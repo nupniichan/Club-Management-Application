@@ -64,8 +64,8 @@ class DashboardChartWidget extends StatelessWidget {
               const SizedBox(width: AppConstants.paddingSmall),
               Text(
                 chartType == ChartType.events 
-                    ? 'Sự kiện toàn trường'
-                    : 'Giải thưởng toàn trường',
+                    ? 'Số sự kiện'
+                    : 'Số giải thưởng',
                 style: TextStyle(
                   fontSize: AppConstants.fontSizeSmall,
                   color: Colors.grey[600],
@@ -108,7 +108,7 @@ class LineChartPainter extends CustomPainter {
       ..style = PaintingStyle.stroke;
 
     final gridPaint = Paint()
-      ..color = Colors.grey.withOpacity(0.3)
+      ..color = Colors.grey.withValues(alpha: 0.3)
       ..strokeWidth = 1;
 
     // Draw grid lines
@@ -183,7 +183,6 @@ class LineChartPainter extends CustomPainter {
       canvas.drawCircle(point, 4, borderPaint);
     }
   }
-
   void _drawLabels(Canvas canvas, Size size) {
     final textStyle = TextStyle(
       color: Colors.grey[600],
@@ -221,14 +220,13 @@ class LineChartPainter extends CustomPainter {
       );
     }
   }
-
   List<double> _getDataPoints(ChartType type) {
     if (type == ChartType.events) {
-      // Sample data for events
+      // Sample data for events - now using integers as percentage of max value (10)
       final List<int> rawData = [1, 2, 2, 3, 3, 4, 4, 6, 8, 10, 7, 3]; // Số sự kiện theo tháng
       return rawData.map((e) => e / 10).toList(); // Chuyển thành tỷ lệ trên thang điểm 0-1
     } else {
-      // Sample data for awards
+      // Sample data for awards - now using integers as percentage of max value (5)
       final List<int> rawData = [0, 1, 0, 1, 1, 1, 2, 2, 3, 4, 5, 3]; // Số giải thưởng theo tháng
       return rawData.map((e) => e / 5).toList(); // Chuyển thành tỷ lệ trên thang điểm 0-1
     }
@@ -242,4 +240,4 @@ class LineChartPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
+} 

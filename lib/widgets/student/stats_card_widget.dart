@@ -55,7 +55,8 @@ class StatsCardWidget extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: AppConstants.paddingMedium),          Text(
+          const SizedBox(height: AppConstants.paddingMedium),
+          Text(
             value,
             style: TextStyle(
               fontSize: value.length > 15 ? 18 : value.length > 10 ? 22 : 28,
@@ -78,4 +79,4 @@ class StatsCardWidget extends StatelessWidget {
       ),
     );
   }
-} 
+}
