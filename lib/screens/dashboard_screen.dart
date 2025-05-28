@@ -1,7 +1,10 @@
+// filepath: d:\Documents\test\Adr\Mobilenangcao\Club-Management-Application\lib\screens\dashboard_screen.dart
 import 'package:flutter/material.dart';
 import 'login_screen.dart';
 import '../constants/app_constants.dart';
 import '../services/auth_service.dart';
+import '../widgets/manager/dashboard_chart_widget.dart';
+import '../widgets/manager/stats_card_widget.dart';
 
 class DashboardScreen extends StatelessWidget {
   final String userName;
@@ -42,209 +45,368 @@ class DashboardScreen extends StatelessWidget {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              AppConstants.primaryColor,
               AppConstants.primaryColor.withValues(alpha: 0.1),
+              Colors.white,
             ],
           ),
         ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(AppConstants.paddingMedium),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Welcome Card
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(AppConstants.paddingLarge),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
-                        blurRadius: 10,
-                        offset: const Offset(0, 5),
-                      ),
-                    ],
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(AppConstants.paddingMedium),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Welcome Section
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(AppConstants.paddingLarge),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 30,
+                          backgroundColor: AppConstants.primaryColor.withValues(alpha: 0.1),
+                          child: Icon(
+                            userRole == 'Quản lý' 
+                                ? Icons.admin_panel_settings
+                                : Icons.school,
+                            size: 30,
+                            color: AppConstants.primaryColor,
+                          ),
+                        ),
+                        const SizedBox(width: AppConstants.paddingMedium),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Chào mừng trở lại!',
+                                style: TextStyle(
+                                  fontSize: AppConstants.fontSizeMedium,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                              Text(
+                                userName,
+                                style: const TextStyle(
+                                  fontSize: AppConstants.fontSizeXXLarge,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppConstants.textPrimaryColor,
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppConstants.paddingSmall,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppConstants.successColor.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  userRole,
+                                  style: const TextStyle(
+                                    fontSize: AppConstants.fontSizeSmall,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppConstants.successColor,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.all(AppConstants.paddingSmall),
+                          decoration: BoxDecoration(
+                            color: AppConstants.primaryColor.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+                          ),
+                          child: Column(
+                            children: [
+                              const Icon(
+                                Icons.today,
+                                color: AppConstants.primaryColor,
+                                size: 20,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                DateTime.now().day.toString().padLeft(2, '0'),
+                                style: const TextStyle(
+                                  fontSize: AppConstants.fontSizeSmall,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppConstants.primaryColor,
+                                ),
+                              ),
+                              Text(
+                                _getMonthName(DateTime.now().month),
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppConstants.paddingLarge),
+
+              // Stats Cards Row
+              Row(
+                children: [                  Expanded(
+                    child: StatsCardWidget(
+                      title: 'CLB đang quản lý',
+                      value: 'CLB Tin học',
+                      icon: Icons.business,
+                      color: AppConstants.primaryColor,
+                    ),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
+                  const SizedBox(width: AppConstants.paddingMedium),
+                  Expanded(
+                    child: StatsCardWidget(
+                      title: 'Tổng Thành Viên',
+                      value: '42',
+                      icon: Icons.people,
+                      color: AppConstants.successColor,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppConstants.paddingMedium),
+              
+              Row(
+                children: [
+                  Expanded(
+                    child: StatsCardWidget(
+                      title: 'Ngân Sách Hiện Tại',
+                      value: '5tr',
+                      icon: Icons.monetization_on,
+                      color: AppConstants.warningColor,
+                    ),
+                  ),
+                  const SizedBox(width: AppConstants.paddingMedium),
+                  Expanded(
+                    child: StatsCardWidget(
+                      title: 'Tổng giải thưởng',
+                      value: '3',
+                      icon: Icons.emoji_events,
+                      color: Colors.purple,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppConstants.paddingLarge),
+
+              // Charts Section
+              const Text(
+                'Thống Kê Hoạt Động',
+                style: TextStyle(
+                  fontSize: AppConstants.fontSizeXLarge,
+                  fontWeight: FontWeight.bold,
+                  color: AppConstants.textPrimaryColor,
+                ),
+              ),
+              const SizedBox(height: AppConstants.paddingMedium),
+
+              // Events Chart
+              Container(
+                height: 250,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: const DashboardChartWidget(
+                  title: 'Hoạt động/Sự kiện',
+                  chartType: ChartType.events,
+                  color: AppConstants.primaryColor,
+                ),
+              ),
+              const SizedBox(height: AppConstants.paddingLarge),
+
+              // Awards Chart
+              Container(
+                height: 250,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: const DashboardChartWidget(
+                  title: 'Giải thưởng',
+                  chartType: ChartType.awards,
+                  color: Colors.purple,
+                ),
+              ),
+              const SizedBox(height: AppConstants.paddingLarge),
+
+              // New Members Section
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(AppConstants.paddingLarge),
+                      decoration: BoxDecoration(
+                        color: AppConstants.primaryColor,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(AppConstants.borderRadiusLarge),
+                          topRight: Radius.circular(AppConstants.borderRadiusLarge),
+                        ),
+                      ),
+                      child: const Row(
                         children: [
-                          CircleAvatar(
-                            radius: 30,
-                            backgroundColor: AppConstants.primaryColor.withValues(alpha: 0.1),
-                            child: Icon(
-                              userRole == AppConstants.roleManager 
-                                  ? Icons.admin_panel_settings
-                                  : Icons.school,
-                              size: 30,
-                              color: AppConstants.primaryColor,
+                          Icon(
+                            Icons.people_alt,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                          SizedBox(width: AppConstants.paddingSmall),
+                          Text(
+                            'Thành Viên Mới',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: AppConstants.fontSizeXLarge,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const SizedBox(width: AppConstants.paddingMedium),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(AppConstants.paddingMedium),
+                      child: Column(
+                        children: [
+                          // Table Header
+                          Container(
+                            padding: const EdgeInsets.symmetric(vertical: AppConstants.paddingSmall),
+                            decoration: BoxDecoration(
+                              border: Border(
+                                bottom: BorderSide(
+                                  color: Colors.grey[300]!,
+                                  width: 1,
+                                ),
+                              ),
+                            ),
+                            child: const Row(
                               children: [
-                                Text(
-                                  'Chào mừng!',
-                                  style: TextStyle(
-                                    fontSize: AppConstants.fontSizeMedium,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                                Text(
-                                  userName,
-                                  style: const TextStyle(
-                                    fontSize: AppConstants.fontSizeXXLarge,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppConstants.textPrimaryColor,
-                                  ),
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: AppConstants.paddingSmall,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: userRole == AppConstants.roleManager 
-                                        ? AppConstants.successColor.withValues(alpha: 0.1)
-                                        : AppConstants.primaryColor.withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
+                                Expanded(
+                                  flex: 3,
                                   child: Text(
-                                    userRole,
+                                    'Họ tên',
                                     style: TextStyle(
-                                      fontSize: AppConstants.fontSizeSmall,
-                                      fontWeight: FontWeight.w600,
-                                      color: userRole == AppConstants.roleManager 
-                                          ? AppConstants.successColor
-                                          : AppConstants.primaryColor,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: AppConstants.fontSizeMedium,
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 2,
+                                  child: Text(
+                                    'MSHS',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: AppConstants.fontSizeMedium,
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 2,
+                                  child: Text(
+                                    'Lớp',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: AppConstants.fontSizeMedium,
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 3,
+                                  child: Text(
+                                    'Ngày tham gia',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: AppConstants.fontSizeMedium,
                                     ),
                                   ),
                                 ),
                               ],
                             ),
                           ),
+                          
+                          // Table Data
+                          _buildMemberRow(
+                            'Nguyễn Văn An',
+                            'HS001',
+                            '10A1',
+                            '12/05/2025',
+                          ),
+                          _buildMemberRow(
+                            'Trần Thị Bình',
+                            'HS002',
+                            '11A3',
+                            '14/05/2025',
+                          ),
+                          _buildMemberRow(
+                            'Lê Hoàng Cường',
+                            'HS003',
+                            '12A2',
+                            '18/05/2025',
+                          ),
+                          _buildMemberRow(
+                            'Phạm Thị Dung',
+                            'HS004',
+                            '10B1',
+                            '20/05/2025',
+                          ),
+                          _buildMemberRow(
+                            'Hoàng Văn Em',
+                            'HS005',
+                            '11A1',
+                            '22/05/2025',
+                          ),
                         ],
                       ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: AppConstants.paddingLarge),
-
-                // Features Section
-                const Text(
-                  'Chức năng',
-                  style: TextStyle(
-                    fontSize: AppConstants.fontSizeXLarge,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: AppConstants.paddingMedium),
-
-                // Features Grid
-                Expanded(
-                  child: GridView.count(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: AppConstants.paddingMedium,
-                    mainAxisSpacing: AppConstants.paddingMedium,
-                    childAspectRatio: 1.1,
-                    children: [
-                      _buildFeatureCard(
-                        context,
-                        'Quản lý\nthành viên',
-                        Icons.people,
-                        AppConstants.primaryColor,
-                        () => _navigateToFeature(context, 'members'),
-                      ),
-                      _buildFeatureCard(
-                        context,
-                        'Quản lý\nhoạt động',
-                        Icons.event,
-                        AppConstants.successColor,
-                        () => _navigateToFeature(context, 'activities'),
-                      ),
-                      _buildFeatureCard(
-                        context,
-                        'Báo cáo',
-                        Icons.analytics,
-                        AppConstants.warningColor,
-                        () => _navigateToFeature(context, 'reports'),
-                      ),
-                      _buildFeatureCard(
-                        context,
-                        'Cài đặt',
-                        Icons.settings,
-                        Colors.purple,
-                        () => _navigateToFeature(context, 'settings'),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFeatureCard(
-    BuildContext context,
-    String title,
-    IconData icon,
-    Color color,
-    VoidCallback onTap,
-  ) {
-    return Card(
-      elevation: 8,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
-      ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
-        child: Container(
-          padding: const EdgeInsets.all(AppConstants.paddingMedium),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                color.withValues(alpha: 0.1),
-                color.withValues(alpha: 0.05),
-              ],
-            ),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(AppConstants.paddingMedium),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Icon(
-                  icon,
-                  size: 32,
-                  color: color,
-                ),
-              ),
-              const SizedBox(height: AppConstants.paddingSmall),
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: AppConstants.fontSizeMedium,
-                  fontWeight: FontWeight.w600,
-                  color: color,
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -254,15 +416,70 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  void _navigateToFeature(BuildContext context, String feature) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Chức năng "$feature" đang được phát triển'),
-        backgroundColor: AppConstants.primaryColor,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+  String _getMonthName(int month) {
+    const months = [
+      '', 'T1', 'T2', 'T3', 'T4', 'T5', 'T6',
+      'T7', 'T8', 'T9', 'T10', 'T11', 'T12'
+    ];
+    return months[month];
+  }
+
+  Widget _buildMemberRow(
+    String name,
+    String studentId,
+    String className,
+    String joinDate,
+  ) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: AppConstants.paddingSmall),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: Colors.grey[200]!,
+            width: 1,
+          ),
         ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 3,
+            child: Text(
+              name,
+              style: const TextStyle(
+                fontSize: AppConstants.fontSizeMedium,
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: Text(
+              studentId,
+              style: const TextStyle(
+                fontSize: AppConstants.fontSizeMedium,
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: Text(
+              className,
+              style: const TextStyle(
+                fontSize: AppConstants.fontSizeMedium,
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 3,
+            child: Text(
+              joinDate,
+              style: TextStyle(
+                fontSize: AppConstants.fontSizeMedium,
+                color: Colors.grey[600],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -333,4 +550,4 @@ class DashboardScreen extends StatelessWidget {
       },
     );
   }
-} 
+}

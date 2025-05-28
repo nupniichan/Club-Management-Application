@@ -64,8 +64,8 @@ class DashboardChartWidget extends StatelessWidget {
               const SizedBox(width: AppConstants.paddingSmall),
               Text(
                 chartType == ChartType.events 
-                    ? 'Sự kiện toàn trường'
-                    : 'Giải thưởng toàn trường',
+                    ? 'Số sự kiện'
+                    : 'Số giải thưởng',
                 style: TextStyle(
                   fontSize: AppConstants.fontSizeSmall,
                   color: Colors.grey[600],
@@ -183,7 +183,6 @@ class LineChartPainter extends CustomPainter {
       canvas.drawCircle(point, 4, borderPaint);
     }
   }
-
   void _drawLabels(Canvas canvas, Size size) {
     final textStyle = TextStyle(
       color: Colors.grey[600],
@@ -205,10 +204,11 @@ class LineChartPainter extends CustomPainter {
       );
     }
 
-    // Y-axis labels
+    // Y-axis labels - now using integer values
     for (int i = 0; i <= 4; i++) {
       final y = size.height * (4 - i) / 4;
-      final value = (i * 0.5).toStringAsFixed(1);
+      final maxValue = chartType == ChartType.events ? 10 : 5; // Sự kiện: max 10, Giải thưởng: max 5
+      final value = (i * maxValue / 4).round().toString();
       final textPainter = TextPainter(
         text: TextSpan(text: value, style: textStyle),
         textDirection: TextDirection.ltr,
@@ -220,14 +220,15 @@ class LineChartPainter extends CustomPainter {
       );
     }
   }
-
   List<double> _getDataPoints(ChartType type) {
     if (type == ChartType.events) {
-      // Sample data for events (similar to the chart in the image)
-      return [0.1, 0.2, 0.15, 0.3, 0.25, 0.4, 0.35, 0.6, 0.8, 1.0, 0.7, 0.3];
+      // Sample data for events - now using integers as percentage of max value (10)
+      final List<int> rawData = [1, 2, 2, 3, 3, 4, 4, 6, 8, 10, 7, 3]; // Số sự kiện theo tháng
+      return rawData.map((e) => e / 10).toList(); // Chuyển thành tỷ lệ trên thang điểm 0-1
     } else {
-      // Sample data for awards
-      return [0.05, 0.1, 0.08, 0.15, 0.12, 0.25, 0.3, 0.45, 0.6, 0.8, 0.9, 0.7];
+      // Sample data for awards - now using integers as percentage of max value (5)
+      final List<int> rawData = [0, 1, 0, 1, 1, 1, 2, 2, 3, 4, 5, 3]; // Số giải thưởng theo tháng
+      return rawData.map((e) => e / 5).toList(); // Chuyển thành tỷ lệ trên thang điểm 0-1
     }
   }
 

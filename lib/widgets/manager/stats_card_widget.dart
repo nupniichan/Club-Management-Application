@@ -55,14 +55,15 @@ class StatsCardWidget extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: AppConstants.paddingMedium),
-          Text(
+          const SizedBox(height: AppConstants.paddingMedium),          Text(
             value,
             style: TextStyle(
-              fontSize: 28,
+              fontSize: value.length > 15 ? 18 : value.length > 10 ? 22 : 28,
               fontWeight: FontWeight.bold,
               color: color,
             ),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 2,
           ),
           const SizedBox(height: AppConstants.paddingSmall),
           Text(
