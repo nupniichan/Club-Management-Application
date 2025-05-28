@@ -173,3 +173,5 @@ pids
 *.freezed.dart
 *.gr.dart
 *.config.dart
+#specstory
+.specstory/
