@@ -1,10 +1,9 @@
-// filepath: d:\Documents\test\Adr\Mobilenangcao\Club-Management-Application\lib\screens\dashboard_screen.dart
 import 'package:flutter/material.dart';
-import 'login_screen.dart';
-import '../constants/app_constants.dart';
-import '../services/auth_service.dart';
-import '../widgets/manager/dashboard_chart_widget.dart';
-import '../widgets/manager/stats_card_widget.dart';
+import '../login_screen.dart';
+import '../../constants/app_constants.dart';
+import '../../services/auth_service.dart';
+import '../../widgets/student/dashboard_chart_widget.dart';
+import '../../widgets/student/stats_card_widget.dart';
 
 class DashboardScreen extends StatelessWidget {
   final String userName;
@@ -168,7 +167,8 @@ class DashboardScreen extends StatelessWidget {
 
               // Stats Cards Row
               Row(
-                children: [                  Expanded(
+                children: [
+                  Expanded(
                     child: StatsCardWidget(
                       title: 'CLB đang quản lý',
                       value: 'CLB Tin học',

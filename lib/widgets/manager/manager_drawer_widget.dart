@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../constants/app_constants.dart';
-import '../../services/auth_service.dart';
-import '../../screens/login_screen.dart';
 import '../../screens/manager/manager_club_management_screen.dart';
 import '../../screens/manager/manager_event_approval_screen.dart';
 import '../../screens/manager/manager_account_management_screen.dart';
