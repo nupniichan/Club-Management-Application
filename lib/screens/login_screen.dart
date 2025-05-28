@@ -46,9 +46,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 userRole: result.user!.role,
               ),
             ),
-          );
-        } else {
-          // Student -> DashboardScreen (old)
+          );        } else {
+          // Student -> DashboardScreen
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(

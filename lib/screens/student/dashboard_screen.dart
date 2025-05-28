@@ -4,6 +4,7 @@ import '../../constants/app_constants.dart';
 import '../../services/auth_service.dart';
 import '../../widgets/student/dashboard_chart_widget.dart';
 import '../../widgets/student/stats_card_widget.dart';
+import '../../widgets/student/student_drawer_widget.dart';
 
 class DashboardScreen extends StatelessWidget {
   final String userName;
@@ -14,7 +15,6 @@ class DashboardScreen extends StatelessWidget {
     required this.userName,
     required this.userRole,
   });
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,15 +28,30 @@ class DashboardScreen extends StatelessWidget {
         backgroundColor: AppConstants.primaryColor,
         foregroundColor: Colors.white,
         elevation: 0,
+        leading: Builder(
+          builder: (BuildContext context) {
+            return IconButton(
+              icon: const Icon(Icons.menu),
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+              tooltip: 'Mở menu',
+            );
+          },
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
             tooltip: 'Đăng xuất',
             onPressed: () {
               _showLogoutDialog(context);
-            },
-          ),
+            },          ),
         ],
+      ),
+      drawer: StudentDrawerWidget(
+        currentPage: 'dashboard',
+        userName: userName,
+        userRole: userRole,
       ),
       body: Container(
         decoration: BoxDecoration(
