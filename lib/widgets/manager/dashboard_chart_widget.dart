@@ -105,10 +105,8 @@ class LineChartPainter extends CustomPainter {
     final paint = Paint()
       ..color = color
       ..strokeWidth = 3
-      ..style = PaintingStyle.stroke;
-
-    final gridPaint = Paint()
-      ..color = Colors.grey.withOpacity(0.3)
+      ..style = PaintingStyle.stroke;    final gridPaint = Paint()
+      ..color = Colors.grey.withValues(alpha: 0.3)
       ..strokeWidth = 1;
 
     // Draw grid lines

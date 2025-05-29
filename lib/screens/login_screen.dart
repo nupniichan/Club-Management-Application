@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'student/dashboard_screen.dart';
+import 'student/student_dashboard_screen.dart';
 import 'manager/manager_main_screen.dart';
 import '../services/auth_service.dart';
 import '../constants/app_constants.dart';
@@ -20,7 +20,15 @@ class _LoginScreenState extends State<LoginScreen> {
   final _authService = AuthService();
   bool _isLoading = false;
   bool _obscurePassword = true;
-
+  
+  List<Map<String, String>> _accountsList = [];
+  String? _selectedEmail;
+  @override
+  void initState() {
+    super.initState();
+    _accountsList = _authService.getSampleAccounts();
+  }
+  
   void _login() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
@@ -46,9 +54,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 userRole: result.user!.role,
               ),
             ),
-          );
-        } else {
-          // Student -> DashboardScreen (old)
+          );        } else {
+          // Student -> DashboardScreen
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
@@ -71,8 +78,25 @@ class _LoginScreenState extends State<LoginScreen> {
 
       setState(() {
         _isLoading = false;
-      });
-    }
+      });    }
+  }
+  
+  void _onAccountSelected(String? email) {
+    setState(() {
+      _selectedEmail = email;
+      _emailController.text = email ?? '';
+      
+      if (email != null) {
+        // Tìm mật khẩu tương ứng với email
+        final selectedAccount = _accountsList.firstWhere(
+          (account) => account['email'] == email,
+          orElse: () => {'password': ''},
+        );
+        _passwordController.text = selectedAccount['password'] ?? '';
+      } else {
+        _passwordController.text = '';
+      }
+    });
   }
 
   @override
@@ -156,14 +180,53 @@ class _LoginScreenState extends State<LoginScreen> {
                       key: _formKey,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          // Email field
-                          CustomTextField(
-                            label: 'Email',
-                            hintText: 'Nhập email của bạn',
-                            controller: _emailController,
-                            keyboardType: TextInputType.emailAddress,
-                            validator: Validators.validateEmail,
+                        children: [                          // Account dropdown and email field
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Chọn tài khoản mẫu (tùy chọn)',
+                                style: TextStyle(
+                                  fontSize: AppConstants.fontSizeSmall,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+                                  border: Border.all(color: Colors.grey.shade300),
+                                  color: Colors.grey.shade50,
+                                ),
+                                child: DropdownButtonHideUnderline(
+                                  child: DropdownButton<String>(
+                                    isExpanded: true,
+                                    value: _selectedEmail,
+                                    hint: const Text('Chọn tài khoản'),                                    items: [
+                                      const DropdownMenuItem<String>(
+                                        value: null,
+                                        child: Text('-- Chọn tài khoản --'),
+                                      ),
+                                      ..._accountsList.map((account) => DropdownMenuItem<String>(
+                                        value: account['email'],
+                                        child: Text('${account['title']} (${account['email']})'),
+                                      )),
+                                    ],
+                                    onChanged: _onAccountSelected,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              CustomTextField(
+                                label: 'Email',
+                                hintText: 'Nhập email của bạn',
+                                controller: _emailController,
+                                keyboardType: TextInputType.emailAddress,
+                                validator: Validators.validateEmail,
+                              ),
+                            ],
                           ),
                           const SizedBox(height: AppConstants.paddingLarge),
 
