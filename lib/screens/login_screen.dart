@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'student/dashboard_screen.dart';
+import 'student/student_dashboard_screen.dart';
 import 'manager/manager_main_screen.dart';
 import '../services/auth_service.dart';
 import '../constants/app_constants.dart';

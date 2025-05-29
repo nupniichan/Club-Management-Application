@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../constants/app_constants.dart';
 import '../../screens/student/student_member_management_screen.dart';
-import '../../screens/student/dashboard_screen.dart';
+import '../../screens/student/student_dashboard_screen.dart';
 import '../../screens/student/student_event_management_screen.dart';
 import '../../screens/student/student_budget_management_screen.dart';
 import '../../screens/student/student_award_management_screen.dart';

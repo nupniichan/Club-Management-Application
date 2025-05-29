@@ -13,7 +13,7 @@ lib/
 │   └── user.dart           # Model User
 ├── screens/                 # Các màn hình UI
 │   ├── login_screen.dart   # Màn hình đăng nhập
-│   └── dashboard_screen.dart # Màn hình chính
+│   └── student_dashboard_screen.dart # Màn hình chính
 ├── services/               # Business logic và API
 │   └── auth_service.dart   # Service xử lý đăng nhập
 ├── utils/                  # Utility functions

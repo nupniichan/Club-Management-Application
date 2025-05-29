@@ -33,27 +33,17 @@ class StatsCardWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(AppConstants.paddingSmall),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
-                ),
-                child: Icon(
-                  icon,
-                  color: color,
-                  size: 24,
-                ),
-              ),
-              Icon(
-                Icons.trending_up,
-                color: AppConstants.successColor,
-                size: 20,
-              ),
-            ],
+          Container(
+            padding: const EdgeInsets.all(AppConstants.paddingSmall),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+            ),
+            child: Icon(
+              icon,
+              color: color,
+              size: 24,
+            ),
           ),
           const SizedBox(height: AppConstants.paddingMedium),
           Text(
