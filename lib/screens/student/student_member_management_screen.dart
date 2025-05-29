@@ -1271,9 +1271,11 @@ class _StudentMemberManagementScreenState extends State<StudentMemberManagementS
       onChanged: (value) {},
     );
   }
-  
-  // Phương thức chuyển hướng đến tab chỉnh sửa thành viên
+    // Phương thức chuyển hướng đến tab chỉnh sửa thành viên  
   void _navigateToEditMember(BuildContext context, Map<String, dynamic> member) {
+    // Đóng dialog chi tiết trước khi chuyển màn hình
+    Navigator.of(context).pop();
+    
     // Cập nhật form với thông tin của thành viên
     idController.text = member['id'];
     nameController.text = member['name'];
