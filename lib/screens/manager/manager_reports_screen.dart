@@ -1,4 +1,5 @@
-// Full class with mobile/web layout and full detailed report view
+// ignore_for_file: avoid_print
+
 import 'package:flutter/material.dart';
 import '../../constants/app_constants.dart';
 import '../../services/auth_service.dart';
@@ -13,6 +14,8 @@ class ManagerReportsScreen extends StatefulWidget {
 }
 
 class _ManagerReportsScreenState extends State<ManagerReportsScreen> {
+  int _selectedIndex = 0;
+
   final List<Map<String, dynamic>> _reports = List.generate(
     5,
     (index) => {
@@ -51,309 +54,243 @@ class _ManagerReportsScreenState extends State<ManagerReportsScreen> {
         userName: 'Nguyễn Phi Quốc Bảo',
         userRole: 'Quản lý',
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(AppConstants.paddingLarge),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            isMobile(context)
-                ? Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width / 2 - 32,
-                      child: TextField(
-                        decoration: const InputDecoration(
-                          hintText: 'Tìm kiếm theo tên báo cáo',
-                          prefixIcon: Icon(Icons.search),
-                          border: OutlineInputBorder(),
-                        ),
-                        onChanged: (value) {
-                          // handle search logic
-                        },
-                      ),
-                    ),
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width / 2 - 32,
-                      child: DropdownButtonFormField<String>(
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                        ),
-                        value: 'Tất cả CLB',
-                        items: const [
-                          DropdownMenuItem(
-                            value: 'Tất cả CLB',
-                            child: Text('Tất cả CLB'),
+      body:
+          _selectedIndex == 0
+              ? _buildReportList(context)
+              : _buildSearchPage(context),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.list_alt),
+            label: 'Danh sách',
+          ),
+          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Tìm kiếm'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReportList(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(AppConstants.paddingLarge),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Danh sách báo cáo'),
+          const SizedBox(height: AppConstants.paddingMedium),
+          Expanded(
+            child:
+                isMobile(context)
+                    ? ListView.separated(
+                      itemCount: _reports.length,
+                      separatorBuilder: (_, __) => const Divider(),
+                      itemBuilder: (context, index) {
+                        final report = _reports[index];
+                        return ListTile(
+                          title: Text(
+                            report['title'],
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
-                          DropdownMenuItem(
-                            value: 'Tin học',
-                            child: Text('Tin học'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'Toán học',
-                            child: Text('Toán học'),
-                          ),
-                        ],
-                        onChanged: (value) {
-                          // handle club filter logic
-                        },
-                      ),
-                    ),
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width / 2 - 32,
-                      child: TextField(
-                        readOnly: true,
-                        decoration: const InputDecoration(
-                          hintText: 'mm/dd/yyyy',
-                          prefixIcon: Icon(Icons.calendar_today),
-                          border: OutlineInputBorder(),
-                        ),
-                        onTap: () async {
-                          // handle start date picker
-                        },
-                      ),
-                    ),
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width / 2 - 32,
-                      child: TextField(
-                        readOnly: true,
-                        decoration: const InputDecoration(
-                          hintText: 'mm/dd/yyyy',
-                          prefixIcon: Icon(Icons.calendar_today),
-                          border: OutlineInputBorder(),
-                        ),
-                        onTap: () async {
-                          // handle end date picker
-                        },
-                      ),
-                    ),
-                  ],
-                )
-                : Row(
-                  children: [
-                    Expanded(
-                      flex: 3,
-                      child: TextField(
-                        decoration: const InputDecoration(
-                          hintText: 'Tìm kiếm theo tên báo cáo',
-                          prefixIcon: Icon(Icons.search),
-                          border: OutlineInputBorder(),
-                        ),
-                        onChanged: (value) {
-                          // handle search logic
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      flex: 2,
-                      child: DropdownButtonFormField<String>(
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                        ),
-                        value: 'Tất cả CLB',
-                        items: const [
-                          DropdownMenuItem(
-                            value: 'Tất cả CLB',
-                            child: Text('Tất cả CLB'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'Tin học',
-                            child: Text('Tin học'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'Toán học',
-                            child: Text('Toán học'),
-                          ),
-                        ],
-                        onChanged: (value) {
-                          // handle club filter logic
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      flex: 2,
-                      child: TextField(
-                        readOnly: true,
-                        decoration: const InputDecoration(
-                          hintText: 'mm/dd/yyyy',
-                          prefixIcon: Icon(Icons.calendar_today),
-                          border: OutlineInputBorder(),
-                        ),
-                        onTap: () async {
-                          // handle start date picker
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      flex: 2,
-                      child: TextField(
-                        readOnly: true,
-                        decoration: const InputDecoration(
-                          hintText: 'mm/dd/yyyy',
-                          prefixIcon: Icon(Icons.calendar_today),
-                          border: OutlineInputBorder(),
-                        ),
-                        onTap: () async {
-                          // handle end date picker
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-            const SizedBox(height: AppConstants.paddingMedium),
-            const Text('Danh sách báo cáo'),
-            const SizedBox(height: AppConstants.paddingMedium),
-            Expanded(
-              child:
-                  isMobile(context)
-                      ? ListView.separated(
-                        itemCount: _reports.length,
-                        separatorBuilder: (_, __) => const Divider(),
-                        itemBuilder: (context, index) {
-                          final report = _reports[index];
-                          return ListTile(
-                            title: Text(
-                              report['title'],
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Ngày: ${report['date']}'),
-                                Text('Quản lý: ${report['manager']}'),
-                                Text('CLB: ${report['club']}'),
-                              ],
-                            ),
-                            trailing: IconButton(
-                              icon: const Icon(
-                                Icons.remove_red_eye,
-                                color: Colors.blue,
-                              ),
-                              onPressed: () => _viewReport(report),
-                            ),
-                          );
-                        },
-                      )
-                      : ListView(
-                        children: [
-                          Table(
-                            columnWidths: const {
-                              0: FlexColumnWidth(3),
-                              1: FlexColumnWidth(2),
-                              2: FlexColumnWidth(3),
-                              3: FlexColumnWidth(2),
-                              4: IntrinsicColumnWidth(),
-                            },
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              TableRow(
-                                decoration: BoxDecoration(
-                                  color: AppConstants.primaryColor.withOpacity(
-                                    0.1,
+                              Text('Ngày: ${report['date']}'),
+                              Text('Quản lý: ${report['manager']}'),
+                              Text('CLB: ${report['club']}'),
+                            ],
+                          ),
+                          trailing: IconButton(
+                            icon: const Icon(
+                              Icons.remove_red_eye,
+                              color: Colors.blue,
+                            ),
+                            onPressed: () => _viewReport(report),
+                          ),
+                        );
+                      },
+                    )
+                    : ListView(
+                      children: [
+                        Table(
+                          columnWidths: const {
+                            0: FlexColumnWidth(3),
+                            1: FlexColumnWidth(2),
+                            2: FlexColumnWidth(3),
+                            3: FlexColumnWidth(2),
+                            4: IntrinsicColumnWidth(),
+                          },
+                          children: [
+                            TableRow(
+                              decoration: BoxDecoration(
+                                color: AppConstants.primaryColor.withAlpha(
+                                  (255 * 0.1).toInt(),
+                                ),
+                              ),
+                              children: const [
+                                Padding(
+                                  padding: EdgeInsets.all(12),
+                                  child: Text(
+                                    'TÊN BÁO CÁO',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
-                                children: const [
+                                Padding(
+                                  padding: EdgeInsets.all(12),
+                                  child: Text(
+                                    'NGÀY BÁO CÁO',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.all(12),
+                                  child: Text(
+                                    'NHÂN SỰ PHỤ TRÁCH',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.all(12),
+                                  child: Text(
+                                    'CLB',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.all(12),
+                                  child: Text(
+                                    'HÀNH ĐỘNG',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            ..._reports.map(
+                              (report) => TableRow(
+                                decoration: const BoxDecoration(
+                                  border: Border(
+                                    bottom: BorderSide(color: Colors.black12),
+                                  ),
+                                ),
+                                children: [
                                   Padding(
-                                    padding: EdgeInsets.all(12),
+                                    padding: const EdgeInsets.all(12),
                                     child: Text(
-                                      'TÊN BÁO CÁO',
-                                      style: TextStyle(
+                                      report['title'],
+                                      style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                   ),
                                   Padding(
-                                    padding: EdgeInsets.all(12),
-                                    child: Text(
-                                      'NGÀY BÁO CÁO',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
+                                    padding: const EdgeInsets.all(12),
+                                    child: Text(report['date']),
                                   ),
                                   Padding(
-                                    padding: EdgeInsets.all(12),
-                                    child: Text(
-                                      'NHÂN SỰ PHỤ TRÁCH',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
+                                    padding: const EdgeInsets.all(12),
+                                    child: Text(report['manager']),
                                   ),
                                   Padding(
-                                    padding: EdgeInsets.all(12),
-                                    child: Text(
-                                      'CLB',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
+                                    padding: const EdgeInsets.all(12),
+                                    child: Text(report['club']),
                                   ),
                                   Padding(
-                                    padding: EdgeInsets.all(12),
-                                    child: Text(
-                                      'HÀNH ĐỘNG',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
+                                    padding: const EdgeInsets.all(4),
+                                    child: IconButton(
+                                      icon: const Icon(
+                                        Icons.remove_red_eye,
+                                        color: Colors.blue,
                                       ),
+                                      onPressed: () => _viewReport(report),
                                     ),
                                   ),
                                 ],
                               ),
-                              ..._reports.map(
-                                (report) => TableRow(
-                                  decoration: const BoxDecoration(
-                                    border: Border(
-                                      bottom: BorderSide(color: Colors.black12),
-                                    ),
-                                  ),
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.all(12),
-                                      child: Text(
-                                        report['title'],
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.all(12),
-                                      child: Text(report['date']),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.all(12),
-                                      child: Text(report['manager']),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.all(12),
-                                      child: Text(report['club']),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.all(4),
-                                      child: IconButton(
-                                        icon: const Icon(
-                                          Icons.remove_red_eye,
-                                          color: Colors.blue,
-                                        ),
-                                        onPressed: () => _viewReport(report),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSearchPage(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(AppConstants.paddingLarge),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Tìm kiếm & Lọc báo cáo',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: AppConstants.paddingMedium),
+          TextField(
+            decoration: const InputDecoration(
+              hintText: 'Tìm kiếm theo tên báo cáo',
+              prefixIcon: Icon(Icons.search),
+              border: OutlineInputBorder(),
             ),
-          ],
-        ),
+            onChanged: (value) {},
+          ),
+          const SizedBox(height: AppConstants.paddingMedium),
+          DropdownButtonFormField<String>(
+            decoration: const InputDecoration(border: OutlineInputBorder()),
+            value: 'Tất cả CLB',
+            items: const [
+              DropdownMenuItem(value: 'Tất cả CLB', child: Text('Tất cả CLB')),
+              DropdownMenuItem(value: 'Tin học', child: Text('Tin học')),
+              DropdownMenuItem(value: 'Toán học', child: Text('Toán học')),
+            ],
+            onChanged: (value) {},
+          ),
+          const SizedBox(height: AppConstants.paddingMedium),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  readOnly: true,
+                  decoration: const InputDecoration(
+                    hintText: 'mm/dd/yyyy',
+                    prefixIcon: Icon(Icons.calendar_today),
+                    border: OutlineInputBorder(),
+                  ),
+                  onTap: () async {},
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: TextField(
+                  readOnly: true,
+                  decoration: const InputDecoration(
+                    hintText: 'mm/dd/yyyy',
+                    prefixIcon: Icon(Icons.calendar_today),
+                    border: OutlineInputBorder(),
+                  ),
+                  onTap: () async {},
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
