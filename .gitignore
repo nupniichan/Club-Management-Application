@@ -106,6 +106,7 @@ $RECYCLE.BIN/
 *.msm
 *.msp
 *.lnk
+windows/flutter/generated_*
 
 # macOS specific
 .DS_Store

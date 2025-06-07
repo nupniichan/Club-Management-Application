@@ -5,12 +5,12 @@ import 'constants/app_constants.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Ẩn hoàn toàn thanh trạng thái
   SystemChrome.setEnabledSystemUIMode(
     SystemUiMode.immersiveSticky,
   );
-  
+
   runApp(const MyApp());
 }
 

@@ -67,14 +67,17 @@ class AppConstants {
   static const int maxEmailLength = 255;
 
   // Images
-  static const String defaultProfileImage = 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80';
-  static const String loginBackgroundImage = 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80';
+  static const String defaultProfileImage =
+      'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80';
+  static const String loginBackgroundImage =
+      'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80';
 
   // Messages
   static const String loginSuccessMessage = 'Đăng nhập thành công!';
   static const String loginFailureMessage = 'Email hoặc mật khẩu không đúng!';
   static const String logoutMessage = 'Đã đăng xuất thành công!';
-  static const String networkErrorMessage = 'Lỗi kết nối mạng. Vui lòng thử lại!';
+  static const String networkErrorMessage =
+      'Lỗi kết nối mạng. Vui lòng thử lại!';
   static const String unknownErrorMessage = 'Đã xảy ra lỗi không xác định!';
 
   // Feature Names
@@ -102,7 +105,9 @@ class AppTheme {
           backgroundColor: Colors.black,
           foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+            borderRadius: BorderRadius.circular(
+              AppConstants.borderRadiusMedium,
+            ),
           ),
           padding: const EdgeInsets.symmetric(
             horizontal: AppConstants.paddingLarge,
@@ -128,7 +133,7 @@ class AppTheme {
           vertical: AppConstants.paddingMedium,
         ),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         elevation: 4,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
@@ -136,4 +141,4 @@ class AppTheme {
       ),
     );
   }
-} 
+}
