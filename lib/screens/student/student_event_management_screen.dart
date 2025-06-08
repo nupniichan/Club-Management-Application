@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../constants/app_constants.dart';
 import '../../widgets/student/student_drawer_widget.dart';
 import '../../widgets/student/student_app_bar_widget.dart';
+import '../../models/event.dart';
+import '../../services/event_data_service.dart';
 
 class StudentEventManagementScreen extends StatefulWidget {
   final String? userName;
@@ -30,6 +32,9 @@ class _StudentEventManagementScreenState
     'Chỉnh sửa sự kiện',
   ];
 
+  final EventDataService _eventService = EventDataService();
+  List<Event> _events = [];
+
   // Form controllers and variables
   final _formKey = GlobalKey<FormState>();
   final eventNameController = TextEditingController();
@@ -44,50 +49,19 @@ class _StudentEventManagementScreenState
   String _searchQuery = '';
 
   // Variable to store the event being edited
-  Map<String, dynamic>? _editingEvent;
+  Event? _editingEvent;
 
-  // Updated mock data based on MongoDB structure
-  final List<Map<String, dynamic>> _events = [
-    {
-      '_id': '673c5d577f6aae48b37a856b',
-      'ten': 'IT Day',
-      'ngayToChuc': '2024-11-22',
-      'thoiGianBatDau': '12:00',
-      'thoiGianKetThuc': '15:00',
-      'diaDiem': 'Sân trường',
-      'noiDung': 'Sự kiện IT Day được tổ chức nhằm giới thiệu cho mọi người về thế giới công nghệ thông tin',
-      'nguoiPhuTrach': 'Nguyễn Phi Quốc Bảo',
-      'khachMoi': ['Doanh nghiệp MemoryZone', 'Doanh nghiệp máy tính AnPhat'],
-      'club': '67160c5ad55fc5f816de7644',
-      'trangThai': 'daDuyet',
-    },
-    {
-      '_id': '673c5d577f6aae48b37a856c',
-      'ten': 'Hackathon X',
-      'ngayToChuc': '2024-12-15',
-      'thoiGianBatDau': '08:00',
-      'thoiGianKetThuc': '18:00',
-      'diaDiem': 'Phòng máy tính A101',
-      'noiDung': 'Cuộc thi lập trình 24h dành cho sinh viên đam mê coding',
-      'nguoiPhuTrach': 'Trần Văn B',
-      'khachMoi': ['Công ty FPT Software', 'Công ty TMA Solutions'],
-      'club': '67160c5ad55fc5f816de7644',
-      'trangThai': 'choPheDuyet',
-    },
-    {
-      '_id': '673c5d577f6aae48b37a856d',
-      'ten': 'Workshop AI',
-      'ngayToChuc': '2024-10-30',
-      'thoiGianBatDau': '14:00',
-      'thoiGianKetThuc': '17:00',
-      'diaDiem': 'Hội trường lớn',
-      'noiDung': 'Workshop về trí tuệ nhân tạo và machine learning cơ bản',
-      'nguoiPhuTrach': 'Lê Thị C',
-      'khachMoi': ['Tiến sĩ Nguyễn Văn A', 'Chuyên gia AI Google'],
-      'club': '67160c5ad55fc5f816de7644',
-      'trangThai': 'hoanThanh',
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadEvents();
+  }
+
+  void _loadEvents() {
+    setState(() {
+      _events = _eventService.getAllEvents();
+    });
+  }
 
   @override
   void dispose() {
@@ -102,8 +76,6 @@ class _StudentEventManagementScreenState
     _searchController.dispose();
     super.dispose();
   }
-
-
 
   // Reset form to default state
   void _resetForm() {
@@ -162,23 +134,22 @@ class _StudentEventManagementScreenState
   // Save a new event
   void _saveEvent() {
     if (_formKey.currentState!.validate()) {
-      final newEvent = {
-        '_id': DateTime.now().millisecondsSinceEpoch.toString(),
-        'ten': eventNameController.text,
-        'ngayToChuc': _convertDateFormat(dateController.text),
-        'thoiGianBatDau': '08:00',
-        'thoiGianKetThuc': '17:00',
-        'diaDiem': 'Phòng học',
-        'noiDung': 'Sự kiện mới được tạo',
-        'nguoiPhuTrach': trainerController.text,
-        'khachMoi': [],
-        'club': '67160c5ad55fc5f816de7644',
-        'trangThai': 'choPheDuyet',
-      };
+      final newEvent = Event(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        ten: eventNameController.text,
+        ngayToChuc: _convertDateFormat(dateController.text),
+        thoiGianBatDau: '08:00',
+        thoiGianKetThuc: '17:00',
+        diaDiem: 'Phòng học',
+        noiDung: 'Sự kiện mới được tạo',
+        nguoiPhuTrach: trainerController.text,
+        khachMoi: [],
+        club: '67160c5ad55fc5f816de7644',
+        trangThai: 'choPheDuyet',
+      );
 
-      setState(() {
-        _events.add(newEvent);
-      });
+      _eventService.addEvent(newEvent);
+      _loadEvents();
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -207,24 +178,19 @@ class _StudentEventManagementScreenState
   // Update an existing event
   void _updateEvent() {
     if (_formKey.currentState!.validate() && _editingEvent != null) {
-      final updatedEvent = Map<String, dynamic>.from(_editingEvent!);
-      updatedEvent['ten'] = eventNameController.text;
-      updatedEvent['ngayToChuc'] = _convertDateFormat(dateController.text);
-      updatedEvent['nguoiPhuTrach'] = trainerController.text;
-      updatedEvent['thoiGianBatDau'] = startTimeController.text;
-      updatedEvent['thoiGianKetThuc'] = endTimeController.text;
-      updatedEvent['diaDiem'] = locationController.text;
-      updatedEvent['noiDung'] = contentController.text;
-      updatedEvent['khachMoi'] = guestController.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+      final updatedEvent = _editingEvent!.copyWith(
+        ten: eventNameController.text,
+        ngayToChuc: _convertDateFormat(dateController.text),
+        nguoiPhuTrach: trainerController.text,
+        thoiGianBatDau: startTimeController.text,
+        thoiGianKetThuc: endTimeController.text,
+        diaDiem: locationController.text,
+        noiDung: contentController.text,
+        khachMoi: guestController.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList(),
+      );
 
-      setState(() {
-        final index = _events.indexWhere(
-          (e) => e['_id'] == _editingEvent!['_id'],
-        );
-        if (index != -1) {
-          _events[index] = updatedEvent;
-        }
-      });
+      _eventService.updateEvent(updatedEvent);
+      _loadEvents();
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -243,9 +209,9 @@ class _StudentEventManagementScreenState
   }
 
   // Navigate to edit event
-  void _navigateToEditEvent(BuildContext context, Map<String, dynamic> event) {
+  void _navigateToEditEvent(BuildContext context, Event event) {
     // Kiểm tra trạng thái sự kiện
-    if (event['trangThai'] != 'choPheDuyet') {
+    if (event.trangThai != 'choPheDuyet') {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Chỉ có thể chỉnh sửa sự kiện đang chờ phê duyệt'),
@@ -255,25 +221,25 @@ class _StudentEventManagementScreenState
       return;
     }
 
-    eventNameController.text = event['ten'];
-    dateController.text = _formatDate(event['ngayToChuc']);
-    trainerController.text = event['nguoiPhuTrach'];
-    startTimeController.text = event['thoiGianBatDau'];
-    endTimeController.text = event['thoiGianKetThuc'];
-    locationController.text = event['diaDiem'];
-    contentController.text = event['noiDung'];
-    guestController.text = event['khachMoi'].join(', ');
+    eventNameController.text = event.ten;
+    dateController.text = _formatDate(event.ngayToChuc);
+    trainerController.text = event.nguoiPhuTrach;
+    startTimeController.text = event.thoiGianBatDau;
+    endTimeController.text = event.thoiGianKetThuc;
+    locationController.text = event.diaDiem;
+    contentController.text = event.noiDung;
+    guestController.text = event.khachMoi.join(', ');
 
     setState(() {
-      _editingEvent = Map<String, dynamic>.from(event);
+      _editingEvent = event;
       _selectedIndex = 3;
       _currentTitle = _titles[3];
     });
   }
 
   // Show event details in a dialog
-  void _showEventDetails(BuildContext context, Map<String, dynamic> event) {
-    final String statusText = _getStatusText(event['trangThai']);
+  void _showEventDetails(BuildContext context, Event event) {
+    final String statusText = _getStatusText(event.trangThai);
     final Color statusColor = _getStatusColor(statusText);
 
     showDialog(
@@ -313,7 +279,7 @@ class _StudentEventManagementScreenState
                         ),
                         child: Center(
                           child: Text(
-                            event['ten'][0].toUpperCase(),
+                            event.ten[0].toUpperCase(),
                             style: const TextStyle(
                               color: AppConstants.primaryColor,
                               fontWeight: FontWeight.bold,
@@ -325,7 +291,7 @@ class _StudentEventManagementScreenState
                       const SizedBox(width: AppConstants.paddingMedium),
                       Expanded(
                         child: Text(
-                          event['ten'],
+                          event.ten,
                           style: const TextStyle(
                             fontSize: AppConstants.fontSizeXLarge,
                             fontWeight: FontWeight.bold,
@@ -350,18 +316,18 @@ class _StudentEventManagementScreenState
                             Row(
                               children: [
                                 Expanded(
-                                  child: _buildDetailCard(Icons.calendar_today, 'Ngày', _formatDate(event['ngayToChuc'])),
+                                  child: _buildDetailCard(Icons.calendar_today, 'Ngày', _formatDate(event.ngayToChuc)),
                                 ),
                                 const SizedBox(width: AppConstants.paddingSmall),
                                 Expanded(
-                                  child: _buildDetailCard(Icons.schedule, 'Thời gian', '${event['thoiGianBatDau']} - ${event['thoiGianKetThuc']}'),
+                                  child: _buildDetailCard(Icons.schedule, 'Thời gian', '${event.thoiGianBatDau} - ${event.thoiGianKetThuc}'),
                                 ),
                               ],
                             ),
                             const SizedBox(height: AppConstants.paddingSmall),
-                            _buildDetailCard(Icons.person, 'Người phụ trách', event['nguoiPhuTrach']),
+                            _buildDetailCard(Icons.person, 'Người phụ trách', event.nguoiPhuTrach),
                             const SizedBox(height: AppConstants.paddingSmall),
-                            _buildDetailCard(Icons.location_on, 'Địa điểm', event['diaDiem']),
+                            _buildDetailCard(Icons.location_on, 'Địa điểm', event.diaDiem),
                           ],
                         ),
                         
@@ -375,14 +341,14 @@ class _StudentEventManagementScreenState
                           textColor: statusColor,
                         ),
                         
-                        if (event['noiDung'] != null && event['noiDung'].isNotEmpty) ...[
+                        if (event.noiDung.isNotEmpty) ...[
                           const SizedBox(height: AppConstants.paddingMedium),
-                          _buildDetailCard(Icons.description, 'Nội dung', event['noiDung']),
+                          _buildDetailCard(Icons.description, 'Nội dung', event.noiDung),
                         ],
                         
-                        if (event['khachMoi'] != null && event['khachMoi'].isNotEmpty) ...[
+                        if (event.khachMoi.isNotEmpty) ...[
                           const SizedBox(height: AppConstants.paddingMedium),
-                          _buildDetailCard(Icons.people, 'Khách mời', event['khachMoi'].join(', ')),
+                          _buildDetailCard(Icons.people, 'Khách mời', event.khachMoi.join(', ')),
                         ],
                       ],
                     ),
@@ -503,7 +469,7 @@ class _StudentEventManagementScreenState
   }
 
   // Show delete confirmation dialog
-  void _showDeleteConfirmation(BuildContext context, Map<String, dynamic> event) {
+  void _showDeleteConfirmation(BuildContext context, Event event) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -516,7 +482,7 @@ class _StudentEventManagementScreenState
             ),
           ),
           content: Text(
-            'Bạn có chắc chắn muốn xóa sự kiện "${event['ten']}" không?',
+            'Bạn có chắc chắn muốn xóa sự kiện "${event.ten}" không?',
             style: const TextStyle(fontSize: AppConstants.fontSizeLarge),
           ),
           actions: [
@@ -530,9 +496,8 @@ class _StudentEventManagementScreenState
             FilledButton(
               style: FilledButton.styleFrom(backgroundColor: Colors.red),
               onPressed: () {
-                setState(() {
-                  _events.removeWhere((e) => e['_id'] == event['_id']);
-                });
+                _eventService.deleteEvent(event.id);
+                _loadEvents();
                 Navigator.of(context).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
@@ -555,13 +520,13 @@ class _StudentEventManagementScreenState
     );
   }
 
-  List<Map<String, dynamic>> get _filteredEvents {
+  List<Event> get _filteredEvents {
     return _events.where((event) {
       return _searchQuery.isEmpty ||
-          event['ten'].toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          event['ngayToChuc'].toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          event['nguoiPhuTrach'].toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          event['trangThai'].toLowerCase().contains(_searchQuery.toLowerCase());
+          event.ten.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          event.ngayToChuc.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          event.nguoiPhuTrach.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          event.trangThai.toLowerCase().contains(_searchQuery.toLowerCase());
     }).toList();
   }
 
@@ -735,7 +700,7 @@ class _StudentEventManagementScreenState
                   itemCount: _filteredEvents.length,
                   itemBuilder: (context, index) {
                     final event = _filteredEvents[index];
-                    final Color statusColor = _getStatusColor(_getStatusText(event['trangThai']));
+                    final Color statusColor = _getStatusColor(_getStatusText(event.trangThai));
                     return Card(
                       margin: const EdgeInsets.symmetric(
                         horizontal: AppConstants.paddingMedium,
@@ -774,7 +739,7 @@ class _StudentEventManagementScreenState
                               children: [
                                 Expanded(
                                   child: Text(
-                                    event['ten'],
+                                    event.ten,
                                     style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: AppConstants.fontSizeXLarge,
@@ -823,11 +788,11 @@ class _StudentEventManagementScreenState
                               children: [
                                 _buildInfoChip(
                                   Icons.calendar_today,
-                                  'Ngày: ${_formatDate(event['ngayToChuc'])}',
+                                  'Ngày: ${_formatDate(event.ngayToChuc)}',
                                 ),
                                 _buildInfoChip(
                                   Icons.person,
-                                  'Người phụ trách: ${event['nguoiPhuTrach']}',
+                                  'Người phụ trách: ${event.nguoiPhuTrach}',
                                 ),
                               ],
                             ),
@@ -855,7 +820,7 @@ class _StudentEventManagementScreenState
                                   ),
                                   const SizedBox(width: AppConstants.paddingSmall),
                                   Text(
-                                    _getStatusText(event['trangThai']),
+                                    _getStatusText(event.trangThai),
                                     style: TextStyle(
                                       fontSize: AppConstants.fontSizeMedium,
                                       fontWeight: FontWeight.w600,
@@ -1242,7 +1207,7 @@ class _StudentEventManagementScreenState
                       const SizedBox(height: AppConstants.paddingMedium),
                       _buildDropdownField('Người phụ trách', [
                         'Tất cả',
-                        ..._events.map((e) => e['nguoiPhuTrach']).toSet().toList(),
+                        ..._events.map((e) => e.nguoiPhuTrach).toSet().toList(),
                       ]),
                       const SizedBox(height: AppConstants.paddingMedium),
                       _buildDropdownField('Năm', [
@@ -1303,13 +1268,13 @@ class _StudentEventManagementScreenState
                                 itemCount: _filteredEvents.length,
                                 itemBuilder: (context, index) {
                                   final event = _filteredEvents[index];
-                                  final String statusText = _getStatusText(event['trangThai']);
+                                  final String statusText = _getStatusText(event.trangThai);
                                   final Color statusColor = _getStatusColor(statusText);
                                   return ListTile(
                                     leading: CircleAvatar(
                                       backgroundColor: AppConstants.primaryColor.withAlpha(51),
                                       child: Text(
-                                        event['ten'][0].toUpperCase(),
+                                        event.ten[0].toUpperCase(),
                                         style: TextStyle(
                                           color: AppConstants.primaryColor,
                                           fontWeight: FontWeight.bold,
@@ -1317,12 +1282,12 @@ class _StudentEventManagementScreenState
                                       ),
                                     ),
                                     title: Text(
-                                      event['ten'],
+                                      event.ten,
                                       overflow: TextOverflow.ellipsis,
                                       maxLines: 1,
                                     ),
                                     subtitle: Text(
-                                      'Ngày: ${_formatDate(event['ngayToChuc'])} - ${event['nguoiPhuTrach']}',
+                                      'Ngày: ${_formatDate(event.ngayToChuc)} - ${event.nguoiPhuTrach}',
                                       overflow: TextOverflow.ellipsis,
                                       maxLines: 1,
                                     ),

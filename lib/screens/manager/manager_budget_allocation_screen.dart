@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../constants/app_constants.dart';
 import '../../widgets/manager/manager_drawer_widget.dart';
 import '../../widgets/manager/manager_app_bar_widget.dart';
+import '../../models/budget_allocation.dart';
+import '../../services/budget_allocation_data_service.dart';
 
 class ManagerBudgetAllocationScreen extends StatefulWidget {
   const ManagerBudgetAllocationScreen({super.key});
@@ -24,39 +26,28 @@ class _ManagerBudgetAllocationScreenState
     'Tìm kiếm & Lọc',
   ];
 
-  // Mock data based on provided structure
-  final List<Map<String, dynamic>> _allocations = [
-    {
-      '_id': 10,
-      'club': '67160c5ad55fc5f816de7644',
-      'clubName': 'Câu lạc bộ tin học',
-      'amount': 1000000,
-      'purpose': 'Thưởng câu lạc bộ mang về thành tích xuất sắc cho trường',
-      'allocationDate': '2024-11-19',
-    },
-    {
-      '_id': 11,
-      'club': '67160c5ad55fc5f816de7644',
-      'clubName': 'Câu lạc bộ tin học',
-      'amount': 2500000,
-      'purpose': 'Hỗ trợ tổ chức sự kiện IT Day',
-      'allocationDate': '2024-11-15',
-    },
-    {
-      '_id': 12,
-      'club': '67160c5ad55fc5f816de7645',
-      'clubName': 'Câu lạc bộ Toán học',
-      'amount': 1500000,
-      'purpose': 'Mua sách và tài liệu học tập',
-      'allocationDate': '2024-11-10',
-    },
-  ];
+  final BudgetAllocationDataService _allocationService = BudgetAllocationDataService();
+  List<BudgetAllocation> _allocations = [];
+  List<BudgetAllocation> _filteredAllocations = [];
 
   final _formKey = GlobalKey<FormState>();
   final _clubController = TextEditingController();
   final _amountController = TextEditingController();
   final _purposeController = TextEditingController();
   final _dateController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAllocations();
+  }
+
+  void _loadAllocations() {
+    setState(() {
+      _allocations = _allocationService.getAllAllocations();
+      _filteredAllocations = _allocations;
+    });
+  }
 
   @override
   void dispose() {
@@ -77,12 +68,10 @@ class _ManagerBudgetAllocationScreenState
     return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
   }
 
-  List<Map<String, dynamic>> get _filteredAllocations {
-    return _allocations.where((allocation) {
-      return _searchQuery.isEmpty ||
-          allocation['clubName'].toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          allocation['purpose'].toLowerCase().contains(_searchQuery.toLowerCase());
-    }).toList();
+  void _updateFilteredAllocations() {
+    setState(() {
+      _filteredAllocations = _allocationService.searchAllocations(_searchQuery);
+    });
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -101,18 +90,17 @@ class _ManagerBudgetAllocationScreenState
 
   void _saveAllocation() {
     if (_formKey.currentState!.validate()) {
-      final newAllocation = {
-        '_id': _allocations.length + 13,
-        'club': '67160c5ad55fc5f816de7644',
-        'clubName': _clubController.text,
-        'amount': int.parse(_amountController.text.replaceAll(',', '')),
-        'purpose': _purposeController.text,
-        'allocationDate': _dateController.text.split('/').reversed.join('-'),
-      };
+      final newAllocation = BudgetAllocation(
+        id: _allocationService.getNextId(),
+        club: '67160c5ad55fc5f816de7644',
+        clubName: _clubController.text,
+        amount: int.parse(_amountController.text.replaceAll(',', '')),
+        purpose: _purposeController.text,
+        allocationDate: _dateController.text.split('/').reversed.join('-'),
+      );
 
-      setState(() {
-        _allocations.add(newAllocation);
-      });
+      _allocationService.addAllocation(newAllocation);
+      _loadAllocations();
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -179,7 +167,7 @@ class _ManagerBudgetAllocationScreenState
   }
 
   Widget _buildAllocationList() {
-    final totalAmount = _allocations.fold<int>(0, (sum, allocation) => sum + (allocation['amount'] as int));
+    final totalAmount = _allocationService.getTotalAllocatedAmount();
     
     return Column(
       children: [
@@ -345,7 +333,7 @@ class _ManagerBudgetAllocationScreenState
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          allocation['clubName'],
+                                          allocation.clubName,
                                           style: const TextStyle(
                                             fontWeight: FontWeight.bold,
                                             fontSize: 18,
@@ -355,7 +343,7 @@ class _ManagerBudgetAllocationScreenState
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
-                                          'ID: ${allocation['_id']} • ${_formatDate(allocation['allocationDate'])}',
+                                          'ID: ${allocation.id} • ${_formatDate(allocation.allocationDate)}',
                                           style: TextStyle(
                                             fontSize: 14,
                                             color: Colors.grey[600],
@@ -377,7 +365,7 @@ class _ManagerBudgetAllocationScreenState
                                       ),
                                     ),
                                     child: Text(
-                                      _formatCurrency(allocation['amount']),
+                                      _formatCurrency(allocation.amount),
                                       style: const TextStyle(
                                         fontSize: 14,
                                         fontWeight: FontWeight.bold,
@@ -418,7 +406,7 @@ class _ManagerBudgetAllocationScreenState
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      allocation['purpose'],
+                                      allocation.purpose,
                                       style: const TextStyle(
                                         fontSize: 14,
                                         color: Colors.black87,
@@ -682,6 +670,7 @@ class _ManagerBudgetAllocationScreenState
                           setState(() {
                             _searchQuery = '';
                             _searchController.clear();
+                            _updateFilteredAllocations();
                           });
                         },
                       )
@@ -704,6 +693,7 @@ class _ManagerBudgetAllocationScreenState
               onChanged: (value) {
                 setState(() {
                   _searchQuery = value;
+                  _updateFilteredAllocations();
                 });
               },
             ),
@@ -802,13 +792,13 @@ class _ManagerBudgetAllocationScreenState
                             ),
                           ),
                           title: Text(
-                            allocation['clubName'],
+                            allocation.clubName,
                             style: const TextStyle(fontWeight: FontWeight.bold),
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,
                           ),
                           subtitle: Text(
-                            '${_formatDate(allocation['allocationDate'])} • ${_formatCurrency(allocation['amount'])}',
+                            '${_formatDate(allocation.allocationDate)} • ${_formatCurrency(allocation.amount)}',
                             style: TextStyle(color: Colors.grey[600]),
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,
@@ -826,7 +816,7 @@ class _ManagerBudgetAllocationScreenState
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Text(
-                                  _formatCurrency(allocation['amount']),
+                                  _formatCurrency(allocation.amount),
                                   style: const TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
@@ -850,184 +840,264 @@ class _ManagerBudgetAllocationScreenState
     );
   }
 
-  void _showAllocationDetails(BuildContext context, Map<String, dynamic> allocation) {
+  void _showAllocationDetails(BuildContext context, BudgetAllocation allocation) {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+      builder: (context) => Dialog(
+        elevation: 5,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
+        ),
+        child: Container(
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width * 0.9,
+            maxHeight: MediaQuery.of(context).size.height * 0.8,
           ),
-          child: Container(
-            constraints: const BoxConstraints(maxWidth: 500, maxHeight: 600),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.blue.withOpacity(0.1),
-                        Colors.blue.withOpacity(0.05),
-                      ],
-                    ),
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(20),
-                      topRight: Radius.circular(20),
-                    ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Header
+              Container(
+                padding: const EdgeInsets.all(AppConstants.paddingLarge),
+                decoration: BoxDecoration(
+                  color: Colors.green.withAlpha((0.1 * 255).round()),
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(AppConstants.borderRadiusLarge),
+                    topRight: Radius.circular(AppConstants.borderRadiusLarge),
                   ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 60,
-                        height: 60,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [Colors.blue, Colors.blue.withOpacity(0.7)],
-                          ),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: const Icon(
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.green.withAlpha(51),
+                      ),
+                      child: const Center(
+                        child: Icon(
                           Icons.account_balance,
-                          color: Colors.white,
+                          color: Colors.green,
                           size: 30,
                         ),
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              allocation['clubName'],
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              _formatCurrency(allocation['amount']),
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.green,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24),
+                    ),
+                    const SizedBox(width: AppConstants.paddingMedium),
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildDetailRow('ID phân bổ', allocation['_id'].toString(), Icons.tag),
-                          const Divider(),
-                          _buildDetailRow('Ngày phân bổ', _formatDate(allocation['allocationDate']), Icons.calendar_today),
-                          const Divider(),
-                          _buildDetailRow('Club ID', allocation['club'], Icons.group),
-                          const Divider(),
-                          const Text(
-                            'Mục đích:',
-                            style: TextStyle(
+                          Text(
+                            allocation.clubName,
+                            style: const TextStyle(
+                              fontSize: AppConstants.fontSizeXLarge,
                               fontWeight: FontWeight.bold,
-                              fontSize: 16,
                             ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 4),
                           Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(12),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
-                              color: Colors.grey[50],
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.grey[200]!),
+                              color: Colors.green.withAlpha(51),
+                              borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
-                              allocation['purpose'],
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey[700],
+                              _formatCurrency(allocation.amount),
+                              style: const TextStyle(
+                                fontSize: AppConstants.fontSizeSmall,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.green,
                               ),
                             ),
                           ),
                         ],
                       ),
                     ),
-                  ),
+                  ],
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                  decoration: const BoxDecoration(
-                    border: Border(top: BorderSide(color: Colors.grey, width: 0.2)),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
+              ),
+              
+              // Content
+              Flexible(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(AppConstants.paddingLarge),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      FilledButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        style: FilledButton.styleFrom(
-                          backgroundColor: AppConstants.primaryColor,
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildAllocationDetailRow(
+                              Icons.tag, 
+                              'ID phân bổ', 
+                              allocation.id.toString()
+                            ),
+                          ),
+                          const SizedBox(width: AppConstants.paddingSmall),
+                          Expanded(
+                            child: _buildAllocationDetailRow(
+                              Icons.calendar_today, 
+                              'Ngày phân bổ', 
+                              _formatDate(allocation.allocationDate)
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppConstants.paddingSmall),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildAllocationDetailRow(
+                              Icons.group, 
+                              'Club ID', 
+                              allocation.club.substring(0, 8) + '...'
+                            ),
+                          ),
+                          const SizedBox(width: AppConstants.paddingSmall),
+                          Expanded(
+                            child: _buildAllocationDetailRow(
+                              Icons.attach_money, 
+                              'Số tiền', 
+                              _formatCurrency(allocation.amount)
+                            ),
+                          ),
+                        ],
+                      ),
+                      
+                      const SizedBox(height: AppConstants.paddingMedium),
+                      const Text(
+                        'Mục đích phân bổ',
+                        style: TextStyle(
+                          fontSize: AppConstants.fontSizeLarge,
+                          fontWeight: FontWeight.bold,
+                          color: AppConstants.textPrimaryColor,
                         ),
-                        child: const Text('Đóng'),
+                      ),
+                      const SizedBox(height: AppConstants.paddingSmall),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(AppConstants.paddingMedium),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[50],
+                          borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+                          border: Border.all(color: Colors.grey[200]!),
+                        ),
+                        child: Text(
+                          allocation.purpose,
+                          style: const TextStyle(
+                            fontSize: AppConstants.fontSizeMedium,
+                            height: 1.5,
+                          ),
+                        ),
                       ),
                     ],
                   ),
                 ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildDetailRow(String label, String value, IconData icon) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          Icon(icon, size: 20, color: AppConstants.primaryColor),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                ),
               ),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
+              
+              // Footer Actions
+              Container(
+                padding: const EdgeInsets.all(AppConstants.paddingLarge),
+                decoration: BoxDecoration(
+                  color: Colors.grey[50],
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(AppConstants.borderRadiusLarge),
+                    bottomRight: Radius.circular(AppConstants.borderRadiusLarge),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: FilledButton.icon(
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: const Icon(Icons.close),
+                        label: const Text(
+                          'Đóng',
+                          style: TextStyle(fontSize: AppConstants.fontSizeLarge),
+                        ),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppConstants.primaryColor,
+                          padding: const EdgeInsets.symmetric(vertical: AppConstants.paddingMedium),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAllocationDetailRow(IconData icon, String label, String value) {
+    return Container(
+      padding: const EdgeInsets.all(AppConstants.paddingMedium),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+        border: Border.all(color: Colors.grey[200]!),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 2,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            color: AppConstants.primaryColor,
+            size: 20,
+          ),
+          const SizedBox(width: AppConstants.paddingMedium),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    color: AppConstants.textSecondaryColor,
+                    fontSize: AppConstants.fontSizeSmall,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: AppConstants.fontSizeMedium,
+                    fontWeight: FontWeight.w600,
+                    color: AppConstants.textPrimaryColor,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  void _showDeleteConfirmation(BuildContext context, Map<String, dynamic> allocation) {
+  void _showDeleteConfirmation(BuildContext context, BudgetAllocation allocation) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Xác nhận xóa'),
           content: Text(
-            'Bạn có chắc chắn muốn xóa phân bổ cho "${allocation['clubName']}" không?',
+            'Bạn có chắc chắn muốn xóa phân bổ cho "${allocation.clubName}" không?',
           ),
           actions: [
             TextButton(
@@ -1037,9 +1107,8 @@ class _ManagerBudgetAllocationScreenState
             FilledButton(
               style: FilledButton.styleFrom(backgroundColor: Colors.red),
               onPressed: () {
-                setState(() {
-                  _allocations.removeWhere((a) => a['_id'] == allocation['_id']);
-                });
+                _allocationService.deleteAllocation(allocation.id);
+                _loadAllocations();
                 Navigator.of(context).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
@@ -1055,6 +1124,4 @@ class _ManagerBudgetAllocationScreenState
       },
     );
   }
-
-
 } 

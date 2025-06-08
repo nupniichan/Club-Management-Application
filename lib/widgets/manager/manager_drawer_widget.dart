@@ -5,6 +5,7 @@ import '../../screens/manager/manager_event_approval_screen.dart';
 import '../../screens/manager/manager_account_management_screen.dart';
 import '../../screens/manager/manager_reports_screen.dart';
 import '../../screens/manager/manager_budget_allocation_screen.dart';
+import '../../screens/manager/manager_main_screen.dart';
 
 class ManagerDrawerWidget extends StatelessWidget {
   final String currentPage;
@@ -367,7 +368,16 @@ class ManagerDrawerWidget extends StatelessWidget {
     Navigator.pop(context); // Close drawer
     // Pop back to dashboard if not already there
     if (currentPage != 'dashboard') {
-      Navigator.popUntil(context, (route) => route.isFirst);
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ManagerMainScreen(
+            userName: userName,
+            userRole: userRole,
+          ),
+        ),
+        (route) => false,
+      );
     }
   }
 

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../constants/app_constants.dart';
 import '../../widgets/student/student_drawer_widget.dart';
 import '../../widgets/student/student_app_bar_widget.dart';
+import '../../models/budget.dart';
+import '../../services/budget_data_service.dart';
 
 class StudentBudgetManagementScreen extends StatefulWidget {
   final String? userName;
@@ -30,39 +32,8 @@ class _StudentBudgetManagementScreenState
     'Chỉnh sửa ngân sách',
   ];
 
-  // Updated mock data based on MongoDB structure
-  final List<Map<String, dynamic>> _budgets = [
-    {
-      '_id': 18,
-      'ten': 'Ngân sách tổ chức sự kiện IT Day',
-      'khoanChiTieu': 4000000,
-      'nguonThu': 5000000,
-      'ngay': '2024-11-19',
-      'thanhVienChiuTrachNhiem': 'Nguyễn Phi Quốc Bảo',
-      'noiDung': 'Ngân sách thu từ việc bán vé và chi tiêu tổ chức sự kiện',
-      'club': '67160c5ad55fc5f816de7644',
-    },
-    {
-      '_id': 19,
-      'ten': 'Ngân sách Hackathon X',
-      'khoanChiTieu': 3500000,
-      'nguonThu': 4200000,
-      'ngay': '2024-12-15',
-      'thanhVienChiuTrachNhiem': 'Trần Văn B',
-      'noiDung': 'Ngân sách cho cuộc thi lập trình 24h',
-      'club': '67160c5ad55fc5f816de7644',
-    },
-    {
-      '_id': 20,
-      'ten': 'Ngân sách Workshop AI',
-      'khoanChiTieu': 2500000,
-      'nguonThu': 3000000,
-      'ngay': '2024-10-30',
-      'thanhVienChiuTrachNhiem': 'Lê Thị C',
-      'noiDung': 'Chi phí tổ chức workshop về trí tuệ nhân tạo',
-      'club': '67160c5ad55fc5f816de7644',
-    },
-  ];
+  final BudgetDataService _budgetService = BudgetDataService();
+  List<Budget> _budgets = [];
 
   // Form controllers and variables for budget management
   final _formKey = GlobalKey<FormState>();
@@ -73,6 +44,18 @@ class _StudentBudgetManagementScreenState
   final personInChargeController = TextEditingController();
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBudgets();
+  }
+
+  void _loadBudgets() {
+    setState(() {
+      _budgets = _budgetService.getAllBudgets();
+    });
+  }
 
   @override
   void dispose() {
@@ -110,14 +93,14 @@ class _StudentBudgetManagementScreenState
   }
 
   // Variable to store the budget being edited
-  Map<String, dynamic>? _editingBudget;
+  Budget? _editingBudget;
 
   DateTime? _selectedDate;
   String? _filterPersonInCharge;
   String? _filterYear;
 
   // Show budget details in a dialog
-  void _showBudgetDetails(BuildContext context, Map<String, dynamic> budget) {
+  void _showBudgetDetails(BuildContext context, Budget budget) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -157,7 +140,7 @@ class _StudentBudgetManagementScreenState
                         ),
                         child: Center(
                           child: Text(
-                            budget['ten'][0].toUpperCase(),
+                            budget.ten[0].toUpperCase(),
                             style: const TextStyle(
                               color: AppConstants.primaryColor,
                               fontWeight: FontWeight.bold,
@@ -169,7 +152,7 @@ class _StudentBudgetManagementScreenState
                       const SizedBox(width: AppConstants.paddingMedium),
                       Expanded(
                         child: Text(
-                          budget['ten'],
+                          budget.ten,
                           style: const TextStyle(
                             fontSize: AppConstants.fontSizeXLarge,
                             fontWeight: FontWeight.bold,
@@ -192,7 +175,7 @@ class _StudentBudgetManagementScreenState
                         _buildDetailCard(
                           Icons.account_balance_wallet,
                           'Ngân sách',
-                          _formatCurrency(budget['nguonThu']),
+                          _formatCurrency(budget.nguonThu),
                           Colors.green,
                         ),
                         const SizedBox(height: AppConstants.paddingMedium),
@@ -200,7 +183,7 @@ class _StudentBudgetManagementScreenState
                         _buildDetailCard(
                           Icons.money_off,
                           'Chi tiêu',
-                          _formatCurrency(budget['khoanChiTieu']),
+                          _formatCurrency(budget.khoanChiTieu),
                           Colors.red,
                         ),
                         const SizedBox(height: AppConstants.paddingMedium),
@@ -208,7 +191,7 @@ class _StudentBudgetManagementScreenState
                         _buildDetailCard(
                           Icons.calendar_today,
                           'Ngày',
-                          _formatDate(budget['ngay']),
+                          _formatDate(budget.ngay),
                           AppConstants.primaryColor,
                         ),
                         const SizedBox(height: AppConstants.paddingMedium),
@@ -216,7 +199,7 @@ class _StudentBudgetManagementScreenState
                         _buildDetailCard(
                           Icons.person,
                           'Thành viên phụ trách',
-                          budget['thanhVienChiuTrachNhiem'],
+                          budget.thanhVienChiuTrachNhiem,
                           Colors.blue,
                         ),
                         const SizedBox(height: AppConstants.paddingMedium),
@@ -224,7 +207,7 @@ class _StudentBudgetManagementScreenState
                         _buildDetailCard(
                           Icons.description,
                           'Nội dung',
-                          budget['noiDung'],
+                          budget.noiDung,
                           Colors.purple,
                         ),
                       ],
@@ -382,7 +365,7 @@ class _StudentBudgetManagementScreenState
   // Show delete confirmation dialog
   void _showDeleteConfirmation(
     BuildContext context,
-    Map<String, dynamic> budget,
+    Budget budget,
   ) {
     showDialog(
       context: context,
@@ -390,7 +373,7 @@ class _StudentBudgetManagementScreenState
         return AlertDialog(
           title: const Text('Xác nhận xóa'),
           content: Text(
-            'Bạn có chắc chắn muốn xóa ngân sách cho sự kiện "${budget['ten']}" không?',
+            'Bạn có chắc chắn muốn xóa ngân sách cho sự kiện "${budget.ten}" không?',
           ),
           actions: [
             TextButton(
@@ -400,11 +383,8 @@ class _StudentBudgetManagementScreenState
             FilledButton(
               style: FilledButton.styleFrom(backgroundColor: Colors.red),
               onPressed: () {
-                setState(() {
-                  _budgets.removeWhere(
-                    (b) => b['_id'] == budget['_id'],
-                  );
-                });
+                _budgetService.deleteBudget(budget.id);
+                _loadBudgets();
                 Navigator.of(context).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
@@ -456,20 +436,19 @@ class _StudentBudgetManagementScreenState
   // Method to save a new budget
   void _saveBudget() {
     if (_formKey.currentState!.validate()) {
-      final newBudget = {
-        '_id': DateTime.now().millisecondsSinceEpoch,
-        'ten': eventNameController.text,
-        'nguonThu': int.tryParse(budgetController.text.replaceAll(',', '')) ?? 0,
-        'khoanChiTieu': int.tryParse(expenditureController.text.replaceAll(',', '')) ?? 0,
-        'ngay': _convertDateFormat(dateController.text),
-        'thanhVienChiuTrachNhiem': personInChargeController.text,
-        'noiDung': 'Ngân sách được thêm mới',
-        'club': '67160c5ad55fc5f816de7644',
-      };
+      final newBudget = Budget(
+        id: DateTime.now().millisecondsSinceEpoch,
+        ten: eventNameController.text,
+        nguonThu: int.tryParse(budgetController.text.replaceAll(',', '')) ?? 0,
+        khoanChiTieu: int.tryParse(expenditureController.text.replaceAll(',', '')) ?? 0,
+        ngay: _convertDateFormat(dateController.text),
+        thanhVienChiuTrachNhiem: personInChargeController.text,
+        noiDung: 'Ngân sách được thêm mới',
+        club: '67160c5ad55fc5f816de7644',
+      );
 
-      setState(() {
-        _budgets.add(newBudget);
-      });
+      _budgetService.addBudget(newBudget);
+      _loadBudgets();
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -489,21 +468,16 @@ class _StudentBudgetManagementScreenState
   // Method to update an existing budget
   void _updateBudget() {
     if (_formKey.currentState!.validate() && _editingBudget != null) {
-      final updatedBudget = Map<String, dynamic>.from(_editingBudget!);
-      updatedBudget['ten'] = eventNameController.text;
-      updatedBudget['nguonThu'] = int.tryParse(budgetController.text.replaceAll(',', '')) ?? 0;
-      updatedBudget['khoanChiTieu'] = int.tryParse(expenditureController.text.replaceAll(',', '')) ?? 0;
-      updatedBudget['ngay'] = _convertDateFormat(dateController.text);
-      updatedBudget['thanhVienChiuTrachNhiem'] = personInChargeController.text;
+      final updatedBudget = _editingBudget!.copyWith(
+        ten: eventNameController.text,
+        nguonThu: int.tryParse(budgetController.text.replaceAll(',', '')) ?? 0,
+        khoanChiTieu: int.tryParse(expenditureController.text.replaceAll(',', '')) ?? 0,
+        ngay: _convertDateFormat(dateController.text),
+        thanhVienChiuTrachNhiem: personInChargeController.text,
+      );
 
-      setState(() {
-        final index = _budgets.indexWhere(
-          (b) => b['_id'] == _editingBudget!['_id'],
-        );
-        if (index != -1) {
-          _budgets[index] = updatedBudget;
-        }
-      });
+      _budgetService.updateBudget(updatedBudget);
+      _loadBudgets();
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -522,17 +496,16 @@ class _StudentBudgetManagementScreenState
   }
 
   // Method to navigate to edit budget
-  void _navigateToEditBudget(BuildContext context, Map<String, dynamic> budget) {
-    // Remove Navigator.of(context).pop() since this is called from the list, not a dialog
-    eventNameController.text = budget['ten'];
-    budgetController.text = budget['nguonThu'].toString();
-    expenditureController.text = budget['khoanChiTieu'].toString();
-    dateController.text = _formatDate(budget['ngay']);
-    personInChargeController.text = budget['thanhVienChiuTrachNhiem'];
+  void _navigateToEditBudget(BuildContext context, Budget budget) {
+    eventNameController.text = budget.ten;
+    budgetController.text = budget.nguonThu.toString();
+    expenditureController.text = budget.khoanChiTieu.toString();
+    dateController.text = _formatDate(budget.ngay);
+    personInChargeController.text = budget.thanhVienChiuTrachNhiem;
 
     // Parse the date string (assuming format DD/MM/YYYY)
     try {
-      final dateParts = budget['date'].split('/');
+      final dateParts = dateController.text.split('/');
       _selectedDate = DateTime(
         int.parse(dateParts[2]),
         int.parse(dateParts[1]),
@@ -544,35 +517,34 @@ class _StudentBudgetManagementScreenState
     }
 
     setState(() {
-      _editingBudget = Map<String, dynamic>.from(budget);
+      _editingBudget = budget;
       _selectedIndex = 3; // Use index 3 for edit
       _currentTitle = _titles[3];
     });
-    print("Navigated to edit for: ${budget['eventName']}");
   }
 
   // Get filtered budgets based on search query
-  List<Map<String, dynamic>> get _filteredBudgets {
+  List<Budget> get _filteredBudgets {
     return _budgets.where((budget) {
       bool matchesSearch =
           _searchQuery.isEmpty ||
-          budget['ten'].toLowerCase().contains(
+          budget.ten.toLowerCase().contains(
             _searchQuery.toLowerCase(),
           ) ||
-          budget['thanhVienChiuTrachNhiem'].toLowerCase().contains(
+          budget.thanhVienChiuTrachNhiem.toLowerCase().contains(
             _searchQuery.toLowerCase(),
           ) ||
-          budget['ngay'].toLowerCase().contains(_searchQuery.toLowerCase());
+          budget.ngay.toLowerCase().contains(_searchQuery.toLowerCase());
 
       bool matchesPersonInCharge =
           _filterPersonInCharge == null ||
           _filterPersonInCharge == 'Tất cả' ||
-          budget['thanhVienChiuTrachNhiem'] == _filterPersonInCharge;
+          budget.thanhVienChiuTrachNhiem == _filterPersonInCharge;
 
       bool matchesYear =
           _filterYear == null ||
           _filterYear == 'Tất cả' ||
-          budget['ngay'].split('-').first == _filterYear;
+          budget.ngay.split('-').first == _filterYear;
 
       return matchesSearch && matchesPersonInCharge && matchesYear;
     }).toList();
@@ -796,7 +768,7 @@ class _StudentBudgetManagementScreenState
                                     ),
                                     child: Center(
                             child: Text(
-                                        budget['ten'][0].toUpperCase(),
+                                        budget.ten[0].toUpperCase(),
                               style: const TextStyle(
                                           color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -811,7 +783,7 @@ class _StudentBudgetManagementScreenState
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                              budget['ten'],
+                              budget.ten,
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                             fontSize: 18,
@@ -821,7 +793,7 @@ class _StudentBudgetManagementScreenState
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
-                                          'Phụ trách: ${budget['thanhVienChiuTrachNhiem']}',
+                                          'Phụ trách: ${budget.thanhVienChiuTrachNhiem}',
                                           style: TextStyle(
                                             fontSize: 14,
                                             color: Colors.grey[600],
@@ -872,7 +844,7 @@ class _StudentBudgetManagementScreenState
                                     Expanded(
                                       child: _buildBudgetStat(
                                         'Ngân sách',
-                                        _formatCurrency(budget['nguonThu']),
+                                        _formatCurrency(budget.nguonThu),
                             Icons.account_balance_wallet,
                                         Colors.green,
                                       ),
@@ -885,7 +857,7 @@ class _StudentBudgetManagementScreenState
                                     Expanded(
                                       child: _buildBudgetStat(
                                         'Chi tiêu',
-                                        _formatCurrency(budget['khoanChiTieu']),
+                                        _formatCurrency(budget.khoanChiTieu),
                             Icons.money_off,
                                         Colors.orange,
                                       ),
@@ -903,7 +875,7 @@ class _StudentBudgetManagementScreenState
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
-                            'Ngày: ${_formatDate(budget['ngay'])}',
+                            'Ngày: ${_formatDate(budget.ngay)}',
                                     style: TextStyle(
                                       fontSize: 14,
                                       color: Colors.grey[600],
@@ -1413,7 +1385,7 @@ class _StudentBudgetManagementScreenState
                                   "Tất cả",
                                   ..._budgets
                                       .map(
-                                        (b) => b['personInCharge'].toString(),
+                                        (b) => b.thanhVienChiuTrachNhiem.toString(),
                                       )
                                       .toSet()
                                       .toList(),
@@ -1598,7 +1570,7 @@ class _StudentBudgetManagementScreenState
                                                     ),
                                                     child: Center(
                                         child: Text(
-                                          budget['ten'][0].toUpperCase(),
+                                          budget.ten[0].toUpperCase(),
                                                         style: const TextStyle(
                                                           color: Colors.white,
                                             fontWeight: FontWeight.bold,
@@ -1613,7 +1585,7 @@ class _StudentBudgetManagementScreenState
                                                       crossAxisAlignment: CrossAxisAlignment.start,
                                                       children: [
                                                         Text(
-                                                          budget['ten'] ?? '',
+                                                          budget.ten ?? '',
                                                           style: const TextStyle(
                                                             fontWeight: FontWeight.bold,
                                                             fontSize: 16,
@@ -1623,7 +1595,7 @@ class _StudentBudgetManagementScreenState
                                                         ),
                                                         const SizedBox(height: 2),
                                                         Text(
-                                                          'Phụ trách: ${budget['thanhVienChiuTrachNhiem'] ?? '-'}',
+                                                          'Phụ trách: ${budget.thanhVienChiuTrachNhiem ?? '-'}',
                                                           style: TextStyle(
                                                             fontSize: 12,
                                                             color: Colors.grey[600],
@@ -1670,7 +1642,7 @@ class _StudentBudgetManagementScreenState
                                                           const SizedBox(width: 4),
                                                           Flexible(
                                                             child: Text(
-                                                              _formatCurrency(budget['nguonThu']),
+                                                              _formatCurrency(budget.nguonThu),
                                                               style: const TextStyle(
                                                                 fontSize: 12,
                                                                 fontWeight: FontWeight.w600,
@@ -1695,7 +1667,7 @@ class _StudentBudgetManagementScreenState
                                                           const SizedBox(width: 4),
                                                           Flexible(
                                         child: Text(
-                                                              _formatCurrency(budget['khoanChiTieu']),
+                                                              _formatCurrency(budget.khoanChiTieu),
                                           style: const TextStyle(
                                             fontSize: 12,
                                                                 fontWeight: FontWeight.w600,
@@ -1720,26 +1692,26 @@ class _StudentBudgetManagementScreenState
                                                           const SizedBox(width: 4),
                                                           Flexible(
                                                             child: Text(
-                                                              _formatDate(budget['ngay']),
+                                                              _formatDate(budget.ngay),
                                                               style: const TextStyle(
                                                                 fontSize: 12,
                                                                 fontWeight: FontWeight.w600,
                                                                 color: Colors.blue,
                                                               ),
                                                               overflow: TextOverflow.ellipsis,
-                                ),
-                      ),
-                    ],
-                  ),
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
                                                     ),
                                                   ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    );
                                   },
                                 ),
                       ),

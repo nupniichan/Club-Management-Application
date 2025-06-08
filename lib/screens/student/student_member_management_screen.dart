@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../constants/app_constants.dart';
 import '../../widgets/student/student_drawer_widget.dart';
 import '../../widgets/student/student_app_bar_widget.dart';
+import '../../models/member.dart';
+import '../../services/member_data_service.dart';
 
 class StudentMemberManagementScreen extends StatefulWidget {
   final String? userName;
@@ -25,6 +27,9 @@ class _StudentMemberManagementScreenState
   int _selectedIndex = 0;
   String _currentTitle = 'Quản lý thành viên';
 
+  final MemberDataService _memberService = MemberDataService();
+  List<Member> _members = [];
+
   // Form controllers và variables
   final _formKey = GlobalKey<FormState>();
   final nameController = TextEditingController();
@@ -34,7 +39,7 @@ class _StudentMemberManagementScreenState
   String role = 'THÀNH VIÊN';
 
   // Biến để lưu trữ thành viên đang được chỉnh sửa
-  Map<String, dynamic>? _editingMember;
+  Member? _editingMember;
 
   final List<String> _titles = [
     'Quản lý thành viên',
@@ -43,41 +48,28 @@ class _StudentMemberManagementScreenState
     'Chỉnh sửa thành viên',
   ];
 
-  // Mock data cho thành viên
-  final List<Map<String, dynamic>> _members = [
-    {
-      'id': 'HS24123456',
-      'name': 'Nguyễn Văn A',
-      'gender': 'Nam',
-      'class': '12A16',
-      'role': 'THÀNH VIÊN',
-    },
-    {
-      'id': 'HS24123457',
-      'name': 'Nguyễn Văn B',
-      'gender': 'Nam',
-      'class': '10A11',
-      'role': 'THÀNH VIÊN',
-    },
-    {
-      'id': 'HS24123465',
-      'name': 'Trần Văn C',
-      'gender': 'Nam',
-      'class': '12A7',
-      'role': 'PHÓ CÂU LẠC BỘ',
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadMembers();
+  }
 
-  List<Map<String, dynamic>> get _filteredMembers {
+  void _loadMembers() {
+    setState(() {
+      _members = _memberService.getAllMembers();
+    });
+  }
+
+  List<Member> get _filteredMembers {
     if (_searchQuery.isEmpty) {
       return _members;
     }
     return _members.where((member) {
-      return member['name'].toLowerCase().contains(
+      return member.name.toLowerCase().contains(
             _searchQuery.toLowerCase(),
           ) ||
-          member['id'].toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          member['class'].toLowerCase().contains(_searchQuery.toLowerCase());
+          member.id.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          member.className.toLowerCase().contains(_searchQuery.toLowerCase());
     }).toList();
   }
 
@@ -105,18 +97,17 @@ class _StudentMemberManagementScreenState
   void _saveMember() {
     if (_formKey.currentState!.validate()) {
       // Tạo đối tượng thành viên mới
-      final newMember = {
-        'id': idController.text,
-        'name': nameController.text,
-        'gender': gender,
-        'class': classController.text,
-        'role': role,
-      };
+      final newMember = Member(
+        id: idController.text,
+        name: nameController.text,
+        gender: gender,
+        className: classController.text,
+        role: role,
+      );
 
-      // Thêm thành viên mới vào danh sách
-      setState(() {
-        _members.add(newMember);
-      });
+      // Thêm thành viên mới vào service
+      _memberService.addMember(newMember);
+      _loadMembers();
 
       // Hiển thị thông báo thành công
       ScaffoldMessenger.of(context).showSnackBar(
@@ -139,23 +130,17 @@ class _StudentMemberManagementScreenState
   void _updateMember() {
     if (_formKey.currentState!.validate() && _editingMember != null) {
       // Tạo đối tượng thành viên đã cập nhật
-      final updatedMember = {
-        'id': idController.text,
-        'name': nameController.text,
-        'gender': gender,
-        'class': classController.text,
-        'role': role,
-      };
+      final updatedMember = _editingMember!.copyWith(
+        id: idController.text,
+        name: nameController.text,
+        gender: gender,
+        className: classController.text,
+        role: role,
+      );
 
-      // Cập nhật thành viên trong danh sách
-      setState(() {
-        final index = _members.indexWhere(
-          (m) => m['id'] == _editingMember!['id'],
-        );
-        if (index != -1) {
-          _members[index] = updatedMember;
-        }
-      });
+      // Cập nhật thành viên trong service
+      _memberService.updateMember(updatedMember);
+      _loadMembers();
 
       // Hiển thị thông báo thành công
       ScaffoldMessenger.of(context).showSnackBar(
@@ -337,8 +322,8 @@ class _StudentMemberManagementScreenState
                     itemCount: _filteredMembers.length,
                     itemBuilder: (context, index) {
                       final member = _filteredMembers[index];
-                    final Color genderColor = member['gender'] == 'Nam' ? Colors.blue : Colors.pink;
-                    final Color roleColor = _getRoleColor(member['role']);
+                    final Color genderColor = member.gender == 'Nam' ? Colors.blue : Colors.pink;
+                    final Color roleColor = _getRoleColor(member.role);
                     
                       return Card(
                       margin: const EdgeInsets.only(bottom: AppConstants.paddingMedium),
@@ -366,7 +351,7 @@ class _StudentMemberManagementScreenState
                               Row(
                                 children: [
                                   Hero(
-                                    tag: 'member-${member['id']}',
+                                    tag: 'member-${member.id}',
                                     child: Container(
                                       width: 50,
                                       height: 50,
@@ -381,7 +366,7 @@ class _StudentMemberManagementScreenState
                                           ),
                                           child: Center(
                                             child: Text(
-                                              _getInitials(member['name']),
+                                              _getInitials(member.name),
                                           style: const TextStyle(
                                             color: Colors.white,
                                                 fontWeight: FontWeight.bold,
@@ -397,7 +382,7 @@ class _StudentMemberManagementScreenState
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
                                               Text(
-                                                member['name'],
+                                                member.name,
                                                 style: const TextStyle(
                                                   fontWeight: FontWeight.bold,
                                             fontSize: 18,
@@ -411,7 +396,7 @@ class _StudentMemberManagementScreenState
                                             Icon(Icons.badge, size: 14, color: Colors.grey[600]),
                                             const SizedBox(width: 4),
                                               Text(
-                                                member['id'],
+                                                member.id.toString(),
                                                 style: TextStyle(
                                                   fontSize: 14,
                                                 color: Colors.grey[600],
@@ -462,7 +447,7 @@ class _StudentMemberManagementScreenState
                                     Expanded(
                                       child: _buildMemberStat(
                                         'Lớp',
-                                        member['class'],
+                                        member.className,
                                     Icons.class_,
                                         Colors.blue,
                                       ),
@@ -475,8 +460,8 @@ class _StudentMemberManagementScreenState
                                     Expanded(
                                       child: _buildMemberStat(
                                         'Giới tính',
-                                        member['gender'],
-                                        member['gender'] == 'Nam' ? Icons.male : Icons.female,
+                                        member.gender,
+                                        member.gender == 'Nam' ? Icons.male : Icons.female,
                                         genderColor,
                                       ),
                                     ),
@@ -488,8 +473,8 @@ class _StudentMemberManagementScreenState
                                     Expanded(
                                       child: _buildMemberStat(
                                         'Chức vụ',
-                                        member['role'] == 'THÀNH VIÊN' ? 'TV' : 
-                                        (member['role'] == 'PHÓ CÂU LẠC BỘ' ? 'PHÓ' : 'TRƯỞNG'),
+                                        member.role == 'THÀNH VIÊN' ? 'TV' : 
+                                        (member.role == 'PHÓ CÂU LẠC BỘ' ? 'PHÓ' : 'TRƯỞNG'),
                                         Icons.work,
                                         roleColor,
                                       ),
@@ -572,13 +557,13 @@ class _StudentMemberManagementScreenState
     );
   }
 
-  void _showMemberDetails(BuildContext context, Map<String, dynamic> member) {
+  void _showMemberDetails(BuildContext context, Member member) {
     final Color genderColor =
-        member['gender'] == 'Nam' ? Colors.blue : Colors.pink;
+        member.gender == 'Nam' ? Colors.blue : Colors.pink;
     final Color roleColor =
-        member['role'] == 'PHÓ CÂU LẠC BỘ'
+        member.role == 'PHÓ CÂU LẠC BỘ'
             ? Colors.green
-            : (member['role'] == 'TRƯỞNG CÂU LẠC BỘ'
+            : (member.role == 'TRƯỞNG CÂU LẠC BỘ'
                 ? Colors.orange
                 : Colors.blue);
 
@@ -610,7 +595,7 @@ class _StudentMemberManagementScreenState
                   child: Row(
                     children: [
                       Hero(
-                        tag: 'member-${member['id']}',
+                        tag: 'member-${member.id}',
                         child: Container(
                           width: 70,
                           height: 70,
@@ -636,7 +621,7 @@ class _StudentMemberManagementScreenState
                           ),
                           child: Center(
                             child: Text(
-                              _getInitials(member['name']),
+                              _getInitials(member.ten),
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -652,7 +637,7 @@ class _StudentMemberManagementScreenState
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              member['name'],
+                              member.ten,
                               style: const TextStyle(
                                 fontSize: AppConstants.fontSizeXLarge,
                                 fontWeight: FontWeight.bold,
@@ -669,7 +654,7 @@ class _StudentMemberManagementScreenState
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
-                                member['role'],
+                                member.vaiTro,
                                 style: TextStyle(
                                   color: roleColor,
                                   fontWeight: FontWeight.w600,
@@ -692,13 +677,13 @@ class _StudentMemberManagementScreenState
                       _buildDetailItem(
                         Icons.badge_outlined,
                         'Mã số học sinh',
-                        member['id'],
+                        member.id.toString(),
                       ),
                       const Divider(),
                       _buildDetailItem(
-                        member['gender'] == 'Nam' ? Icons.male : Icons.female,
+                        member.gioiTinh == 'Nam' ? Icons.male : Icons.female,
                         'Giới tính',
-                        member['gender'],
+                        member.gioiTinh,
                         iconColor: genderColor,
                       ),
                       const Divider(),
@@ -825,7 +810,7 @@ class _StudentMemberManagementScreenState
 
   void _showDeleteConfirmation(
     BuildContext context,
-    Map<String, dynamic> member,
+    Member member,
   ) {
     showDialog(
       context: context,
@@ -833,7 +818,7 @@ class _StudentMemberManagementScreenState
         return AlertDialog(
           title: const Text('Xác nhận xóa'),
           content: Text(
-            'Bạn có chắc chắn muốn xóa thành viên "${member['name']}" không?',
+            'Bạn có chắc chắn muốn xóa thành viên "${member.name}" không?',
           ),
           actions: [
             TextButton(
@@ -843,9 +828,8 @@ class _StudentMemberManagementScreenState
             FilledButton(
               style: FilledButton.styleFrom(backgroundColor: Colors.red),
               onPressed: () {
-                setState(() {
-                  _members.removeWhere((m) => m['id'] == member['id']);
-                });
+                _memberService.deleteMember(member.id);
+                _loadMembers();
                 Navigator.of(context).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
@@ -1500,8 +1484,8 @@ class _StudentMemberManagementScreenState
                                   itemCount: _filteredMembers.length,
                                   itemBuilder: (context, index) {
                                     final member = _filteredMembers[index];
-                                  final Color genderColor = member['gender'] == 'Nam' ? Colors.blue : Colors.pink;
-                                  final Color roleColor = _getRoleColor(member['role']);
+                                  final Color genderColor = member.gender == 'Nam' ? Colors.blue : Colors.pink;
+                                  final Color roleColor = _getRoleColor(member.role);
                                   
                                   return Card(
                                     margin: const EdgeInsets.only(bottom: AppConstants.paddingSmall),
@@ -1542,7 +1526,7 @@ class _StudentMemberManagementScreenState
                                                   ),
                                                   child: Center(
                                         child: Text(
-                                          _getInitials(member['name']),
+                                          _getInitials(member.name),
                                                       style: const TextStyle(
                                                         color: Colors.white,
                                             fontWeight: FontWeight.bold,
@@ -1557,7 +1541,7 @@ class _StudentMemberManagementScreenState
                                                     crossAxisAlignment: CrossAxisAlignment.start,
                                                     children: [
                                                       Text(
-                                                        member['name'] ?? '',
+                                                        member.name,
                                                         style: const TextStyle(
                                                           fontWeight: FontWeight.bold,
                                                           fontSize: 16,
@@ -1567,7 +1551,7 @@ class _StudentMemberManagementScreenState
                                                       ),
                                                       const SizedBox(height: 2),
                                                       Text(
-                                        '${member['id'] ?? '-'} - ${member['class'] ?? '-'}',
+                                        '${member.id} - ${member.className}',
                                                         style: TextStyle(
                                                           fontSize: 12,
                                                           color: Colors.grey[600],
@@ -1610,12 +1594,12 @@ class _StudentMemberManagementScreenState
                                                   Expanded(
                                                     child: Row(
                                                       children: [
-                                                        Icon(member['gender'] == 'Nam' ? Icons.male : Icons.female, 
+                                                        Icon(member.gender == 'Nam' ? Icons.male : Icons.female, 
                                                              size: 16, color: genderColor),
                                                         const SizedBox(width: 4),
                                                         Flexible(
                                                           child: Text(
-                                                            member['gender'],
+                                                            member.gender,
                                                             style: TextStyle(
                                                               fontSize: 12,
                                                               fontWeight: FontWeight.w600,
@@ -1640,7 +1624,7 @@ class _StudentMemberManagementScreenState
                                                         const SizedBox(width: 4),
                                                         Flexible(
                                         child: Text(
-                                                            member['class'],
+                                                            member.className,
                                                             style: const TextStyle(
                                                               fontSize: 12,
                                                               fontWeight: FontWeight.w600,
@@ -1665,8 +1649,8 @@ class _StudentMemberManagementScreenState
                                                         const SizedBox(width: 4),
                                                         Flexible(
                                                           child: Text(
-                                                            member['role'] == 'THÀNH VIÊN' ? 'TV' : 
-                                                            (member['role'] == 'PHÓ CÂU LẠC BỘ' ? 'PHÓ' : 'TRƯỞNG'),
+                                                            member.role == 'THÀNH VIÊN' ? 'TV' : 
+                                                            (member.role == 'PHÓ CÂU LẠC BỘ' ? 'PHÓ' : 'TRƯỞNG'),
                                           style: TextStyle(
                                             fontSize: 12,
                                                               fontWeight: FontWeight.w600,
@@ -1720,17 +1704,17 @@ class _StudentMemberManagementScreenState
   // Phương thức chuyển hướng đến tab chỉnh sửa thành viên
   void _navigateToEditMember(
     BuildContext context,
-    Map<String, dynamic> member,
+    Member member,
   ) {
     // Cập nhật form với thông tin của thành viên
-    idController.text = member['id'];
-    nameController.text = member['name'];
-    classController.text = member['class'];
+    idController.text = member.id;
+    nameController.text = member.name;
+    classController.text = member.className;
 
     setState(() {
-      _editingMember = Map<String, dynamic>.from(member);
-      gender = member['gender'];
-      role = member['role'];
+      _editingMember = member;
+      gender = member.gender;
+      role = member.role;
       _selectedIndex = 3; // Chuyển đến tab chỉnh sửa thành viên
       _currentTitle = _titles[3]; // Cập nhật tiêu đề
     });

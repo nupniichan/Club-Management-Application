@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../constants/app_constants.dart';
 import '../../widgets/student/student_drawer_widget.dart';
+import '../../models/report.dart';
+import '../../services/report_data_service.dart';
 
 class StudentActivityReportsScreen extends StatefulWidget {
   final String? userName;
@@ -30,51 +32,26 @@ class _StudentActivityReportsScreenState
     'Tìm kiếm báo cáo',
   ];
 
-  // Updated mock data based on MongoDB structure
-  final List<Map<String, dynamic>> _reports = [
-    {
-      '_id': '673c6cb889b097623521cf58',
-      'tenBaoCao': 'Báo cáo tháng 11',
-      'ngayBaoCao': '2024-11-19',
-      'nhanSuPhuTrach': 'Nguyễn Phi Quốc Bảo',
-      'danhSachSuKien': ['IT Day', 'Tech Talk'],
-      'danhSachGiai': ['Giải nhất cuộc thi lập trình'],
-      'tongNganSachChiTieu': 4000000,
-      'tongThu': 5000000,
-      'ketQuaDatDuoc': 'Sự kiện diễn ra hơn cả mong đợi, các doanh nghiệp muốn hợp tác với câu lạc bộ',
-      'club': '67160c5ad55fc5f816de7644',
-    },
-    {
-      '_id': '673c6cb889b097623521cf59',
-      'tenBaoCao': 'Báo cáo tháng 10',
-      'ngayBaoCao': '2024-10-31',
-      'nhanSuPhuTrach': 'Trần Văn C',
-      'danhSachSuKien': ['Hackathon X', 'Workshop AI'],
-      'danhSachGiai': ['Giải khuyến khích AI Challenge'],
-      'tongNganSachChiTieu': 3500000,
-      'tongThu': 4200000,
-      'ketQuaDatDuoc': 'Tháng hoạt động tốt với nhiều sự kiện chất lượng',
-      'club': '67160c5ad55fc5f816de7644',
-    },
-    {
-      '_id': '673c6cb889b097623521cf60',
-      'tenBaoCao': 'Báo cáo quý III',
-      'ngayBaoCao': '2024-09-30',
-      'nhanSuPhuTrach': 'Lê Thị D',
-      'danhSachSuKien': ['CodeFest', 'Game Dev Jam', 'Cloud Computing'],
-      'danhSachGiai': ['Giải nhì CodeFest', 'Giải ba Game Jam'],
-      'tongNganSachChiTieu': 8000000,
-      'tongThu': 9500000,
-      'ketQuaDatDuoc': 'Quý hoạt động xuất sắc với nhiều thành tích nổi bật',
-      'club': '67160c5ad55fc5f816de7644',
-    },
-  ];
+  final ReportDataService _reportService = ReportDataService();
+  List<Report> _reports = [];
 
-  List<Map<String, dynamic>> get _filteredReports {
+  @override
+  void initState() {
+    super.initState();
+    _loadReports();
+  }
+
+  void _loadReports() {
+    setState(() {
+      _reports = _reportService.getAllStudentReports();
+    });
+  }
+
+  List<Report> get _filteredReports {
     return _reports.where((report) {
       return _searchQuery.isEmpty ||
-          report['tenBaoCao'].toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          report['nhanSuPhuTrach'].toLowerCase().contains(_searchQuery.toLowerCase());
+          report.tenBaoCao.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          report.nhanSuPhuTrach.toLowerCase().contains(_searchQuery.toLowerCase());
     }).toList();
   }
 
@@ -257,7 +234,7 @@ class _StudentActivityReportsScreenState
                   itemCount: _filteredReports.length,
                   itemBuilder: (context, index) {
                     final report = _filteredReports[index];
-                    final profit = report['tongThu'] - report['tongNganSachChiTieu'];
+                    final profit = report.tongThu - report.tongNganSachChiTieu;
                     final profitColor = profit >= 0 ? Colors.green : Colors.red;
                     
                     return Card(
@@ -318,7 +295,7 @@ class _StudentActivityReportsScreenState
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          report['tenBaoCao'],
+                                          report.tenBaoCao,
                                           style: const TextStyle(
                                             fontWeight: FontWeight.bold,
                                             fontSize: 18,
@@ -327,8 +304,8 @@ class _StudentActivityReportsScreenState
                                           maxLines: 2,
                                         ),
                                         const SizedBox(height: 4),
-                                                                Text(
-                          'ID: ${report['_id'].substring(0, 8)} • ${report['nhanSuPhuTrach']}',
+                                        Text(
+                          'ID: ${report.id.substring(0, 8)} • ${report.nhanSuPhuTrach}',
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.grey[600],
@@ -352,7 +329,7 @@ class _StudentActivityReportsScreenState
                                     Expanded(
                                       child: _buildReportStat(
                                         'Sự kiện',
-                                        '${report['danhSachSuKien'].length}',
+                                        '${report.danhSachSuKien.length}',
                                         Icons.event,
                                         Colors.blue,
                                       ),
@@ -365,7 +342,7 @@ class _StudentActivityReportsScreenState
                                     Expanded(
                                       child: _buildReportStat(
                                         'Thu nhập',
-                                        _formatCurrency(report['tongThu']),
+                                        _formatCurrency(report.tongThu),
                                         Icons.trending_up,
                                         Colors.green,
                                       ),
@@ -459,8 +436,8 @@ class _StudentActivityReportsScreenState
     );
   }
 
-  void _showReportDetails(BuildContext context, Map<String, dynamic> report) {
-    final profit = report['tongThu'] - report['tongNganSachChiTieu'];
+  void _showReportDetails(BuildContext context, Report report) {
+    final profit = report.tongThu - report.tongNganSachChiTieu;
     final profitColor = profit >= 0 ? Colors.green : Colors.red;
     
     showDialog(
@@ -512,7 +489,7 @@ class _StudentActivityReportsScreenState
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              report['tenBaoCao'],
+                              report.tenBaoCao,
                               style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -520,7 +497,7 @@ class _StudentActivityReportsScreenState
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              _formatDate(report['ngayBaoCao']),
+                              _formatDate(report.ngayBaoCao),
                               style: TextStyle(
                                 fontSize: 14,
                                 color: Colors.grey[600],
@@ -539,9 +516,9 @@ class _StudentActivityReportsScreenState
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildDetailRow('ID báo cáo', report['_id'], Icons.tag),
+                          _buildDetailRow('ID báo cáo', report.id, Icons.tag),
                           const Divider(),
-                          _buildDetailRow('Người phụ trách', report['nhanSuPhuTrach'], Icons.person),
+                          _buildDetailRow('Người phụ trách', report.nhanSuPhuTrach, Icons.person),
                           const Divider(),
                           const Text(
                             'Danh sách sự kiện:',
@@ -551,39 +528,39 @@ class _StudentActivityReportsScreenState
                             ),
                           ),
                           const SizedBox(height: 8),
-                          ...report['danhSachSuKien'].map<Widget>((event) => 
-                            Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 4),
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.event, size: 16, color: Colors.blue),
-                                  const SizedBox(width: 8),
-                                  Text(event),
-                                ],
+                                                      ...report.danhSachSuKien.map<Widget>((event) => 
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 4),
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.event, size: 16, color: Colors.blue),
+                                    const SizedBox(width: 8),
+                                    Expanded(child: Text(event.ten)),
+                                  ],
+                                ),
+                              ),
+                            ).toList(),
+                            const SizedBox(height: 16),
+                            const Text(
+                              'Danh sách giải thưởng:',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
                               ),
                             ),
-                          ).toList(),
-                          const SizedBox(height: 16),
-                          const Text(
-                            'Danh sách giải thưởng:',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          ...report['danhSachGiai'].map<Widget>((award) => 
-                            Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 4),
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.emoji_events, size: 16, color: Colors.orange),
-                                  const SizedBox(width: 8),
-                                  Expanded(child: Text(award)),
-                                ],
+                            const SizedBox(height: 8),
+                            ...report.danhSachGiai.map<Widget>((award) => 
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 4),
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.emoji_events, size: 16, color: Colors.orange),
+                                    const SizedBox(width: 8),
+                                    Expanded(child: Text(award.tenGiai)),
+                                  ],
+                                ),
                               ),
-                            ),
-                          ).toList(),
+                            ).toList(),
                           const SizedBox(height: 16),
                           const Text(
                             'Thống kê tài chính:',
@@ -607,7 +584,7 @@ class _StudentActivityReportsScreenState
                                       const Icon(Icons.trending_up, color: Colors.green),
                                       const SizedBox(height: 4),
                                       Text(
-                                        _formatCurrency(report['tongThu']),
+                                        _formatCurrency(report.tongThu),
                                         style: const TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
@@ -635,7 +612,7 @@ class _StudentActivityReportsScreenState
                                       const Icon(Icons.trending_down, color: Colors.red),
                                       const SizedBox(height: 4),
                                       Text(
-                                        _formatCurrency(report['tongNganSachChiTieu']),
+                                        _formatCurrency(report.tongNganSachChiTieu),
                                         style: const TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
@@ -693,7 +670,7 @@ class _StudentActivityReportsScreenState
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            report['ketQuaDatDuoc'],
+                            report.ketQuaDatDuoc,
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.grey[700],
@@ -769,8 +746,8 @@ class _StudentActivityReportsScreenState
   }
 
   Widget _buildStatistics() {
-    final totalRevenue = _reports.fold<int>(0, (sum, report) => sum + (report['tongThu'] as int));
-    final totalExpense = _reports.fold<int>(0, (sum, report) => sum + (report['tongNganSachChiTieu'] as int));
+    final totalRevenue = _reports.fold<int>(0, (sum, report) => sum + (report.tongThu as int));
+    final totalExpense = _reports.fold<int>(0, (sum, report) => sum + (report.tongNganSachChiTieu as int));
     final totalProfit = totalRevenue - totalExpense;
     
     return Padding(
@@ -1129,7 +1106,7 @@ class _StudentActivityReportsScreenState
                     itemCount: _searchQuery.isEmpty ? 0 : _filteredReports.length,
                     itemBuilder: (context, index) {
                       final report = _filteredReports[index];
-                      final profit = report['tongThu'] - report['tongNganSachChiTieu'];
+                      final profit = report.tongThu - report.tongNganSachChiTieu;
                       final profitColor = profit >= 0 ? Colors.green : Colors.red;
                       
                       return Card(
@@ -1157,13 +1134,13 @@ class _StudentActivityReportsScreenState
                             ),
                           ),
                           title: Text(
-                            report['tenBaoCao'],
+                            report.tenBaoCao,
                             style: const TextStyle(fontWeight: FontWeight.bold),
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,
                           ),
                           subtitle: Text(
-                            '${_formatDate(report['ngayBaoCao'])} • ${report['nhanSuPhuTrach']}',
+                            '${_formatDate(report.ngayBaoCao)} • ${report.nhanSuPhuTrach}',
                             style: TextStyle(color: Colors.grey[600]),
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,

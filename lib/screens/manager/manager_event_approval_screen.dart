@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../constants/app_constants.dart';
 import '../../widgets/manager/manager_drawer_widget.dart';
 import '../../widgets/manager/manager_app_bar_widget.dart';
+import '../../models/event.dart';
+import '../../services/event_data_service.dart';
 
 class ManagerEventApprovalScreen extends StatefulWidget {
   const ManagerEventApprovalScreen({super.key});
@@ -20,61 +22,20 @@ class _ManagerEventApprovalScreenState extends State<ManagerEventApprovalScreen>
     'Đã duyệt',
   ];
 
-  // Updated event data based on MongoDB structure
-  final List<Map<String, dynamic>> _events = [
-    {
-      '_id': '673c5d577f6aae48b37a856b',
-      'ten': 'IT Day',
-      'ngayToChuc': '2024-11-22T00:00:00.000Z',
-      'thoiGianBatDau': '12:00',
-      'thoiGianKetThuc': '15:00',
-      'diaDiem': 'Sân trường',
-      'noiDung': 'Sự kiện IT Day được tổ chức nhằm giới thiệu cho mọi người về thế giới công nghệ thông tin hiện đại',
-      'nguoiPhuTrach': 'Nguyễn Phi Quốc Bảo',
-      'khachMoi': ['Công ty ABC', 'Trường ĐH XYZ'],
-      'club': '67160c5ad55fc5f816de7644',
-      'trangThai': 'daDuyet',
-    },
-    {
-      '_id': '673c5d577f6aae48b37a856c',
-      'ten': 'Workshop Lập trình Web',
-      'ngayToChuc': '2024-12-01T00:00:00.000Z',
-      'thoiGianBatDau': '08:00',
-      'thoiGianKetThuc': '17:00',
-      'diaDiem': 'Phòng Lab A',
-      'noiDung': 'Workshop dạy lập trình web với React và Node.js dành cho sinh viên',
-      'nguoiPhuTrach': 'Trần Văn A',
-      'khachMoi': ['Chuyên gia IT'],
-      'club': '67160c5ad55fc5f816de7644',
-      'trangThai': 'choPheDuyet',
-    },
-    {
-      '_id': '673c5d577f6aae48b37a856d',
-      'ten': 'Buổi biểu diễn âm nhạc',
-      'ngayToChuc': '2024-11-30T00:00:00.000Z',
-      'thoiGianBatDau': '19:00',
-      'thoiGianKetThuc': '21:00',
-      'diaDiem': 'Hội trường chính',
-      'noiDung': 'Buổi biểu diễn âm nhạc acoustic của câu lạc bộ âm nhạc',
-      'nguoiPhuTrach': 'Lê Thị B',
-      'khachMoi': ['Ban nhạc ABC'],
-      'club': '67160c5ad55fc5f816de7645',
-      'trangThai': 'daDuyet',
-    },
-    {
-      '_id': '673c5d577f6aae48b37a856e',
-      'ten': 'Giải chạy marathon',
-      'ngayToChuc': '2024-12-15T00:00:00.000Z',
-      'thoiGianBatDau': '06:00',
-      'thoiGianKetThuc': '10:00',
-      'diaDiem': 'Quanh trường học',
-      'noiDung': 'Giải chạy marathon thường niên nhằm rèn luyện sức khỏe cho sinh viên',
-      'nguoiPhuTrach': 'Phạm Văn C',
-      'khachMoi': [],
-      'club': '67160c5ad55fc5f816de7646',
-      'trangThai': 'choPheDuyet',
-    },
-  ];
+  final EventDataService _eventService = EventDataService();
+  List<Event> _events = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadEvents();
+  }
+
+  void _loadEvents() {
+    setState(() {
+      _events = _eventService.getAllEvents();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -116,17 +77,17 @@ class _ManagerEventApprovalScreenState extends State<ManagerEventApprovalScreen>
   }
 
   Widget _buildBody() {
-    List<Map<String, dynamic>> filteredEvents;
+    List<Event> filteredEvents;
     
     switch (_selectedIndex) {
       case 0:
         filteredEvents = _events;
         break;
       case 1:
-        filteredEvents = _events.where((event) => event['trangThai'] == 'choPheDuyet').toList();
+        filteredEvents = _eventService.getEventsByStatus('choPheDuyet');
         break;
       case 2:
-        filteredEvents = _events.where((event) => event['trangThai'] == 'daDuyet').toList();
+        filteredEvents = _eventService.getEventsByStatus('daDuyet');
         break;
       default:
         filteredEvents = _events;
@@ -152,7 +113,7 @@ class _ManagerEventApprovalScreenState extends State<ManagerEventApprovalScreen>
               Expanded(
                 child: _buildStatsCard(
                   'Chờ duyệt',
-                  '${_events.where((e) => e['trangThai'] == 'choPheDuyet').length}',
+                  '${_eventService.getEventsByStatus('choPheDuyet').length}',
                   Icons.pending,
                   Colors.orange,
                 ),
@@ -161,7 +122,7 @@ class _ManagerEventApprovalScreenState extends State<ManagerEventApprovalScreen>
               Expanded(
                 child: _buildStatsCard(
                   'Đã duyệt',
-                  '${_events.where((e) => e['trangThai'] == 'daDuyet').length}',
+                  '${_eventService.getEventsByStatus('daDuyet').length}',
                   Icons.check_circle,
                   Colors.green,
                 ),
@@ -306,9 +267,9 @@ class _ManagerEventApprovalScreenState extends State<ManagerEventApprovalScreen>
     }
   }
 
-  Widget _buildEventCard(Map<String, dynamic> event) {
-    final statusColor = _getStatusColor(event['trangThai']);
-    final statusText = _getStatusText(event['trangThai']);
+  Widget _buildEventCard(Event event) {
+    final statusColor = _getStatusColor(event.trangThai);
+    final statusText = _getStatusText(event.trangThai);
     
     return Card(
       margin: const EdgeInsets.only(bottom: AppConstants.paddingMedium),
@@ -356,7 +317,7 @@ class _ManagerEventApprovalScreenState extends State<ManagerEventApprovalScreen>
                     ),
                     child: Center(
                       child: Text(
-                        event['ten'][0].toUpperCase(),
+                        event.ten[0].toUpperCase(),
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -371,7 +332,7 @@ class _ManagerEventApprovalScreenState extends State<ManagerEventApprovalScreen>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          event['ten'],
+                          event.ten,
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 18,
@@ -381,7 +342,7 @@ class _ManagerEventApprovalScreenState extends State<ManagerEventApprovalScreen>
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Người phụ trách: ${event['nguoiPhuTrach']}',
+                          'Người phụ trách: ${event.nguoiPhuTrach}',
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.grey[600],
@@ -440,7 +401,7 @@ class _ManagerEventApprovalScreenState extends State<ManagerEventApprovalScreen>
                           ),
                         ),
                         Text(
-                          _formatDate(event['ngayToChuc']),
+                          _formatDate(event.ngayToChuc),
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
@@ -455,7 +416,7 @@ class _ManagerEventApprovalScreenState extends State<ManagerEventApprovalScreen>
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          '${event['thoiGianBatDau']} - ${event['thoiGianKetThuc']}',
+                          '${event.thoiGianBatDau} - ${event.thoiGianKetThuc}',
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
@@ -483,7 +444,7 @@ class _ManagerEventApprovalScreenState extends State<ManagerEventApprovalScreen>
                         ),
                         Expanded(
                           child: Text(
-                            event['diaDiem'],
+                            event.diaDiem,
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
@@ -494,7 +455,7 @@ class _ManagerEventApprovalScreenState extends State<ManagerEventApprovalScreen>
                         ),
                       ],
                     ),
-                    if (event['khachMoi'].isNotEmpty) ...[
+                    if (event.khachMoi.isNotEmpty) ...[
                       const SizedBox(height: 12),
                       Row(
                         children: [
@@ -514,7 +475,7 @@ class _ManagerEventApprovalScreenState extends State<ManagerEventApprovalScreen>
                           ),
                           Expanded(
                             child: Text(
-                              event['khachMoi'].join(', '),
+                              event.khachMoi.join(', '),
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500,
@@ -531,7 +492,7 @@ class _ManagerEventApprovalScreenState extends State<ManagerEventApprovalScreen>
               ),
               const SizedBox(height: AppConstants.paddingMedium),
               Text(
-                event['noiDung'],
+                event.noiDung,
                 style: TextStyle(
                   color: Colors.grey[700],
                   fontSize: 14,
@@ -557,7 +518,7 @@ class _ManagerEventApprovalScreenState extends State<ManagerEventApprovalScreen>
                       foregroundColor: Colors.blue,
                     ),
                   ),
-                  if (event['trangThai'] == 'choPheDuyet') ...[
+                  if (event.trangThai == 'choPheDuyet') ...[
                     const SizedBox(width: 8),
                     FilledButton.icon(
                       onPressed: () => _approveEvent(event),
@@ -594,9 +555,9 @@ class _ManagerEventApprovalScreenState extends State<ManagerEventApprovalScreen>
     );
   }
 
-  void _showEventDetails(Map<String, dynamic> event) {
-    final statusColor = _getStatusColor(event['trangThai']);
-    final statusText = _getStatusText(event['trangThai']);
+  void _showEventDetails(Event event) {
+    final statusColor = _getStatusColor(event.trangThai);
+    final statusText = _getStatusText(event.trangThai);
     
     showDialog(
       context: context,
@@ -634,7 +595,7 @@ class _ManagerEventApprovalScreenState extends State<ManagerEventApprovalScreen>
                       ),
                       child: Center(
                         child: Text(
-                          event['ten'][0].toUpperCase(),
+                          event.ten[0].toUpperCase(),
                           style: TextStyle(
                             color: statusColor,
                             fontWeight: FontWeight.bold,
@@ -649,7 +610,7 @@ class _ManagerEventApprovalScreenState extends State<ManagerEventApprovalScreen>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            event['ten'] ?? 'Sự kiện',
+                            event.ten,
                             style: const TextStyle(
                               fontSize: AppConstants.fontSizeXLarge,
                               fontWeight: FontWeight.bold,
@@ -690,40 +651,48 @@ class _ManagerEventApprovalScreenState extends State<ManagerEventApprovalScreen>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildDetailRow(
-                        Icons.calendar_today, 
-                        'Ngày tổ chức', 
-                        _formatDate(event['ngayToChuc'])
-                      ),
-                      const SizedBox(height: AppConstants.paddingSmall),
-                      _buildDetailRow(
-                        Icons.access_time, 
-                        'Thời gian', 
-                        '${event['thoiGianBatDau']} - ${event['thoiGianKetThuc']}'
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildDetailRow(
+                              Icons.calendar_today, 
+                              'Ngày tổ chức', 
+                              _formatDate(event.ngayToChuc)
+                            ),
+                          ),
+                          const SizedBox(width: AppConstants.paddingSmall),
+                          Expanded(
+                            child: _buildDetailRow(
+                              Icons.access_time, 
+                              'Thời gian', 
+                              '${event.thoiGianBatDau} - ${event.thoiGianKetThuc}'
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: AppConstants.paddingSmall),
                       _buildDetailRow(
                         Icons.location_on, 
                         'Địa điểm', 
-                        event['diaDiem'] ?? 'Chưa có thông tin'
+                        event.diaDiem
                       ),
                       const SizedBox(height: AppConstants.paddingSmall),
                       _buildDetailRow(
                         Icons.person, 
                         'Người phụ trách', 
-                        event['nguoiPhuTrach'] ?? 'Chưa có thông tin'
+                        event.nguoiPhuTrach
                       ),
                       
-                      if (event['khachMoi'] != null && event['khachMoi'].isNotEmpty) ...[
+                      if (event.khachMoi.isNotEmpty) ...[
                         const SizedBox(height: AppConstants.paddingSmall),
                         _buildDetailRow(
                           Icons.people, 
                           'Khách mời', 
-                          event['khachMoi'].join(', ')
+                          event.khachMoi.join(', ')
                         ),
                       ],
                       
-                      if (event['noiDung'] != null && event['noiDung'].isNotEmpty) ...[
+                      if (event.noiDung.isNotEmpty) ...[
                         const SizedBox(height: AppConstants.paddingMedium),
                         const Text(
                           'Nội dung sự kiện',
@@ -743,7 +712,7 @@ class _ManagerEventApprovalScreenState extends State<ManagerEventApprovalScreen>
                             border: Border.all(color: Colors.grey[200]!),
                           ),
                           child: Text(
-                            event['noiDung'],
+                            event.noiDung,
                             style: const TextStyle(
                               fontSize: AppConstants.fontSizeMedium,
                               height: 1.5,
@@ -768,7 +737,7 @@ class _ManagerEventApprovalScreenState extends State<ManagerEventApprovalScreen>
                 ),
                 child: Row(
                   children: [
-                    if (event['trangThai'] == 'choPheDuyet') ...[
+                    if (event.trangThai == 'choPheDuyet') ...[
                       Expanded(
                         child: OutlinedButton.icon(
                           onPressed: () {
@@ -886,12 +855,12 @@ class _ManagerEventApprovalScreenState extends State<ManagerEventApprovalScreen>
     );
   }
 
-  void _approveEvent(Map<String, dynamic> event) {
+  void _approveEvent(Event event) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Xác nhận duyệt sự kiện'),
-        content: Text('Bạn có chắc chắn muốn duyệt sự kiện "${event['ten']}"?'),
+        content: Text('Bạn có chắc chắn muốn duyệt sự kiện "${event.ten}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -899,11 +868,11 @@ class _ManagerEventApprovalScreenState extends State<ManagerEventApprovalScreen>
           ),
           ElevatedButton(
             onPressed: () {
-              setState(() {
-                event['trangThai'] = 'daDuyet';
-              });
+              final updatedEvent = event.copyWith(trangThai: 'daDuyet');
+              _eventService.updateEvent(updatedEvent);
+              _loadEvents();
               Navigator.pop(context);
-              _showSuccessDialog('Đã duyệt sự kiện "${event['ten']}"');
+              _showSuccessDialog('Đã duyệt sự kiện "${event.ten}"');
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
             child: const Text('Duyệt', style: TextStyle(color: Colors.white)),
@@ -913,7 +882,7 @@ class _ManagerEventApprovalScreenState extends State<ManagerEventApprovalScreen>
     );
   }
 
-  void _rejectEvent(Map<String, dynamic> event) {
+  void _rejectEvent(Event event) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -921,7 +890,7 @@ class _ManagerEventApprovalScreenState extends State<ManagerEventApprovalScreen>
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Bạn có chắc chắn muốn từ chối sự kiện "${event['ten']}"?'),
+            Text('Bạn có chắc chắn muốn từ chối sự kiện "${event.ten}"?'),
             const SizedBox(height: 16),
             TextField(
               decoration: const InputDecoration(
@@ -939,11 +908,11 @@ class _ManagerEventApprovalScreenState extends State<ManagerEventApprovalScreen>
           ),
           ElevatedButton(
             onPressed: () {
-              setState(() {
-                event['trangThai'] = 'daHuy';
-              });
+              final updatedEvent = event.copyWith(trangThai: 'daHuy');
+              _eventService.updateEvent(updatedEvent);
+              _loadEvents();
               Navigator.pop(context);
-              _showSuccessDialog('Đã từ chối sự kiện "${event['ten']}"');
+              _showSuccessDialog('Đã từ chối sự kiện "${event.ten}"');
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('Từ chối', style: TextStyle(color: Colors.white)),
@@ -974,6 +943,4 @@ class _ManagerEventApprovalScreenState extends State<ManagerEventApprovalScreen>
       ),
     );
   }
-
-
 } 

@@ -2,9 +2,43 @@ import 'package:flutter/material.dart';
 import '../../constants/app_constants.dart';
 import '../../widgets/manager/dashboard_chart_widget.dart';
 import '../../widgets/manager/stats_card_widget.dart';
+import '../../services/club_data_service.dart';
+import '../../services/member_data_service.dart';
+import '../../services/event_data_service.dart';
+import '../../services/award_data_service.dart';
 
-class ManagerDashboardScreen extends StatelessWidget {
+class ManagerDashboardScreen extends StatefulWidget {
   const ManagerDashboardScreen({super.key});
+
+  @override
+  State<ManagerDashboardScreen> createState() => _ManagerDashboardScreenState();
+}
+
+class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
+  final ClubDataService _clubService = ClubDataService();
+  final MemberDataService _memberService = MemberDataService();
+  final EventDataService _eventService = EventDataService();
+  final AwardDataService _awardService = AwardDataService();
+
+  int _totalClubs = 0;
+  int _totalMembers = 0;
+  int _totalEvents = 0;
+  int _totalAwards = 0;
+  
+  @override
+  void initState() {
+    super.initState();
+    _loadStats();
+  }
+
+  void _loadStats() {
+    setState(() {
+      _totalClubs = _clubService.getAllClubs().length;
+      _totalMembers = _memberService.getAllMembers().length;
+      _totalEvents = _eventService.getAllEvents().length;
+      _totalAwards = _awardService.getAllAwards().length;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -139,7 +173,7 @@ class ManagerDashboardScreen extends StatelessWidget {
                 Expanded(
                   child: StatsCardWidget(
                     title: 'Tổng Câu Lạc Bộ',
-                    value: '12',
+                    value: '$_totalClubs',
                     icon: Icons.business,
                     color: AppConstants.primaryColor,
                   ),
@@ -148,7 +182,7 @@ class ManagerDashboardScreen extends StatelessWidget {
                 Expanded(
                   child: StatsCardWidget(
                     title: 'Tổng Thành Viên',
-                    value: '248',
+                    value: '$_totalMembers',
                     icon: Icons.people,
                     color: AppConstants.successColor,
                   ),
@@ -162,7 +196,7 @@ class ManagerDashboardScreen extends StatelessWidget {
                 Expanded(
                   child: StatsCardWidget(
                     title: 'Sự kiện đã tổ chức',
-                    value: '35',
+                    value: '$_totalEvents',
                     icon: Icons.event,
                     color: AppConstants.warningColor,
                   ),
@@ -171,7 +205,7 @@ class ManagerDashboardScreen extends StatelessWidget {
                 Expanded(
                   child: StatsCardWidget(
                     title: 'Giải Thưởng Đạt Được',
-                    value: '8',
+                    value: '$_totalAwards',
                     icon: Icons.emoji_events,
                     color: Colors.purple,
                   ),
@@ -282,31 +316,7 @@ class ManagerDashboardScreen extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.all(AppConstants.paddingMedium),
                     child: Column(
-                      children: [
-                        _buildEventItem(
-                          'Lễ trao bằng',
-                          'Tin học',
-                          '09/11/2001',
-                          Icons.school,
-                          AppConstants.warningColor,
-                        ),
-                        const Divider(),
-                        _buildEventItem(
-                          'Hội thảo AI',
-                          'Công nghệ',
-                          '15/11/2001',
-                          Icons.computer,
-                          AppConstants.primaryColor,
-                        ),
-                        const Divider(),
-                        _buildEventItem(
-                          'Cuộc thi lập trình',
-                          'Tin học',
-                          '20/11/2001',
-                          Icons.code,
-                          AppConstants.successColor,
-                        ),
-                      ],
+                      children: _buildPendingEventsList(),
                     ),
                   ),
                 ],
@@ -324,6 +334,49 @@ class ManagerDashboardScreen extends StatelessWidget {
       'T7', 'T8', 'T9', 'T10', 'T11', 'T12'
     ];
     return months[month];
+  }
+
+  List<Widget> _buildPendingEventsList() {
+    final pendingEvents = _eventService.getEventsByStatus('Chờ duyệt');
+    
+    if (pendingEvents.isEmpty) {
+      return [
+        Padding(
+          padding: const EdgeInsets.all(AppConstants.paddingLarge),
+          child: Center(
+            child: Text(
+              'Không có sự kiện chờ duyệt',
+              style: TextStyle(
+                color: Colors.grey[600],
+                fontSize: AppConstants.fontSizeMedium,
+              ),
+            ),
+          ),
+        ),
+      ];
+    }
+
+    List<Widget> items = [];
+    for (int i = 0; i < pendingEvents.length && i < 3; i++) {
+      final event = pendingEvents[i];
+      items.add(_buildEventItem(
+        event.ten,
+        event.club,
+        _formatDate(event.ngayToChuc),
+        Icons.event,
+        AppConstants.warningColor,
+      ));
+      if (i < pendingEvents.length - 1 && i < 2) {
+        items.add(const Divider());
+      }
+    }
+    
+    return items;
+  }
+
+  String _formatDate(String isoDateString) {
+    final date = DateTime.parse(isoDateString);
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
   }
 
   Widget _buildEventItem(

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../constants/app_constants.dart';
 import '../../widgets/student/student_drawer_widget.dart';
 import '../../widgets/student/student_app_bar_widget.dart';
+import '../../models/award.dart';
+import '../../services/award_data_service.dart';
 
 class StudentAwardManagementScreen extends StatefulWidget {
   final String? userName;
@@ -39,46 +41,30 @@ class _StudentAwardManagementScreenState
   final dateController = TextEditingController();
   final noteController = TextEditingController();
   String selectedAwardType = 'Giải nhất';
-  Map<String, dynamic>? _editingAward;
+  Award? _editingAward;
 
-  // Mock data for awards
-  final List<Map<String, dynamic>> _awards = [
-    {
-      '_id': '673c5ce77f6aae48b37a8561',
-      'tenGiaiThuong': 'Code competitive',
-      'ngayDatGiai': '2024-11-18',
-      'loaiGiai': 'Giải nhì',
-      'thanhVienDatGiai': 'Nguyễn Văn A',
-      'ghiChu': 'Cuộc thi lập trình xuất sắc',
-      'anhDatGiai': '1732029750179.jpg',
-    },
-    {
-      '_id': '673c5ce77f6aae48b37a8562',
-      'tenGiaiThuong': 'Hackathon Mobile App',
-      'ngayDatGiai': '2024-10-15',
-      'loaiGiai': 'Giải nhất',
-      'thanhVienDatGiai': 'Trần Thị B',
-      'ghiChu': 'Phát triển ứng dụng di động sáng tạo',
-      'anhDatGiai': '1732029750180.jpg',
-    },
-    {
-      '_id': '673c5ce77f6aae48b37a8563',
-      'tenGiaiThuong': 'AI Challenge',
-      'ngayDatGiai': '2024-09-20',
-      'loaiGiai': 'Giải ba',
-      'thanhVienDatGiai': 'Lê Văn C',
-      'ghiChu': 'Nghiên cứu và ứng dụng AI',
-      'anhDatGiai': '1732029750181.jpg',
-    },
-  ];
+  final AwardDataService _awardService = AwardDataService();
+  List<Award> _awards = [];
 
-  List<Map<String, dynamic>> get _filteredAwards {
+  @override
+  void initState() {
+    super.initState();
+    _loadAwards();
+  }
+
+  void _loadAwards() {
+    setState(() {
+      _awards = _awardService.getAllAwards();
+    });
+  }
+
+  List<Award> get _filteredAwards {
     return _awards.where((award) {
       return _searchQuery.isEmpty ||
-          award['tenGiaiThuong'].toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          award['loaiGiai'].toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          award['thanhVienDatGiai'].toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          award['ghiChu'].toLowerCase().contains(_searchQuery.toLowerCase());
+          award.tenGiaiThuong.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          award.loaiGiai.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          award.thanhVienDatGiai.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          award.ghiChu.toLowerCase().contains(_searchQuery.toLowerCase());
     }).toList();
   }
 
@@ -275,7 +261,7 @@ class _StudentAwardManagementScreenState
                   itemCount: _filteredAwards.length,
                   itemBuilder: (context, index) {
                     final award = _filteredAwards[index];
-                    final Color awardColor = _getAwardTypeColor(award['loaiGiai']);
+                    final Color awardColor = _getAwardTypeColor(award.loaiGiai);
                     
                     return Card(
                       margin: const EdgeInsets.only(bottom: AppConstants.paddingMedium),
@@ -336,7 +322,7 @@ class _StudentAwardManagementScreenState
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          award['tenGiaiThuong'],
+                                          award.tenGiaiThuong,
                                           style: const TextStyle(
                                             fontWeight: FontWeight.bold,
                                             fontSize: 18,
@@ -346,7 +332,7 @@ class _StudentAwardManagementScreenState
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
-                                          'Thành viên: ${award['thanhVienDatGiai']}',
+                                          'Thành viên: ${award.thanhVienDatGiai}',
                                           style: TextStyle(
                                             fontSize: 14,
                                             color: Colors.grey[600],
@@ -366,7 +352,7 @@ class _StudentAwardManagementScreenState
                                       border: Border.all(color: awardColor.withOpacity(0.3)),
                                     ),
                                     child: Text(
-                                      award['loaiGiai'],
+                                      award.loaiGiai,
                                       style: TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.bold,
@@ -402,7 +388,7 @@ class _StudentAwardManagementScreenState
                                           ),
                                           const SizedBox(height: 2),
                                           Text(
-                                            _formatDate(award['ngayDatGiai']),
+                                            _formatDate(award.ngayDatGiai),
                                             style: const TextStyle(
                                               fontSize: 14,
                                               fontWeight: FontWeight.bold,
@@ -433,7 +419,7 @@ class _StudentAwardManagementScreenState
                                           ),
                                           const SizedBox(height: 2),
                                           Text(
-                                            award['thanhVienDatGiai'],
+                                            award.thanhVienDatGiai,
                                             style: const TextStyle(
                                               fontSize: 14,
                                               fontWeight: FontWeight.bold,
@@ -466,7 +452,7 @@ class _StudentAwardManagementScreenState
                                           ),
                                           const SizedBox(height: 2),
                                           Text(
-                                            award['anhDatGiai'] != null && award['anhDatGiai'].isNotEmpty ? 'Có' : 'Không',
+                                            award.anhDatGiai.isNotEmpty ? 'Có' : 'Không',
                                             style: const TextStyle(
                                               fontSize: 14,
                                               fontWeight: FontWeight.bold,
@@ -479,10 +465,10 @@ class _StudentAwardManagementScreenState
                                   ],
                                 ),
                               ),
-                              if (award['ghiChu'] != null && award['ghiChu'].isNotEmpty) ...[
+                              if (award.ghiChu.isNotEmpty) ...[
                                 const SizedBox(height: AppConstants.paddingMedium),
                                 Text(
-                                  award['ghiChu'],
+                                  award.ghiChu,
                                   style: TextStyle(
                                     fontSize: 14,
                                     color: Colors.grey[700],
@@ -530,8 +516,6 @@ class _StudentAwardManagementScreenState
       ],
     );
   }
-
-
 
   Widget _buildAddAward() {
     return const Center(
@@ -721,7 +705,7 @@ class _StudentAwardManagementScreenState
                     itemCount: _searchQuery.isEmpty ? 0 : _filteredAwards.length,
                     itemBuilder: (context, index) {
                       final award = _filteredAwards[index];
-                      final Color awardColor = _getAwardTypeColor(award['loaiGiai']);
+                      final Color awardColor = _getAwardTypeColor(award.loaiGiai);
                       
                       return Card(
                         margin: const EdgeInsets.only(bottom: AppConstants.paddingSmall),
@@ -748,13 +732,13 @@ class _StudentAwardManagementScreenState
                             ),
                           ),
                           title: Text(
-                            award['tenGiaiThuong'],
+                            award.tenGiaiThuong,
                             style: const TextStyle(fontWeight: FontWeight.bold),
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,
                           ),
                           subtitle: Text(
-                            '${award['loaiGiai']} • ${award['thanhVienDatGiai']}',
+                            '${award.loaiGiai} • ${award.thanhVienDatGiai}',
                             style: TextStyle(color: Colors.grey[600]),
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,
@@ -772,7 +756,7 @@ class _StudentAwardManagementScreenState
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Text(
-                                  award['loaiGiai'],
+                                  award.loaiGiai,
                                   style: TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
@@ -797,15 +781,15 @@ class _StudentAwardManagementScreenState
   }
 
   // Navigate to edit award
-  void _navigateToEditAward(Map<String, dynamic> award) {
-    awardNameController.text = award['tenGiaiThuong'];
-    memberNameController.text = award['thanhVienDatGiai'];
-    dateController.text = _formatDate(award['ngayDatGiai']);
-    noteController.text = award['ghiChu'];
+  void _navigateToEditAward(Award award) {
+    awardNameController.text = award.tenGiaiThuong;
+    memberNameController.text = award.thanhVienDatGiai;
+    dateController.text = _formatDate(award.ngayDatGiai);
+    noteController.text = award.ghiChu;
     
     setState(() {
-      _editingAward = Map<String, dynamic>.from(award);
-      selectedAwardType = award['loaiGiai'];
+      _editingAward = award;
+      selectedAwardType = award.loaiGiai;
       _currentTitle = _titles[3];
     });
   }
@@ -1000,21 +984,16 @@ class _StudentAwardManagementScreenState
   // Update award
   void _updateAward() {
     if (_formKey.currentState!.validate() && _editingAward != null) {
-      final updatedAward = Map<String, dynamic>.from(_editingAward!);
-      updatedAward['tenGiaiThuong'] = awardNameController.text;
-      updatedAward['loaiGiai'] = selectedAwardType;
-      updatedAward['thanhVienDatGiai'] = memberNameController.text;
-      updatedAward['ngayDatGiai'] = _convertDateFormat(dateController.text);
-      updatedAward['ghiChu'] = noteController.text;
+      final updatedAward = _editingAward!.copyWith(
+        tenGiaiThuong: awardNameController.text,
+        loaiGiai: selectedAwardType,
+        thanhVienDatGiai: memberNameController.text,
+        ngayDatGiai: _convertDateFormat(dateController.text),
+        ghiChu: noteController.text,
+      );
 
-      setState(() {
-        final index = _awards.indexWhere(
-          (a) => a['_id'] == _editingAward!['_id'],
-        );
-        if (index != -1) {
-          _awards[index] = updatedAward;
-        }
-      });
+      _awardService.updateAward(updatedAward);
+      _loadAwards();
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -1045,8 +1024,8 @@ class _StudentAwardManagementScreenState
   }
 
   // Show award details (need to add edit button)
-  void _showAwardDetails(BuildContext context, Map<String, dynamic> award) {
-    final Color awardColor = _getAwardTypeColor(award['loaiGiai']);
+  void _showAwardDetails(BuildContext context, Award award) {
+    final Color awardColor = _getAwardTypeColor(award.loaiGiai);
     
     showDialog(
       context: context,
@@ -1098,7 +1077,7 @@ class _StudentAwardManagementScreenState
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              award['tenGiaiThuong'],
+                              award.tenGiaiThuong,
                               style: const TextStyle(
                                 fontSize: AppConstants.fontSizeXLarge,
                                 fontWeight: FontWeight.bold,
@@ -1117,7 +1096,7 @@ class _StudentAwardManagementScreenState
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
-                                award['loaiGiai'],
+                                award.loaiGiai,
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: AppConstants.fontSizeSmall,
@@ -1139,11 +1118,11 @@ class _StudentAwardManagementScreenState
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildDetailRow(Icons.person, 'Thành viên đạt giải', award['thanhVienDatGiai']),
+                        _buildDetailRow(Icons.person, 'Thành viên đạt giải', award.thanhVienDatGiai),
                         const SizedBox(height: AppConstants.paddingMedium),
-                        _buildDetailRow(Icons.calendar_today, 'Ngày đạt giải', _formatDate(award['ngayDatGiai'])),
+                        _buildDetailRow(Icons.calendar_today, 'Ngày đạt giải', _formatDate(award.ngayDatGiai)),
                         const SizedBox(height: AppConstants.paddingMedium),
-                        _buildDetailRow(Icons.note, 'Ghi chú', award['ghiChu']),
+                        _buildDetailRow(Icons.note, 'Ghi chú', award.ghiChu),
                       ],
                     ),
                   ),

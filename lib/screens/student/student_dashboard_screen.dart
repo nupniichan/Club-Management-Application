@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import '../login_screen.dart';
 import '../../constants/app_constants.dart';
 import '../../services/auth_service.dart';
+import '../../services/member_data_service.dart';
+import '../../services/budget_data_service.dart';
+import '../../services/event_data_service.dart';
+import '../../services/award_data_service.dart';
 import '../../widgets/student/dashboard_chart_widget.dart';
 import '../../widgets/student/stats_card_widget.dart';
 import '../../widgets/student/student_drawer_widget.dart';
@@ -27,6 +31,38 @@ class _DashboardScreenState extends State<DashboardScreen> {
     'Dashboard',
     'Cài Đặt',
   ];
+
+  final MemberDataService _memberService = MemberDataService();
+  final BudgetDataService _budgetService = BudgetDataService();
+  final EventDataService _eventService = EventDataService();
+  final AwardDataService _awardService = AwardDataService();
+
+  int _totalMembers = 0;
+  int _totalBudget = 0;
+  int _totalEvents = 0;
+  int _totalAwards = 0;
+  String _clubName = 'Câu lạc bộ tin học';
+  String _clubField = 'Công Nghệ';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDashboardData();
+  }
+
+  void _loadDashboardData() {
+    final members = _memberService.getAllMembers();
+    final budgets = _budgetService.getAllBudgets();
+    final events = _eventService.getAllEvents();
+    final awards = _awardService.getAllAwards();
+
+    setState(() {
+      _totalMembers = members.length;
+      _totalBudget = budgets.fold<int>(0, (sum, budget) => sum + budget.nguonThu);
+      _totalEvents = events.length;
+      _totalAwards = awards.length;
+    });
+  }
   
   @override
   Widget build(BuildContext context) {
@@ -191,7 +227,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Expanded(
                   child: StatsCardWidget(
                     title: 'CLB đang quản lý',
-                    value: 'Câu lạc bộ tin học',
+                    value: _clubName,
                     icon: Icons.business,
                     color: AppConstants.primaryColor,
                   ),
@@ -200,7 +236,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Expanded(
                   child: StatsCardWidget(
                     title: 'Tổng Thành Viên',
-                    value: '6',
+                    value: '$_totalMembers',
                     icon: Icons.people,
                     color: AppConstants.successColor,
                   ),
@@ -214,7 +250,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Expanded(
                   child: StatsCardWidget(
                     title: 'Ngân Sách Hiện Tại',
-                    value: '2M VNĐ',
+                    value: '${(_totalBudget / 1000000).toStringAsFixed(1)}M VNĐ',
                     icon: Icons.monetization_on,
                     color: AppConstants.warningColor,
                   ),
@@ -223,7 +259,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Expanded(
                   child: StatsCardWidget(
                     title: 'Lĩnh vực',
-                    value: 'Công Nghệ',
+                    value: _clubField,
                     icon: Icons.computer,
                     color: Colors.purple,
                   ),
@@ -381,7 +417,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               Expanded(
                                 flex: 3,
                                 child: Text(
-                                  'Ngày tham gia',
+                                  'Vai trò',
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: AppConstants.fontSizeLarge,
@@ -392,36 +428,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           ),
                         ),
                         
-                        // Table Data
-                        _buildMemberRow(
-                          'Nguyễn Văn An',
-                          'HS001',
-                          '10A1',
-                          '12/05/2025',
-                        ),
-                        _buildMemberRow(
-                          'Trần Thị Bình',
-                          'HS002',
-                          '11A3',
-                          '14/05/2025',
-                        ),
-                        _buildMemberRow(
-                          'Lê Hoàng Cường',
-                          'HS003',
-                          '12A2',
-                          '18/05/2025',
-                        ),
-                        _buildMemberRow(
-                          'Phạm Thị Dung',
-                          'HS004',
-                          '10B1',
-                          '20/05/2025',
-                        ),
-                        _buildMemberRow(
-                          'Hoàng Văn Em',
-                          'HS005',
-                          '11A1',
-                          '22/05/2025',
+                        // Dynamic member data from service
+                        ..._memberService.getAllMembers().take(5).map(
+                          (member) => _buildMemberRow(
+                            member.ten,
+                            member.id.toString(),
+                            member.lop,
+                            member.vaiTro,
+                          ),
                         ),
                       ],
                     ),
@@ -505,7 +519,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     String name,
     String studentId,
     String className,
-    String joinDate,
+    String role,
   ) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: AppConstants.paddingSmall),
@@ -549,7 +563,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Expanded(
             flex: 3,
             child: Text(
-              joinDate,
+              role,
               style: const TextStyle(
                 fontSize: AppConstants.fontSizeLarge,
                 color: AppConstants.textSecondaryColor,

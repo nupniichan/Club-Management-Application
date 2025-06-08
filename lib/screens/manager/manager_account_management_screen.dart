@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../constants/app_constants.dart';
 import '../../widgets/manager/manager_drawer_widget.dart';
 import '../../widgets/manager/manager_app_bar_widget.dart';
+import '../../models/account.dart';
+import '../../services/account_data_service.dart';
 
 class ManagerAccountManagementScreen extends StatefulWidget {
   const ManagerAccountManagementScreen({super.key});
@@ -22,39 +24,20 @@ class _ManagerAccountManagementScreenState
     'Tìm kiếm & Lọc',
   ];
 
-  // Updated mock data based on MongoDB structure
-  final List<Map<String, dynamic>> _accounts = [
-    {
-      '_id': '673afdefb543f47cb92cde93',
-      'userId': 'PS123456',
-      'name': 'Nguyễn Trần Văn B',
-      'email': 'PS123456@thpt.edu.vn',
-      'password': '123456',
-      'role': 'manager',
-      'status': 'Hoạt động',
-      'createdDate': '2024-11-17',
-    },
-    {
-      '_id': '673afdefb543f47cb92cde94',
-      'userId': 'HS123456',
-      'name': 'Trần Văn A',
-      'email': 'HS123456@thpt.edu.vn',
-      'password': '123456',
-      'role': 'student',
-      'status': 'Hoạt động',
-      'createdDate': '2024-11-18',
-    },
-    {
-      '_id': '673afdefb543f47cb92cde95',
-      'userId': 'HS123457',
-      'name': 'Lê Thị C',
-      'email': 'HS123457@thpt.edu.vn',
-      'password': '123456',
-      'role': 'student',
-      'status': 'Tạm khóa',
-      'createdDate': '2024-11-16',
-    },
-  ];
+  final AccountDataService _accountService = AccountDataService();
+  List<Account> _accounts = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAccounts();
+  }
+
+  void _loadAccounts() {
+    setState(() {
+      _accounts = _accountService.getAllAccounts();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -112,7 +95,7 @@ class _ManagerAccountManagementScreenState
               end: Alignment.bottomRight,
             ),
           ),
-      padding: const EdgeInsets.all(AppConstants.paddingMedium),
+          padding: const EdgeInsets.all(AppConstants.paddingMedium),
           child: Row(
             children: [
               Container(
@@ -122,7 +105,7 @@ class _ManagerAccountManagementScreenState
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
-                Icons.people,
+                  Icons.people,
                   size: 20,
                   color: AppConstants.primaryColor,
                 ),
@@ -141,7 +124,7 @@ class _ManagerAccountManagementScreenState
                       ),
                     ),
                     Text(
-                      'Tổng số: ${_accounts.length} tài khoản • ${_accounts.where((a) => a['status'] == 'Hoạt động').length} hoạt động',
+                      'Tổng số: ${_accounts.length} tài khoản • ${_accounts.where((a) => a.status == 'Hoạt động').length} hoạt động',
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey[600],
@@ -182,7 +165,7 @@ class _ManagerAccountManagementScreenState
                       const SizedBox(height: 16),
                       Text(
                         'Chưa có tài khoản nào',
-            style: TextStyle(
+                        style: TextStyle(
                           fontSize: 18,
                           color: Colors.grey[600],
                           fontWeight: FontWeight.w500,
@@ -194,10 +177,10 @@ class _ManagerAccountManagementScreenState
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.grey[500],
-            ),
-          ),
-        ],
-      ),
+                        ),
+                      ),
+                    ],
+                  ),
                 )
               : ListView.builder(
                   padding: const EdgeInsets.all(AppConstants.paddingMedium),
@@ -266,9 +249,9 @@ class _ManagerAccountManagementScreenState
     }
   }
 
-  Widget _buildAccountCard(Map<String, dynamic> account) {
-    final statusColor = account['status'] == 'Hoạt động' ? Colors.green : Colors.red;
-    final roleColor = account['role'] == 'manager' ? Colors.purple : Colors.blue;
+  Widget _buildAccountCard(Account account) {
+    final statusColor = account.status == 'Hoạt động' ? Colors.green : Colors.red;
+    final roleColor = account.role == 'manager' ? Colors.purple : Colors.blue;
     
     return Card(
       margin: const EdgeInsets.only(bottom: AppConstants.paddingMedium),
@@ -316,7 +299,7 @@ class _ManagerAccountManagementScreenState
                     ),
                     child: Center(
                       child: Text(
-                        account['name'][0].toUpperCase(),
+                        account.name[0].toUpperCase(),
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -331,7 +314,7 @@ class _ManagerAccountManagementScreenState
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-          account['name'],
+                          account.name,
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 18,
@@ -341,7 +324,7 @@ class _ManagerAccountManagementScreenState
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'ID: ${account['userId']} • ${_formatDate(account['createdDate'])}',
+                          'ID: ${account.userId} • ${_formatDate(account.createdDate)}',
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.grey[600],
@@ -363,7 +346,7 @@ class _ManagerAccountManagementScreenState
                       ),
                     ),
                     child: Text(
-                      account['status'],
+                      account.status,
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
@@ -407,7 +390,7 @@ class _ManagerAccountManagementScreenState
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            account['email'],
+                            account.email,
                             style: const TextStyle(
                               fontSize: 14,
                               color: Colors.black87,
@@ -430,7 +413,7 @@ class _ManagerAccountManagementScreenState
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(
-                                account['role'] == 'manager' ? Icons.admin_panel_settings : Icons.school,
+                                account.role == 'manager' ? Icons.admin_panel_settings : Icons.school,
                                 size: 16,
                                 color: roleColor,
                               ),
@@ -447,7 +430,7 @@ class _ManagerAccountManagementScreenState
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            _getRoleText(account['role']),
+                            _getRoleText(account.role),
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
@@ -644,7 +627,7 @@ class _ManagerAccountManagementScreenState
     );
   }
 
-  void _showAccountDetails(BuildContext context, Map<String, dynamic> account) {
+  void _showAccountDetails(BuildContext context, Account account) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -667,7 +650,7 @@ class _ManagerAccountManagementScreenState
               ),
               child: Center(
                 child: Text(
-                  account['name'][0].toUpperCase(),
+                  account.name[0].toUpperCase(),
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -682,14 +665,14 @@ class _ManagerAccountManagementScreenState
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    account['name'],
+                    account.name,
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   Text(
-                    'ID: ${account['userId']}',
+                    'ID: ${account.userId}',
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey[600],
@@ -705,13 +688,34 @@ class _ManagerAccountManagementScreenState
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildDetailRow('Họ tên', account['name'], Icons.person),
-              _buildDetailRow('Mã người dùng', account['userId'], Icons.badge),
-              _buildDetailRow('Email', account['email'], Icons.email),
-              _buildDetailRow('Vai trò', _getRoleText(account['role']), Icons.work),
-              _buildDetailRow('Trạng thái', account['status'], Icons.info, 
-                colorValue: account['status'] == 'Hoạt động' ? Colors.green : Colors.red),
-              _buildDetailRow('Ngày tạo', _formatDate(account['createdDate']), Icons.calendar_today),
+              _buildDetailRow('Họ tên', account.name, Icons.person),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildDetailRow('Mã người dùng', account.userId, Icons.badge),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildDetailRow('Email', account.email, Icons.email),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildDetailRow('Vai trò', _getRoleText(account.role), Icons.work),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildDetailRow('Trạng thái', account.status, Icons.info, 
+                      colorValue: account.status == 'Hoạt động' ? Colors.green : Colors.red),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              _buildDetailRow('Ngày tạo', _formatDate(account.createdDate), Icons.calendar_today),
             ],
           ),
         ),
@@ -767,7 +771,7 @@ class _ManagerAccountManagementScreenState
     );
   }
 
-  void _showDeleteConfirmation(BuildContext context, Map<String, dynamic> account) {
+  void _showDeleteConfirmation(BuildContext context, Account account) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -816,7 +820,7 @@ class _ManagerAccountManagementScreenState
                     backgroundColor: Colors.red,
                     radius: 20,
                     child: Text(
-                      account['name'][0].toUpperCase(),
+                      account.name[0].toUpperCase(),
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -829,14 +833,14 @@ class _ManagerAccountManagementScreenState
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          account['name'],
+                          account.name,
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
                           ),
                         ),
                         Text(
-                          account['email'],
+                          account.email,
                           style: TextStyle(
                             color: Colors.grey[600],
                             fontSize: 14,
@@ -866,8 +870,10 @@ class _ManagerAccountManagementScreenState
           ),
           FilledButton(
             onPressed: () {
+              _accountService.deleteAccount(account.id);
+              _loadAccounts();
               Navigator.pop(context);
-              _showSuccessDialog('Đã xóa tài khoản "${account['name']}" thành công!');
+              _showSuccessDialog('Đã xóa tài khoản "${account.name}" thành công!');
             },
             style: FilledButton.styleFrom(
               backgroundColor: Colors.red,
@@ -879,12 +885,12 @@ class _ManagerAccountManagementScreenState
     );
   }
 
-  void _showEditAccountInfo(BuildContext context, Map<String, dynamic> account) {
-    final nameController = TextEditingController(text: account['name']);
-    final emailController = TextEditingController(text: account['email']);
-    final userIdController = TextEditingController(text: account['userId']);
-    final passwordController = TextEditingController(text: account['password']);
-    String selectedRole = account['role'];
+  void _showEditAccountInfo(BuildContext context, Account account) {
+    final nameController = TextEditingController(text: account.name);
+    final emailController = TextEditingController(text: account.email);
+    final userIdController = TextEditingController(text: account.userId);
+    final passwordController = TextEditingController(text: account.password);
+    String selectedRole = account.role;
     
     showDialog(
       context: context,
@@ -921,7 +927,7 @@ class _ManagerAccountManagementScreenState
                       ),
                       child: Center(
                         child: Text(
-                          account['name'][0].toUpperCase(),
+                          account.name[0].toUpperCase(),
                           style: const TextStyle(
                             color: Colors.green,
                             fontWeight: FontWeight.bold,
@@ -944,7 +950,7 @@ class _ManagerAccountManagementScreenState
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'ID: ${account['_id']}',
+                            'ID: ${account.id}',
                             style: const TextStyle(
                               fontSize: AppConstants.fontSizeSmall,
                               color: AppConstants.textSecondaryColor,
@@ -1056,14 +1062,16 @@ class _ManagerAccountManagementScreenState
                       child: FilledButton.icon(
                         onPressed: () {
                           // Update account info
-                          setState(() {
-                            account['userId'] = userIdController.text;
-                            account['name'] = nameController.text;
-                            account['email'] = emailController.text;
-                            account['password'] = passwordController.text;
-                            account['role'] = selectedRole;
-                          });
+                          final updatedAccount = account.copyWith(
+                            userId: userIdController.text,
+                            name: nameController.text,
+                            email: emailController.text,
+                            password: passwordController.text,
+                            role: selectedRole,
+                          );
                           
+                          _accountService.updateAccount(updatedAccount);
+                          _loadAccounts();
                           Navigator.of(context).pop();
                           _showSuccessDialog('Đã cập nhật thông tin tài khoản "${nameController.text}"');
                         },
@@ -1110,4 +1118,4 @@ class _ManagerAccountManagementScreenState
           ),
     );
   }
-}
+} 

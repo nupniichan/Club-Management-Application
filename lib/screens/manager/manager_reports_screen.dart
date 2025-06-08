@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import '../../constants/app_constants.dart';
 import '../../widgets/manager/manager_drawer_widget.dart';
 import '../../widgets/manager/manager_app_bar_widget.dart';
+import '../../models/report.dart';
+import '../../services/report_data_service.dart';
 
 class ManagerReportsScreen extends StatefulWidget {
   const ManagerReportsScreen({super.key});
@@ -15,80 +17,20 @@ class ManagerReportsScreen extends StatefulWidget {
 class _ManagerReportsScreenState extends State<ManagerReportsScreen> {
   int _selectedIndex = 0;
 
-  // Updated reports data based on MongoDB structure
-  final List<Map<String, dynamic>> _reports = [
-    {
-      '_id': '673c6cb889b097623521cf58',
-      'tenBaoCao': 'Báo cáo tháng 11',
-      'ngayBaoCao': '2024-11-19T00:00:00.000Z',
-      'nhanSuPhuTrach': 'Nguyễn Phi Quốc Bảo',
-      'danhSachSuKien': [
-        {
-          'ten': 'IT Day',
-          'nguoiPhuTrach': 'Nguyễn Phi Quốc Bảo',
-          'ngayToChuc': '2024-11-22T00:00:00.000Z',
-          'diaDiem': 'Sân trường',
-        }
-      ],
-      'danhSachGiai': [
-        {
-          'tenGiai': 'Giải Nhất Lập trình',
-          'loaiGiai': 'Cấp trường',
-          'ngayDatGiai': '2024-11-20T00:00:00.000Z',
-          'thanhVienDatGiai': 'Trần Văn A',
-        }
-      ],
-      'tongNganSachChiTieu': 4000000,
-      'tongThu': 5000000,
-      'ketQuaDatDuoc': 'Sự kiện diễn ra hơn cả mong đợi, các doanh nghiệp muốn hợp tác với câu lạc bộ trong tương lai',
-      'club': '67160c5ad55fc5f816de7644',
-    },
-    {
-      '_id': '673c6cb889b097623521cf59',
-      'tenBaoCao': 'Báo cáo tháng 10',
-      'ngayBaoCao': '2024-10-25T00:00:00.000Z',
-      'nhanSuPhuTrach': 'Trần Văn B',
-      'danhSachSuKien': [
-        {
-          'ten': 'Workshop Lập trình Web',
-          'nguoiPhuTrach': 'Trần Văn A',
-          'ngayToChuc': '2024-10-20T00:00:00.000Z',
-          'diaDiem': 'Phòng Lab A',
-        }
-      ],
-      'danhSachGiai': [],
-      'tongNganSachChiTieu': 2000000,
-      'tongThu': 1500000,
-      'ketQuaDatDuoc': 'Workshop được tổ chức thành công với sự tham gia đông đảo của sinh viên',
-      'club': '67160c5ad55fc5f816de7644',
-    },
-    {
-      '_id': '673c6cb889b097623521cf60',
-      'tenBaoCao': 'Báo cáo tháng 9',
-      'ngayBaoCao': '2024-09-28T00:00:00.000Z',
-      'nhanSuPhuTrach': 'Lê Thị C',
-      'danhSachSuKien': [
-        {
-          'ten': 'Buổi biểu diễn âm nhạc',
-          'nguoiPhuTrach': 'Lê Thị B',
-          'ngayToChuc': '2024-09-25T00:00:00.000Z',
-          'diaDiem': 'Hội trường chính',
-        }
-      ],
-      'danhSachGiai': [
-        {
-          'tenGiai': 'Giải Ba Ca hát',
-          'loaiGiai': 'Cấp trường',
-          'ngayDatGiai': '2024-09-26T00:00:00.000Z',
-          'thanhVienDatGiai': 'Nguyễn Thị D',
-        }
-      ],
-      'tongNganSachChiTieu': 1500000,
-      'tongThu': 2000000,
-      'ketQuaDatDuoc': 'Buổi biểu diễn thu hút được nhiều khán giả và nhận được phản hồi tích cực',
-      'club': '67160c5ad55fc5f816de7645',
-    },
-  ];
+  final ReportDataService _reportService = ReportDataService();
+  List<Report> _reports = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadReports();
+  }
+
+  void _loadReports() {
+    setState(() {
+      _reports = _reportService.getAllManagerReports();
+    });
+  }
 
   bool isMobile(BuildContext context) =>
       MediaQuery.of(context).size.width < 600;
@@ -250,7 +192,7 @@ class _ManagerReportsScreenState extends State<ManagerReportsScreen> {
     );
   }
 
-  Widget _buildReportCard(Map<String, dynamic> report) {
+  Widget _buildReportCard(Report report) {
     
     return Card(
       margin: const EdgeInsets.only(bottom: AppConstants.paddingMedium),
@@ -298,7 +240,7 @@ class _ManagerReportsScreenState extends State<ManagerReportsScreen> {
                     ),
                     child: Center(
                       child: Text(
-                        report['tenBaoCao'][0].toUpperCase(),
+                        report.tenBaoCao[0].toUpperCase(),
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -313,7 +255,7 @@ class _ManagerReportsScreenState extends State<ManagerReportsScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                         Text(
-                          report['tenBaoCao'],
+                          report.tenBaoCao,
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 18,
@@ -323,7 +265,7 @@ class _ManagerReportsScreenState extends State<ManagerReportsScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'ID: ${report['_id'].substring(0, 8)} • CLB: ${report['club'].substring(0, 8)}',
+                          'ID: ${report.id.substring(0, 8)} • CLB: ${report.club.substring(0, 8)}',
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.grey[600],
@@ -331,7 +273,7 @@ class _ManagerReportsScreenState extends State<ManagerReportsScreen> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          '${report['nhanSuPhuTrach']} • ${_formatDate(report['ngayBaoCao'])}',
+                          '${report.nhanSuPhuTrach} • ${_formatDate(report.ngayBaoCao)}',
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.grey[600],
@@ -378,7 +320,7 @@ class _ManagerReportsScreenState extends State<ManagerReportsScreen> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                _formatDate(report['ngayBaoCao']),
+                                _formatDate(report.ngayBaoCao),
                                 style: const TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
@@ -418,7 +360,7 @@ class _ManagerReportsScreenState extends State<ManagerReportsScreen> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                '${report['danhSachSuKien'].length}',
+                                '${report.danhSachSuKien.length}',
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
@@ -436,7 +378,7 @@ class _ManagerReportsScreenState extends State<ManagerReportsScreen> {
               ),
               const SizedBox(height: AppConstants.paddingMedium),
               Text(
-                report['ketQuaDatDuoc'],
+                report.ketQuaDatDuoc,
                 style: TextStyle(
                   color: Colors.grey[700],
                   fontSize: 14,
@@ -534,207 +476,358 @@ class _ManagerReportsScreenState extends State<ManagerReportsScreen> {
     );
   }
 
-  void _viewReport(Map<String, dynamic> report) {
+  void _viewReport(Report report) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (context) => Dialog(
+        elevation: 5,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
         ),
-            title: Row(
-              children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    AppConstants.primaryColor,
-                    AppConstants.primaryColor.withOpacity(0.7),
+        child: Container(
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width * 0.9,
+            maxHeight: MediaQuery.of(context).size.height * 0.8,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Header
+              Container(
+                padding: const EdgeInsets.all(AppConstants.paddingLarge),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withAlpha((0.1 * 255).round()),
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(AppConstants.borderRadiusLarge),
+                    topRight: Radius.circular(AppConstants.borderRadiusLarge),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.blue.withAlpha(51),
+                      ),
+                      child: Center(
+                        child: Text(
+                          report.tenBaoCao[0].toUpperCase(),
+                          style: const TextStyle(
+                            color: Colors.blue,
+                            fontWeight: FontWeight.bold,
+                            fontSize: AppConstants.fontSizeXLarge,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: AppConstants.paddingMedium),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            report.tenBaoCao,
+                            style: const TextStyle(
+                              fontSize: AppConstants.fontSizeXLarge,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.blue.withAlpha(51),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              _formatDate(report.ngayBaoCao),
+                              style: const TextStyle(
+                                fontSize: AppConstants.fontSizeSmall,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.blue,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
-                borderRadius: BorderRadius.circular(10),
               ),
-              child: Center(
-                child: Text(
-                  report['tenBaoCao'][0].toUpperCase(),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
+              
+              // Content
+              Flexible(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(AppConstants.paddingLarge),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildReportDetailRow(
+                        Icons.description, 
+                        'Tên báo cáo', 
+                        report.tenBaoCao
+                      ),
+                      const SizedBox(height: AppConstants.paddingSmall),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildReportDetailRow(
+                              Icons.calendar_today, 
+                              'Ngày báo cáo', 
+                              _formatDate(report.ngayBaoCao)
+                            ),
+                          ),
+                          const SizedBox(width: AppConstants.paddingSmall),
+                          Expanded(
+                            child: _buildReportDetailRow(
+                              Icons.attach_money, 
+                              'Chi tiêu', 
+                              _formatCurrency(report.tongNganSachChiTieu)
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppConstants.paddingSmall),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildReportDetailRow(
+                              Icons.person, 
+                              'Nhân sự phụ trách', 
+                              report.nhanSuPhuTrach
+                            ),
+                          ),
+                          const SizedBox(width: AppConstants.paddingSmall),
+                          Expanded(
+                            child: _buildReportDetailRow(
+                              Icons.account_balance_wallet, 
+                              'Tổng thu', 
+                              _formatCurrency(report.tongThu)
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppConstants.paddingSmall),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildReportDetailRow(
+                              Icons.event, 
+                              'Số sự kiện', 
+                              '${report.danhSachSuKien.length} sự kiện'
+                            ),
+                          ),
+                          const SizedBox(width: AppConstants.paddingSmall),
+                          Expanded(
+                            child: _buildReportDetailRow(
+                              Icons.star, 
+                              'Số giải thưởng', 
+                              '${report.danhSachGiai.length} giải thưởng'
+                            ),
+                          ),
+                        ],
+                      ),
+                      
+                      const SizedBox(height: AppConstants.paddingMedium),
+                      const Text(
+                        'Kết quả đạt được',
+                        style: TextStyle(
+                          fontSize: AppConstants.fontSizeLarge,
+                          fontWeight: FontWeight.bold,
+                          color: AppConstants.textPrimaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: AppConstants.paddingSmall),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(AppConstants.paddingMedium),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[50],
+                          borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+                          border: Border.all(color: Colors.grey[200]!),
+                        ),
+                        child: Text(
+                          report.ketQuaDatDuoc,
+                          style: const TextStyle(
+                            fontSize: AppConstants.fontSizeMedium,
+                            height: 1.5,
+                          ),
+                        ),
+                      ),
+                      
+                      if (report.danhSachSuKien.isNotEmpty) ...[
+                        const SizedBox(height: AppConstants.paddingMedium),
+                        const Text(
+                          'Danh sách sự kiện',
+                          style: TextStyle(
+                            fontSize: AppConstants.fontSizeLarge,
+                            fontWeight: FontWeight.bold,
+                            color: AppConstants.textPrimaryColor,
+                          ),
+                        ),
+                        const SizedBox(height: AppConstants.paddingSmall),
+                        ...report.danhSachSuKien.map<Widget>((event) => Container(
+                          margin: const EdgeInsets.only(bottom: AppConstants.paddingSmall),
+                          padding: const EdgeInsets.all(AppConstants.paddingMedium),
+                          decoration: BoxDecoration(
+                            color: Colors.blue.withOpacity(0.05),
+                            borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+                            border: Border.all(color: Colors.blue.withOpacity(0.2)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                event.ten,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: AppConstants.fontSizeMedium,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text('Người phụ trách: ${event.nguoiPhuTrach}'),
+                              Text('Ngày: ${_formatDate(event.ngayToChuc)}'),
+                              Text('Địa điểm: ${event.diaDiem}'),
+                            ],
+                          ),
+                        )),
+                      ],
+                      
+                      if (report.danhSachGiai.isNotEmpty) ...[
+                        const SizedBox(height: AppConstants.paddingMedium),
+                        const Text(
+                          'Danh sách giải thưởng',
+                          style: TextStyle(
+                            fontSize: AppConstants.fontSizeLarge,
+                            fontWeight: FontWeight.bold,
+                            color: AppConstants.textPrimaryColor,
+                          ),
+                        ),
+                        const SizedBox(height: AppConstants.paddingSmall),
+                        ...report.danhSachGiai.map<Widget>((award) => Container(
+                          margin: const EdgeInsets.only(bottom: AppConstants.paddingSmall),
+                          padding: const EdgeInsets.all(AppConstants.paddingMedium),
+                          decoration: BoxDecoration(
+                            color: Colors.amber.withOpacity(0.05),
+                            borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+                            border: Border.all(color: Colors.amber.withOpacity(0.2)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                award.tenGiai,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: AppConstants.fontSizeMedium,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text('Loại giải: ${award.loaiGiai}'),
+                              Text('Ngày đạt giải: ${_formatDate(award.ngayDatGiai)}'),
+                              Text('Thành viên: ${award.thanhVienDatGiai}'),
+                            ],
+                          ),
+                        )),
+                      ],
+                    ],
                   ),
                 ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    report['tenBaoCao'],
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+              
+              // Footer Actions
+              Container(
+                padding: const EdgeInsets.all(AppConstants.paddingLarge),
+                decoration: BoxDecoration(
+                  color: Colors.grey[50],
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(AppConstants.borderRadiusLarge),
+                    bottomRight: Radius.circular(AppConstants.borderRadiusLarge),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: FilledButton.icon(
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: const Icon(Icons.close),
+                        label: const Text(
+                          'Đóng',
+                          style: TextStyle(fontSize: AppConstants.fontSizeLarge),
+                        ),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppConstants.primaryColor,
+                          padding: const EdgeInsets.symmetric(vertical: AppConstants.paddingMedium),
+                        ),
+                      ),
                     ),
-                  ),
-                  Text(
-                    _formatDate(report['ngayBaoCao']),
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        content: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _sectionTitle('Thông tin cơ bản', Colors.lightBlue.shade100),
-              _infoRow('Tên báo cáo', report['tenBaoCao']),
-              _infoRow('Ngày báo cáo', _formatDate(report['ngayBaoCao'])),
-              _infoRow('Nhân sự phụ trách', report['nhanSuPhuTrach']),
-                  const SizedBox(height: 16),
-              
-                  _sectionTitle('Danh sách sự kiện', Colors.lightBlue.shade100),
-              if (report['danhSachSuKien'].isNotEmpty) ...[
-                  _tableRow([
-                    'Tên sự kiện',
-                    'Người phụ trách',
-                    'Ngày tổ chức',
-                    'Địa điểm',
-                  ], isHeader: true),
-                ...report['danhSachSuKien'].map<Widget>((event) => _tableRow([
-                  event['ten'],
-                  event['nguoiPhuTrach'],
-                  _formatDate(event['ngayToChuc']),
-                  event['diaDiem'],
-                ])),
-              ] else ...[
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8.0),
-                  child: Text('Không có sự kiện nào'),
+                  ],
                 ),
-              ],
-                  const SizedBox(height: 16),
-              
-              _sectionTitle('Danh sách giải thưởng', Colors.purple.shade100),
-              if (report['danhSachGiai'].isNotEmpty) ...[
-                  _tableRow([
-                    'Tên giải thưởng',
-                    'Loại giải',
-                    'Ngày đạt giải',
-                    'Thành viên đạt giải',
-                  ], isHeader: true),
-                ...report['danhSachGiai'].map<Widget>((award) => _tableRow([
-                  award['tenGiai'],
-                  award['loaiGiai'],
-                  _formatDate(award['ngayDatGiai']),
-                  award['thanhVienDatGiai'],
-                ])),
-              ] else ...[
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8.0),
-                  child: Text('Không có giải thưởng nào'),
-                ),
-              ],
-                  const SizedBox(height: 16),
-              
-                  _sectionTitle('Thông tin tài chính', Colors.green.shade100),
-              _infoRow('Tổng ngân sách chi tiêu', _formatCurrency(report['tongNganSachChiTieu'])),
-              _infoRow('Tổng thu', _formatCurrency(report['tongThu'])),
-                  const SizedBox(height: 16),
-              
-                  _sectionTitle('Kết quả đạt được', Colors.yellow.shade100),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Text(
-                  report['ketQuaDatDuoc'],
-                  style: const TextStyle(height: 1.4),
-                ),
-                  ),
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Đóng'),
               ),
             ],
           ),
-    );
-  }
-
-  Widget _sectionTitle(String title, Color color) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(8),
-      color: color,
-      child: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-    );
-  }
-
-  Widget _infoRow(String label, String value, {Color? colorValue}) {
-    return Container(
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Colors.black12)),
+        ),
       ),
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Text(
-              label,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
+    );
+  }
+
+  Widget _buildReportDetailRow(IconData icon, String label, String value) {
+    return Container(
+      padding: const EdgeInsets.all(AppConstants.paddingMedium),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+        border: Border.all(color: Colors.grey[200]!),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 2,
+            offset: const Offset(0, 1),
           ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            color: AppConstants.primaryColor,
+            size: 20,
+          ),
+          const SizedBox(width: AppConstants.paddingMedium),
           Expanded(
-            child: Text(
-              value, 
-              textAlign: TextAlign.right,
-              style: TextStyle(
-                color: colorValue ?? Colors.black87,
-                fontWeight: colorValue != null ? FontWeight.bold : FontWeight.normal,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    color: AppConstants.textSecondaryColor,
+                    fontSize: AppConstants.fontSizeSmall,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: AppConstants.fontSizeMedium,
+                    fontWeight: FontWeight.w600,
+                    color: AppConstants.textPrimaryColor,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
       ),
     );
   }
-
-  Widget _tableRow(List<String> cells, {bool isHeader = false}) {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: Colors.black12)),
-        color: isHeader ? Colors.grey.shade100 : null,
-      ),
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-      child: Row(
-        children:
-            cells
-                .map(
-                  (cell) => Expanded(
-                    child: Text(
-                      cell,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontWeight:
-                            isHeader ? FontWeight.bold : FontWeight.normal,
-                      ),
-                    ),
-                  ),
-                )
-                .toList(),
-      ),
-    );
-  }
-
-
 }
