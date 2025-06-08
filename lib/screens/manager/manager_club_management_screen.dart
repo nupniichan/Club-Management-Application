@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../constants/app_constants.dart';
-import '../../services/auth_service.dart';
-import '../login_screen.dart';
 import '../../widgets/manager/manager_drawer_widget.dart';
+import '../../widgets/manager/manager_app_bar_widget.dart';
 
 class ManagerClubManagementScreen extends StatefulWidget {
   const ManagerClubManagementScreen({super.key});
@@ -21,61 +20,59 @@ class _ManagerClubManagementScreenState extends State<ManagerClubManagementScree
     'Tìm kiếm & Lọc',
   ];
 
-  // Sample club data
+  // Updated club data based on MongoDB structure  
   final List<Map<String, dynamic>> _clubs = [
     {
-      'id': 1,
-      'name': 'Câu lạc bộ Bóng đá',
-      'description': 'CLB thể thao bóng đá của trường',
-      'members': 25,
-      'status': 'Hoạt động',
-      'createdDate': '15/01/2024',
-      'category': 'Thể thao',
+      '_id': '67160c5ad55fc5f816de7644',
+      'ten': 'Câu lạc bộ tin học',
+      'logo': '/uploads/d034915e14df6c0d63b832c64483d6f6',
+      'linhVucHoatDong': 'Công Nghệ',
+      'thanhVien': ['HS123456', 'HS123457', 'HS123458', 'HS123459', 'HS123460', 'HS123461'],
+      'ngayThanhLap': '2024-10-21T00:00:00.000Z',
+      'giaoVienPhuTrach': 'Thầy Nguyễn Văn A',
+      'mieuTa': 'Câu lạc bộ tin học là nơi dành cho các bạn đam mê công nghệ và lập trình...',
+      'quyDinh': 'Phải có mặt vào cuối tuần',
+      'clubId': 20,
+      'budget': 2000000,
+      'tinhTrang': 'Còn hoạt động',
+      'truongBanCLB': 'HS123456',
     },
     {
-      'id': 2,
-      'name': 'Câu lạc bộ Âm nhạc',
-      'description': 'CLB âm nhạc và biểu diễn',
-      'members': 18,
-      'status': 'Hoạt động',
-      'createdDate': '20/01/2024',
-      'category': 'Nghệ thuật',
+      '_id': '67160c5ad55fc5f816de7645',
+      'ten': 'Câu lạc bộ Âm nhạc',
+      'logo': '/uploads/music_club.jpg',
+      'linhVucHoatDong': 'Nghệ thuật',
+      'thanhVien': ['HS123470', 'HS123471', 'HS123472', 'HS123473'],
+      'ngayThanhLap': '2024-09-15T00:00:00.000Z',
+      'giaoVienPhuTrach': 'Cô Trần Thị B',
+      'mieuTa': 'CLB âm nhạc dành cho những bạn yêu thích nghệ thuật âm nhạc',
+      'quyDinh': 'Tham gia đầy đủ các buổi tập',
+      'clubId': 21,
+      'budget': 1500000,
+      'tinhTrang': 'Còn hoạt động',
+      'truongBanCLB': 'HS123470',
     },
     {
-      'id': 3,
-      'name': 'Câu lạc bộ Tin học',
-      'description': 'CLB lập trình và công nghệ',
-      'members': 32,
-      'status': 'Tạm dừng',
-      'createdDate': '10/01/2024',
-      'category': 'Công nghệ',
+      '_id': '67160c5ad55fc5f816de7646',
+      'ten': 'Câu lạc bộ Thể thao',
+      'logo': '/uploads/sport_club.jpg',
+      'linhVucHoatDong': 'Thể thao',
+      'thanhVien': ['HS123480', 'HS123481'],
+      'ngayThanhLap': '2024-08-10T00:00:00.000Z',
+      'giaoVienPhuTrach': 'Thầy Lê Văn C',
+      'mieuTa': 'CLB thể thao tổ chức các hoạt động rèn luyện sức khỏe',
+      'quyDinh': 'Tập luyện đều đặn',
+      'clubId': 22,
+      'budget': 3000000,
+      'tinhTrang': 'Tạm dừng',
+      'truongBanCLB': 'HS123480',
     },
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_currentTitle),
-        backgroundColor: AppConstants.primaryColor,
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            tooltip: 'Thông báo',
-            onPressed: () {
-              _showNotifications(context);
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Đăng xuất',
-            onPressed: () {
-              _showLogoutDialog(context);
-            },
-          ),
-        ],
-      ),
+      appBar: ManagerAppBarWidget(title: _currentTitle),
       drawer: const ManagerDrawerWidget(
         currentPage: 'club_management',
         userName: 'Nguyễn Phi Quốc Bảo',
@@ -145,7 +142,7 @@ class _ManagerClubManagementScreenState extends State<ManagerClubManagementScree
               Expanded(
                 child: _buildStatsCard(
                   'Hoạt động',
-                  '${_clubs.where((c) => c['status'] == 'Hoạt động').length}',
+                  '${_clubs.where((c) => c['tinhTrang'] == 'Còn hoạt động').length}',
                   Icons.check_circle,
                   Colors.green,
                 ),
@@ -217,94 +214,309 @@ class _ManagerClubManagementScreenState extends State<ManagerClubManagementScree
     );
   }
 
+  String _formatDate(String isoDateString) {
+    final date = DateTime.parse(isoDateString);
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+  }
+
+  String _formatCurrency(int amount) {
+    if (amount >= 1000000) {
+      return '${(amount / 1000000).toStringAsFixed(1)}M VNĐ';
+    } else if (amount >= 1000) {
+      return '${(amount / 1000).toStringAsFixed(0)}K VNĐ';
+    } else {
+      return '${amount} VNĐ';
+    }
+  }
+
   Widget _buildClubCard(Map<String, dynamic> club) {
+    final isActive = club['tinhTrang'] == 'Còn hoạt động';
+    final statusColor = isActive ? Colors.green : Colors.orange;
+    final categoryColors = {
+      'Công Nghệ': Colors.blue,
+      'Nghệ thuật': Colors.purple,
+      'Thể thao': Colors.red,
+    };
+    final categoryColor = categoryColors[club['linhVucHoatDong']] ?? Colors.grey;
+
     return Card(
       margin: const EdgeInsets.only(bottom: AppConstants.paddingMedium),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: AppConstants.primaryColor,
-          child: Text(
-            club['name'][0],
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            colors: [
+              Colors.white,
+              categoryColor.withOpacity(0.03),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
         ),
-        title: Text(
-          club['name'],
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: AppConstants.fontSizeMedium,
-          ),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(club['description']),
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                Icon(Icons.people, size: 16, color: Colors.grey[600]),
-                const SizedBox(width: 4),
-                Text('${club['members']} thành viên'),
-                const SizedBox(width: AppConstants.paddingMedium),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: club['status'] == 'Hoạt động' ? Colors.green : Colors.orange,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    club['status'],
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
+        child: Padding(
+          padding: const EdgeInsets.all(AppConstants.paddingLarge),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          categoryColor,
+                          categoryColor.withOpacity(0.7),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: categoryColor.withOpacity(0.3),
+                          blurRadius: 6,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: Text(
+                        club['ten'][0].toUpperCase(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                        ),
+                      ),
                     ),
                   ),
+                  const SizedBox(width: AppConstants.paddingMedium),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          club['ten'],
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8, 
+                                vertical: 4
+                              ),
+                              decoration: BoxDecoration(
+                                color: categoryColor.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: categoryColor.withOpacity(0.3)
+                                ),
+                              ),
+                              child: Text(
+                                club['linhVucHoatDong'],
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: categoryColor,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8, 
+                                vertical: 4
+                              ),
+                              decoration: BoxDecoration(
+                                color: statusColor.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: statusColor.withOpacity(0.3)
+                                ),
+                              ),
+                              child: Text(
+                                isActive ? 'Hoạt động' : 'Tạm dừng',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: statusColor,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppConstants.paddingMedium),
+              Container(
+                padding: const EdgeInsets.all(AppConstants.paddingMedium),
+                decoration: BoxDecoration(
+                  color: Colors.grey[50],
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey[200]!),
                 ),
-              ],
-            ),
-          ],
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.people,
+                                    size: 16,
+                                    color: Colors.grey[600],
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Thành viên:',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '${club['thanhVien'].length} người',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          width: 1,
+                          height: 40,
+                          color: Colors.grey[300],
+                        ),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.attach_money,
+                                    size: 16,
+                                    color: Colors.green[600],
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Ngân sách:',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                _formatCurrency(club['budget']),
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.green[700],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.school,
+                          size: 16,
+                          color: Colors.grey[600],
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'GV phụ trách: ',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                        Expanded(
+                          child: Text(
+                            club['giaoVienPhuTrach'],
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.black87,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppConstants.paddingMedium),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  OutlinedButton.icon(
+                    onPressed: () => _showClubDetails(club),
+                    icon: const Icon(Icons.visibility, size: 16),
+                    label: const Text('Chi tiết'),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16, 
+                        vertical: 8
+                      ),
+                      side: const BorderSide(color: Colors.blue),
+                      foregroundColor: Colors.blue,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  FilledButton.icon(
+                    onPressed: () => _showChangeStatusDialog(club),
+                    icon: const Icon(Icons.swap_horiz, size: 16),
+                    label: const Text('Trạng thái'),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: club['tinhTrang'] == 'Còn hoạt động' ? Colors.orange : Colors.green,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16, 
+                        vertical: 8
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
-        trailing: PopupMenuButton(
-          itemBuilder: (context) => [
-            const PopupMenuItem(
-              value: 'view',
-              child: Row(
-                children: [
-                  Icon(Icons.visibility),
-                  SizedBox(width: 8),
-                  Text('Xem chi tiết'),
-                ],
-              ),
-            ),
-            const PopupMenuItem(
-              value: 'edit',
-              child: Row(
-                children: [
-                  Icon(Icons.edit),
-                  SizedBox(width: 8),
-                  Text('Chỉnh sửa'),
-                ],
-              ),
-            ),
-            const PopupMenuItem(
-              value: 'delete',
-              child: Row(
-                children: [
-                  Icon(Icons.delete, color: Colors.red),
-                  SizedBox(width: 8),
-                  Text('Xóa', style: TextStyle(color: Colors.red)),
-                ],
-              ),
-            ),
-          ],
-          onSelected: (value) {
-            _handleClubAction(value.toString(), club);
-          },
-        ),
-        onTap: () => _showClubDetails(club),
       ),
     );
   }
@@ -485,21 +697,77 @@ class _ManagerClubManagementScreenState extends State<ManagerClubManagementScree
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(club['name']),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Row(
           children: [
-            Text('Mô tả: ${club['description']}'),
-            const SizedBox(height: 8),
-            Text('Danh mục: ${club['category']}'),
-            const SizedBox(height: 8),
-            Text('Số thành viên: ${club['members']}'),
-            const SizedBox(height: 8),
-            Text('Trạng thái: ${club['status']}'),
-            const SizedBox(height: 8),
-            Text('Ngày tạo: ${club['createdDate']}'),
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppConstants.primaryColor,
+                    AppConstants.primaryColor.withOpacity(0.7),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Center(
+                child: Text(
+                  club['ten'][0].toUpperCase(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    club['ten'],
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    'ID: ${club['clubId']}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildClubDetailRow('Tên câu lạc bộ', club['ten'], Icons.business),
+              _buildClubDetailRow('Lĩnh vực hoạt động', club['linhVucHoatDong'], Icons.category),
+              _buildClubDetailRow('Mô tả', club['mieuTa'], Icons.description),
+              _buildClubDetailRow('Quy định', club['quyDinh'], Icons.rule),
+              _buildClubDetailRow('Giáo viên phụ trách', club['giaoVienPhuTrach'], Icons.school),
+              _buildClubDetailRow('Trưởng ban CLB', club['truongBanCLB'], Icons.person),
+              _buildClubDetailRow('Ngày thành lập', _formatDate(club['ngayThanhLap']), Icons.calendar_today),
+              _buildClubDetailRow('Số thành viên', '${club['thanhVien'].length} người', Icons.people),
+              _buildClubDetailRow('Ngân sách', _formatCurrency(club['budget']), Icons.attach_money, 
+                colorValue: Colors.green[700]),
+              _buildClubDetailRow('Tình trạng', club['tinhTrang'], Icons.info, 
+                colorValue: club['tinhTrang'] == 'Còn hoạt động' ? Colors.green : Colors.orange),
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -511,12 +779,215 @@ class _ManagerClubManagementScreenState extends State<ManagerClubManagementScree
     );
   }
 
+  Widget _buildClubDetailRow(String label, String value, IconData icon, {Color? colorValue}) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey[200]!),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: Colors.grey[600]),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: colorValue ?? Colors.black87,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showDeleteConfirmation(Map<String, dynamic> club) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Xác nhận xóa'),
-        content: Text('Bạn có chắc chắn muốn xóa câu lạc bộ "${club['name']}"?'),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Row(
+          children: [
+            Icon(
+              Icons.warning,
+              color: Colors.orange,
+              size: 28,
+            ),
+            const SizedBox(width: 12),
+            const Text(
+              'Xác nhận xóa',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Bạn có chắc chắn muốn xóa câu lạc bộ sau?',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey[700],
+              ),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.red[50],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.red[200]!),
+              ),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    backgroundColor: Colors.red,
+                    radius: 20,
+                    child: Text(
+                      club['ten'][0].toUpperCase(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          club['ten'],
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        Text(
+                          '${club['thanhVien'].length} thành viên • ${_formatCurrency(club['budget'])}',
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Thao tác này không thể hoàn tác!',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.red[600],
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Hủy'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _showSuccessDialog('Đã xóa câu lạc bộ "${club['ten']}" thành công!');
+            },
+            style: FilledButton.styleFrom(
+              backgroundColor: Colors.red,
+            ),
+            child: const Text('Xóa'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showChangeStatusDialog(Map<String, dynamic> club) {
+    final currentStatus = club['tinhTrang'];
+    final newStatus = currentStatus == 'Còn hoạt động' ? 'Tạm dừng' : 'Còn hoạt động';
+    final statusColor = newStatus == 'Còn hoạt động' ? Colors.green : Colors.orange;
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.swap_horiz, color: statusColor),
+            const SizedBox(width: 8),
+            const Text('Thay đổi trạng thái'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Bạn có muốn thay đổi trạng thái của câu lạc bộ "${club['ten']}" không?'),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey[50],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey[200]!),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info, color: Colors.blue, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Trạng thái hiện tại: $currentStatus',
+                          style: const TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                        Text(
+                          'Trạng thái mới: $newStatus',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: statusColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -524,11 +995,14 @@ class _ManagerClubManagementScreenState extends State<ManagerClubManagementScree
           ),
           ElevatedButton(
             onPressed: () {
+              setState(() {
+                club['tinhTrang'] = newStatus;
+              });
               Navigator.pop(context);
-              _showSuccessDialog('Đã xóa câu lạc bộ "${club['name']}"');
+              _showSuccessDialog('Đã thay đổi trạng thái câu lạc bộ "${club['ten']}" thành "$newStatus"');
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Xóa', style: TextStyle(color: Colors.white)),
+            style: ElevatedButton.styleFrom(backgroundColor: statusColor),
+            child: const Text('Thay đổi', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -557,90 +1031,5 @@ class _ManagerClubManagementScreenState extends State<ManagerClubManagementScree
     );
   }
 
-  void _showNotifications(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            Icon(Icons.notifications, color: AppConstants.primaryColor),
-            const SizedBox(width: AppConstants.paddingSmall),
-            const Text('Thông báo'),
-          ],
-        ),
-        content: const Text('Chưa có thông báo mới.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Đóng'),
-          ),
-        ],
-      ),
-    );
-  }
 
-  void _showLogoutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
-        ),
-        title: Row(
-          children: [
-            Icon(
-              Icons.logout,
-              color: AppConstants.warningColor,
-              size: 28,
-            ),
-            const SizedBox(width: AppConstants.paddingSmall),
-            const Text(
-              'Đăng xuất',
-              style: TextStyle(
-                fontSize: AppConstants.fontSizeXLarge,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-        content: const Text(
-          'Bạn có chắc chắn muốn đăng xuất khỏi ứng dụng?',
-          style: TextStyle(fontSize: AppConstants.fontSizeMedium),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text(
-              'Hủy',
-              style: TextStyle(
-                color: Colors.grey,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              AuthService().logout();
-              Navigator.of(context).pop();
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const LoginScreen()),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppConstants.warningColor,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
-              ),
-            ),
-            child: const Text(
-              'Đăng xuất',
-              style: TextStyle(fontWeight: FontWeight.w600),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 } 

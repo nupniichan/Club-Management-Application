@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../constants/app_constants.dart';
 import '../../widgets/student/student_drawer_widget.dart';
+import '../../widgets/student/student_app_bar_widget.dart';
 
 class StudentMemberManagementScreen extends StatefulWidget {
   final String? userName;
@@ -177,22 +178,7 @@ class _StudentMemberManagementScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_currentTitle),
-        backgroundColor: AppConstants.primaryColor,
-        foregroundColor: Colors.white,
-        leading: Builder(
-          builder: (BuildContext context) {
-            return IconButton(
-              icon: const Icon(Icons.menu),
-              onPressed: () {
-                Scaffold.of(context).openDrawer();
-              },
-              tooltip: 'Mở menu',
-            );
-          },
-        ),
-      ),
+      appBar: StudentAppBarWidget(title: _currentTitle),
       drawer: StudentDrawerWidget(
         currentPage: 'member_management',
         userName: widget.userName!,
@@ -206,6 +192,11 @@ class _StudentMemberManagementScreenState
           setState(() {
             _selectedIndex = index;
             _currentTitle = _titles[index];
+            // Clear search when switching tabs
+            if (index != 2) {
+              _searchController.clear();
+              _searchQuery = '';
+            }
           });
         },
         type: BottomNavigationBarType.fixed,
@@ -243,217 +234,339 @@ class _StudentMemberManagementScreenState
   Widget _buildMemberList() {
     return Column(
       children: [
-        // Thanh thống kê
         Container(
-          color: AppConstants.primaryColor.withAlpha(40),
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppConstants.paddingMedium,
-            vertical: AppConstants.paddingSmall,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                AppConstants.primaryColor.withOpacity(0.1),
+                AppConstants.primaryColor.withOpacity(0.05),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
           ),
+          padding: const EdgeInsets.all(AppConstants.paddingMedium),
           child: Row(
             children: [
-              const Icon(Icons.people, size: 16, color: Colors.grey),
-              const SizedBox(width: AppConstants.paddingSmall),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppConstants.primaryColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.people,
+                  size: 20,
+                  color: AppConstants.primaryColor,
+                ),
+              ),
+              const SizedBox(width: AppConstants.paddingMedium),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Quản lý thành viên',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: AppConstants.primaryColor,
+                      ),
+                    ),
               Text(
                 'Tổng số: ${_filteredMembers.length} thành viên',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppConstants.primaryColor,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  '${_filteredMembers.length}',
                 style: const TextStyle(
+                    color: Colors.white,
                   fontWeight: FontWeight.bold,
                   fontSize: 14,
-                  color: Colors.black87,
+                  ),
                 ),
               ),
             ],
           ),
         ),
-        // Danh sách thành viên
         Expanded(
-          child:
-              _filteredMembers.isEmpty
-                  ? const Center(
-                    child: Text(
-                      'Không tìm thấy thành viên',
-                      style: TextStyle(fontSize: 16, color: Colors.grey),
+          child: _filteredMembers.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.people_outline,
+                        size: 64,
+                        color: Colors.grey[400],
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Chưa có thành viên nào',
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.grey[600],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Hãy thêm thành viên đầu tiên của câu lạc bộ',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[500],
+                        ),
+                      ),
+                    ],
                     ),
                   )
                   : ListView.builder(
+                  padding: const EdgeInsets.all(AppConstants.paddingMedium),
                     itemCount: _filteredMembers.length,
                     itemBuilder: (context, index) {
                       final member = _filteredMembers[index];
+                    final Color genderColor = member['gender'] == 'Nam' ? Colors.blue : Colors.pink;
+                    final Color roleColor = _getRoleColor(member['role']);
+                    
                       return Card(
-                        margin: const EdgeInsets.symmetric(
-                          horizontal: AppConstants.paddingMedium,
-                          vertical: AppConstants.paddingSmall / 2,
-                        ),
-                        elevation: 1,
-                        child: Padding(
-                          padding: const EdgeInsets.all(
-                            AppConstants.paddingMedium,
+                      margin: const EdgeInsets.only(bottom: AppConstants.paddingMedium),
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.white,
+                              Colors.grey[50]!,
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
                           ),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(AppConstants.paddingLarge),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Header với họ tên và nút thao tác
                               Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // Avatar và họ tên
-                                  Expanded(
-                                    child: Row(
-                                      children: [
-                                        Container(
-                                          width: 40,
-                                          height: 40,
+                                  Hero(
+                                    tag: 'member-${member['id']}',
+                                    child: Container(
+                                      width: 50,
+                                      height: 50,
                                           decoration: BoxDecoration(
-                                            color:
-                                                member['gender'] == 'Nam'
-                                                    ? Colors.blue.withAlpha(51)
-                                                    : Colors.pink.withAlpha(51),
-                                            shape: BoxShape.circle,
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            genderColor,
+                                            genderColor.withOpacity(0.7),
+                                          ],
+                                        ),
+                                        borderRadius: BorderRadius.circular(12),
                                           ),
                                           child: Center(
                                             child: Text(
                                               _getInitials(member['name']),
-                                              style: TextStyle(
+                                          style: const TextStyle(
+                                            color: Colors.white,
                                                 fontWeight: FontWeight.bold,
-                                                color:
-                                                    member['gender'] == 'Nam'
-                                                        ? Colors.blue
-                                                        : Colors.pink,
+                                            fontSize: 20,
                                               ),
                                             ),
                                           ),
                                         ),
-                                        const SizedBox(
-                                          width: AppConstants.paddingSmall,
                                         ),
+                                  const SizedBox(width: AppConstants.paddingMedium),
                                         Expanded(
                                           child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
                                               Text(
                                                 member['name'],
                                                 style: const TextStyle(
                                                   fontWeight: FontWeight.bold,
-                                                  fontSize: 16,
+                                            fontSize: 18,
                                                 ),
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
                                               ),
+                                        const SizedBox(height: 4),
+                                        Row(
+                                          children: [
+                                            Icon(Icons.badge, size: 14, color: Colors.grey[600]),
+                                            const SizedBox(width: 4),
                                               Text(
                                                 member['id'],
                                                 style: TextStyle(
-                                                  color: Colors.grey[600],
                                                   fontSize: 14,
+                                                color: Colors.grey[600],
                                                 ),
                                               ),
                                             ],
-                                          ),
                                         ),
                                       ],
                                     ),
                                   ),
-                                  // Nút thao tác
                                   Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      IconButton(
-                                        icon: const Icon(
-                                          Icons.visibility,
+                                      _buildActionButton(
+                                        icon: Icons.visibility,
                                           color: Colors.blue,
-                                        ),
-                                        onPressed:
-                                            () => _showMemberDetails(
-                                              context,
-                                              member,
-                                            ),
+                                        onPressed: () => _showMemberDetails(context, member),
                                         tooltip: 'Xem chi tiết',
-                                        iconSize: 22,
                                       ),
-                                      IconButton(
-                                        icon: const Icon(
-                                          Icons.edit,
+                                      const SizedBox(width: 8),
+                                      _buildActionButton(
+                                        icon: Icons.edit,
                                           color: Colors.green,
-                                        ),
-                                        onPressed:
-                                            () => _navigateToEditMember(
-                                              context,
-                                              member,
-                                            ),
+                                        onPressed: () => _navigateToEditMember(context, member),
                                         tooltip: 'Chỉnh sửa',
-                                        iconSize: 22,
                                       ),
-                                      IconButton(
-                                        icon: const Icon(
-                                          Icons.delete,
+                                      const SizedBox(width: 8),
+                                      _buildActionButton(
+                                        icon: Icons.delete,
                                           color: Colors.red,
-                                        ),
-                                        onPressed:
-                                            () => _showDeleteConfirmation(
-                                              context,
-                                              member,
-                                            ),
+                                        onPressed: () => _showDeleteConfirmation(context, member),
                                         tooltip: 'Xóa',
-                                        iconSize: 22,
                                       ),
                                     ],
                                   ),
                                 ],
                               ),
-                              const SizedBox(
-                                height: AppConstants.paddingMedium,
-                              ),
-
-                              // Thông tin chi tiết
-                              Row(
-                                children: [
-                                  _buildInfoChip(
-                                    Icons.class_,
-                                    'Lớp: ${member['class']}',
-                                  ),
-                                  const SizedBox(
-                                    width: AppConstants.paddingSmall,
-                                  ),
-                                  _buildInfoChip(Icons.wc, member['gender']),
-                                ],
-                              ),
-                              const SizedBox(height: AppConstants.paddingSmall),
-
-                              // Chức vụ
+                              const SizedBox(height: AppConstants.paddingLarge),
                               Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: AppConstants.paddingSmall,
-                                  vertical: 4,
-                                ),
+                                padding: const EdgeInsets.all(AppConstants.paddingMedium),
                                 decoration: BoxDecoration(
-                                  color:
-                                      member['role'] == 'PHÓ CÂU LẠC BỘ'
-                                          ? Colors.green.withAlpha(51)
-                                          : (member['role'] ==
-                                                  'TRƯỞNG CÂU LẠC BỘ'
-                                              ? Colors.orange.withAlpha(51)
-                                              : Colors.blue.withAlpha(51)),
-                                  borderRadius: BorderRadius.circular(4),
+                                  color: Colors.grey[100],
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: Colors.grey[300]!),
                                 ),
-                                child: Text(
-                                  member['role'],
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                    color:
-                                        member['role'] == 'PHÓ CÂU LẠC BỘ'
-                                            ? Colors.green
-                                            : (member['role'] ==
-                                                    'TRƯỞNG CÂU LẠC BỘ'
-                                                ? Colors.orange
-                                                : Colors.blue),
-                                  ),
+                                child: Row(
+                                children: [
+                                    Expanded(
+                                      child: _buildMemberStat(
+                                        'Lớp',
+                                        member['class'],
+                                    Icons.class_,
+                                        Colors.blue,
+                                      ),
+                                    ),
+                                    Container(
+                                      width: 1,
+                                      height: 40,
+                                      color: Colors.grey[300],
+                                    ),
+                                    Expanded(
+                                      child: _buildMemberStat(
+                                        'Giới tính',
+                                        member['gender'],
+                                        member['gender'] == 'Nam' ? Icons.male : Icons.female,
+                                        genderColor,
+                                      ),
+                                    ),
+                              Container(
+                                      width: 1,
+                                      height: 40,
+                                      color: Colors.grey[300],
+                                    ),
+                                    Expanded(
+                                      child: _buildMemberStat(
+                                        'Chức vụ',
+                                        member['role'] == 'THÀNH VIÊN' ? 'TV' : 
+                                        (member['role'] == 'PHÓ CÂU LẠC BỘ' ? 'PHÓ' : 'TRƯỞNG'),
+                                        Icons.work,
+                                        roleColor,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
+                          ),
                           ),
                         ),
                       );
                     },
                   ),
+        ),
+      ],
+    );
+  }
+
+  Color _getRoleColor(String role) {
+    switch (role) {
+      case 'PHÓ CÂU LẠC BỘ':
+        return Colors.green;
+      case 'TRƯỞNG CÂU LẠC BỘ':
+        return Colors.orange;
+      default:
+        return Colors.blue;
+    }
+  }
+
+  Widget _buildActionButton({
+    required IconData icon,
+    required Color color,
+    required VoidCallback onPressed,
+    required String tooltip,
+  }) {
+    return Container(
+      width: 36,
+      height: 36,
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: IconButton(
+        icon: Icon(icon, size: 18),
+        color: color,
+        onPressed: onPressed,
+        tooltip: tooltip,
+        padding: EdgeInsets.zero,
+      ),
+    );
+  }
+
+  Widget _buildMemberStat(String label, String value, IconData icon, Color color) {
+    return Column(
+      children: [
+        Icon(icon, color: color, size: 20),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.grey[600],
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+          overflow: TextOverflow.ellipsis,
+          maxLines: 1,
         ),
       ],
     );
@@ -760,28 +873,6 @@ class _StudentMemberManagementScreenState
     String initial = nameParts.last.isNotEmpty ? nameParts.last[0] : '';
 
     return initial.toUpperCase();
-  }
-
-  // Tạo chip hiển thị thông tin nhỏ
-  Widget _buildInfoChip(IconData icon, String label) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade200,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: Colors.grey.shade700),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: TextStyle(fontSize: 12, color: Colors.grey.shade800),
-          ),
-        ],
-      ),
-    );
   }
 
   // Phương thức xây dựng giao diện thêm thành viên trong tab
@@ -1156,46 +1247,119 @@ class _StudentMemberManagementScreenState
 
   // Phương thức xây dựng giao diện tìm kiếm và lọc
   Widget _buildSearchAndFilter() {
-    // Sử dụng Scaffold để có thể điều chỉnh kích thước khi hiển thị bàn phím
     return Scaffold(
-      // Không hiển thị appBar mới vì đã có appBar chính
-      backgroundColor: Colors.transparent, // Để khớp với nền chính
-      // Đảm bảo cài đặt này để tránh tràn màn hình khi bàn phím hiện lên
+      backgroundColor: Colors.transparent,
       resizeToAvoidBottomInset: true,
       body: SafeArea(
-        // Sử dụng SingleChildScrollView để cuộn toàn bộ nội dung khi cần
         child: Padding(
           padding: const EdgeInsets.all(AppConstants.paddingLarge),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Tiêu đề - Phần cố định
-              const Text(
+              Container(
+                padding: const EdgeInsets.all(AppConstants.paddingLarge),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppConstants.primaryColor.withOpacity(0.1),
+                      AppConstants.primaryColor.withOpacity(0.05),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppConstants.primaryColor.withOpacity(0.2)),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppConstants.primaryColor,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.search,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: AppConstants.paddingMedium),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
                 'Tìm kiếm & Lọc thành viên',
                 style: TextStyle(
                   fontSize: AppConstants.fontSizeXLarge,
                   fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            'Tìm kiếm thành viên theo tên, mã số hoặc lớp',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: AppConstants.paddingLarge),
-
-              // Thanh tìm kiếm - Phần cố định
-              TextField(
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.1),
+                      spreadRadius: 1,
+                      blurRadius: 3,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
+                ),
+                child: TextField(
                 controller: _searchController,
                 decoration: InputDecoration(
-                  hintText: 'Tìm kiếm thành viên...',
-                  prefixIcon: const Icon(Icons.search),
+                    hintText: 'Tìm kiếm theo tên, mã số học sinh, lớp...',
+                    hintStyle: TextStyle(color: Colors.grey[400]),
+                    prefixIcon: Icon(Icons.search, color: AppConstants.primaryColor),
+                    suffixIcon: _searchQuery.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear, color: Colors.grey),
+                            onPressed: () {
+                              setState(() {
+                                _searchQuery = '';
+                                _searchController.clear();
+                              });
+                            },
+                          )
+                        : null,
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(
-                      AppConstants.borderRadiusMedium,
+                      borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+                      borderSide: BorderSide.none,
                     ),
-                  ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+                      borderSide: BorderSide(color: AppConstants.primaryColor, width: 2),
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
                 ),
                 onChanged: (value) {
                   setState(() {
                     _searchQuery = value;
                   });
                 },
+                ),
               ),
               const SizedBox(height: AppConstants.paddingMedium),
 
@@ -1269,20 +1433,66 @@ class _StudentMemberManagementScreenState
                       ),
 
                       const SizedBox(height: AppConstants.paddingLarge),
-
-                      // Kết quả tìm kiếm - giới hạn chiều cao để không bị tràn
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppConstants.paddingMedium,
+                          vertical: AppConstants.paddingSmall,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppConstants.primaryColor.withOpacity(0.05),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: AppConstants.primaryColor.withOpacity(0.1)),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.filter_list,
+                              size: 16,
+                              color: AppConstants.primaryColor,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Kết quả tìm kiếm: ${_filteredMembers.length} thành viên',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                                color: AppConstants.primaryColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: AppConstants.paddingMedium),
                       SizedBox(
-                        height:
-                            300, // Chiều cao cố định cho phần kết quả tìm kiếm
-                        child:
-                            _filteredMembers.isEmpty
-                                ? const Center(
-                                  child: Text(
+                        height: 300,
+                        child: _filteredMembers.isEmpty
+                            ? Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.search_off,
+                                      size: 48,
+                                      color: Colors.grey[400],
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Text(
                                     'Không tìm thấy thành viên',
                                     style: TextStyle(
                                       fontSize: 16,
-                                      color: Colors.grey,
+                                        color: Colors.grey[600],
+                                        fontWeight: FontWeight.w500,
+                                      ),
                                     ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Thử thay đổi từ khóa tìm kiếm hoặc bộ lọc',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.grey[500],
+                                      ),
+                                    ),
+                                  ],
                                   ),
                                 )
                                 : ListView.builder(
@@ -1290,67 +1500,190 @@ class _StudentMemberManagementScreenState
                                   itemCount: _filteredMembers.length,
                                   itemBuilder: (context, index) {
                                     final member = _filteredMembers[index];
-                                    return ListTile(
-                                      leading: CircleAvatar(
-                                        backgroundColor:
-                                            member['gender'] == 'Nam'
-                                                ? Colors.blue.withAlpha(51)
-                                                : Colors.pink.withAlpha(51),
+                                  final Color genderColor = member['gender'] == 'Nam' ? Colors.blue : Colors.pink;
+                                  final Color roleColor = _getRoleColor(member['role']);
+                                  
+                                  return Card(
+                                    margin: const EdgeInsets.only(bottom: AppConstants.paddingSmall),
+                                    elevation: 2,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(12),
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            Colors.white,
+                                            Colors.grey[50]!,
+                                          ],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                        ),
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(AppConstants.paddingMedium),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                Container(
+                                                  width: 40,
+                                                  height: 40,
+                                                  decoration: BoxDecoration(
+                                                    gradient: LinearGradient(
+                                                      colors: [
+                                                        genderColor,
+                                                        genderColor.withOpacity(0.7),
+                                                      ],
+                                                    ),
+                                                    borderRadius: BorderRadius.circular(10),
+                                                  ),
+                                                  child: Center(
                                         child: Text(
                                           _getInitials(member['name']),
-                                          style: TextStyle(
-                                            color:
-                                                member['gender'] == 'Nam'
-                                                    ? Colors.blue
-                                                    : Colors.pink,
+                                                      style: const TextStyle(
+                                                        color: Colors.white,
                                             fontWeight: FontWeight.bold,
+                                                        fontSize: 16,
                                           ),
                                         ),
                                       ),
-                                      title: Text(member['name'] ?? ''),
-                                      subtitle: Text(
+                                                ),
+                                                const SizedBox(width: AppConstants.paddingSmall),
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: [
+                                                      Text(
+                                                        member['name'] ?? '',
+                                                        style: const TextStyle(
+                                                          fontWeight: FontWeight.bold,
+                                                          fontSize: 16,
+                                                        ),
+                                                        overflow: TextOverflow.ellipsis,
+                                                        maxLines: 1,
+                                                      ),
+                                                      const SizedBox(height: 2),
+                                                      Text(
                                         '${member['id'] ?? '-'} - ${member['class'] ?? '-'}',
-                                      ),
-                                      trailing: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                          vertical: 4,
-                                        ),
+                                                        style: TextStyle(
+                                                          fontSize: 12,
+                                                          color: Colors.grey[600],
+                                                        ),
+                                                        overflow: TextOverflow.ellipsis,
+                                                        maxLines: 1,
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                Row(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    _buildActionButton(
+                                                      icon: Icons.visibility,
+                                                      color: Colors.blue,
+                                                      onPressed: () => _showMemberDetails(context, member),
+                                                      tooltip: 'Xem chi tiết',
+                                                    ),
+                                                    const SizedBox(width: 6),
+                                                    _buildActionButton(
+                                                      icon: Icons.edit,
+                                                      color: Colors.green,
+                                                      onPressed: () => _navigateToEditMember(context, member),
+                                                      tooltip: 'Chỉnh sửa',
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: AppConstants.paddingSmall),
+                                            Container(
+                                              padding: const EdgeInsets.all(AppConstants.paddingSmall),
                                         decoration: BoxDecoration(
-                                          color:
-                                              member['role'] == 'PHÓ CÂU LẠC BỘ'
-                                                  ? Colors.green.withAlpha(51)
-                                                  : (member['role'] ==
-                                                          'TRƯỞNG CÂU LẠC BỘ'
-                                                      ? Colors.orange.withAlpha(
-                                                        51,
-                                                      )
-                                                      : Colors.blue.withAlpha(
-                                                        51,
-                                                      )),
-                                          borderRadius: BorderRadius.circular(
-                                            16,
-                                          ),
-                                        ),
+                                                color: Colors.grey[100],
+                                                borderRadius: BorderRadius.circular(8),
+                                              ),
+                                              child: Row(
+                                                children: [
+                                                  Expanded(
+                                                    child: Row(
+                                                      children: [
+                                                        Icon(member['gender'] == 'Nam' ? Icons.male : Icons.female, 
+                                                             size: 16, color: genderColor),
+                                                        const SizedBox(width: 4),
+                                                        Flexible(
+                                                          child: Text(
+                                                            member['gender'],
+                                                            style: TextStyle(
+                                                              fontSize: 12,
+                                                              fontWeight: FontWeight.w600,
+                                                              color: genderColor,
+                                                            ),
+                                                            overflow: TextOverflow.ellipsis,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  Container(
+                                                    width: 1,
+                                                    height: 20,
+                                                    color: Colors.grey[300],
+                                                  ),
+                                                  Expanded(
+                                                    child: Row(
+                                                      mainAxisAlignment: MainAxisAlignment.center,
+                                                      children: [
+                                                        Icon(Icons.class_, size: 16, color: Colors.blue),
+                                                        const SizedBox(width: 4),
+                                                        Flexible(
                                         child: Text(
-                                          member['role'] ?? 'THÀNH VIÊN',
+                                                            member['class'],
+                                                            style: const TextStyle(
+                                                              fontSize: 12,
+                                                              fontWeight: FontWeight.w600,
+                                                              color: Colors.blue,
+                                                            ),
+                                                            overflow: TextOverflow.ellipsis,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  Container(
+                                                    width: 1,
+                                                    height: 20,
+                                                    color: Colors.grey[300],
+                                                  ),
+                                                  Expanded(
+                                                    child: Row(
+                                                      mainAxisAlignment: MainAxisAlignment.end,
+                                                      children: [
+                                                        Icon(Icons.work, size: 16, color: roleColor),
+                                                        const SizedBox(width: 4),
+                                                        Flexible(
+                                                          child: Text(
+                                                            member['role'] == 'THÀNH VIÊN' ? 'TV' : 
+                                                            (member['role'] == 'PHÓ CÂU LẠC BỘ' ? 'PHÓ' : 'TRƯỞNG'),
                                           style: TextStyle(
                                             fontSize: 12,
-                                            color:
-                                                member['role'] ==
-                                                        'PHÓ CÂU LẠC BỘ'
-                                                    ? Colors.green
-                                                    : (member['role'] ==
-                                                            'TRƯỞNG CÂU LẠC BỘ'
-                                                        ? Colors.orange
-                                                        : Colors.blue),
-                                          ),
+                                                              fontWeight: FontWeight.w600,
+                                                              color: roleColor,
+                                                            ),
+                                                            overflow: TextOverflow.ellipsis,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
-                                      onTap:
-                                          () => _showMemberDetails(
-                                            context,
-                                            member,
                                           ),
                                     );
                                   },
@@ -1389,9 +1722,6 @@ class _StudentMemberManagementScreenState
     BuildContext context,
     Map<String, dynamic> member,
   ) {
-    // Đóng dialog chi tiết trước khi chuyển màn hình
-    Navigator.of(context).pop();
-
     // Cập nhật form với thông tin của thành viên
     idController.text = member['id'];
     nameController.text = member['name'];

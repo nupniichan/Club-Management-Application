@@ -21,18 +21,22 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  int _selectedIndex = 0;  final List<String> _titles = [
+  int _selectedIndex = 0;
+  
+  final List<String> _titles = [
     'Dashboard',
     'Cài Đặt',
   ];
   
   @override
   Widget build(BuildContext context) {
-    return Scaffold(      appBar: AppBar(
+    return Scaffold(
+      appBar: AppBar(
         title: Text(
           _titles[_selectedIndex],
           style: const TextStyle(
             fontWeight: FontWeight.bold,
+            fontSize: AppConstants.fontSizeXLarge,
           ),
         ),
         backgroundColor: AppConstants.primaryColor,
@@ -49,7 +53,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             );
           },
         ),
-        actions: [          IconButton(
+        actions: [
+          IconButton(
             icon: const Icon(Icons.notifications_outlined),
             tooltip: 'Thông báo',
             onPressed: () {
@@ -70,7 +75,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         userName: widget.userName,
         userRole: widget.userRole,
       ),
-      body: _buildBody(),      bottomNavigationBar: BottomNavigationBar(
+      body: _buildBody(),
+      bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) {
           setState(() {
@@ -80,7 +86,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         selectedItemColor: AppConstants.primaryColor,
         unselectedItemColor: Colors.grey,
         items: const [
-          BottomNavigationBarItem(            icon: Icon(Icons.dashboard),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.dashboard),
             label: 'Dashboard',
           ),
           BottomNavigationBarItem(
@@ -91,6 +98,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
     );
   }
+
   Widget _buildBody() {
     switch (_selectedIndex) {
       case 0:
@@ -157,15 +165,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           Text(
                             'Xin chào, ${widget.userName}',
                             style: const TextStyle(
-                              fontSize: AppConstants.fontSizeLarge,
+                              fontSize: AppConstants.fontSizeXLarge,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           Text(
                             widget.userRole,
-                            style: TextStyle(
-                              fontSize: AppConstants.fontSizeSmall,
-                              color: Colors.grey[600],
+                            style: const TextStyle(
+                              fontSize: AppConstants.fontSizeMedium,
+                              color: AppConstants.textSecondaryColor,
                             ),
                           ),
                         ],
@@ -183,7 +191,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Expanded(
                   child: StatsCardWidget(
                     title: 'CLB đang quản lý',
-                    value: 'CLB Tin học',
+                    value: 'Câu lạc bộ tin học',
                     icon: Icons.business,
                     color: AppConstants.primaryColor,
                   ),
@@ -192,7 +200,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Expanded(
                   child: StatsCardWidget(
                     title: 'Tổng Thành Viên',
-                    value: '42',
+                    value: '6',
                     icon: Icons.people,
                     color: AppConstants.successColor,
                   ),
@@ -206,7 +214,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Expanded(
                   child: StatsCardWidget(
                     title: 'Ngân Sách Hiện Tại',
-                    value: '5tr',
+                    value: '2M VNĐ',
                     icon: Icons.monetization_on,
                     color: AppConstants.warningColor,
                   ),
@@ -214,9 +222,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 const SizedBox(width: AppConstants.paddingMedium),
                 Expanded(
                   child: StatsCardWidget(
-                    title: 'Tổng giải thưởng',
-                    value: '3',
-                    icon: Icons.emoji_events,
+                    title: 'Lĩnh vực',
+                    value: 'Công Nghệ',
+                    icon: Icons.computer,
                     color: Colors.purple,
                   ),
                 ),
@@ -228,7 +236,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const Text(
               'Thống Kê Hoạt Động',
               style: TextStyle(
-                fontSize: AppConstants.fontSizeXLarge,
+                fontSize: AppConstants.fontSizeXXLarge,
                 fontWeight: FontWeight.bold,
                 color: AppConstants.textPrimaryColor,
               ),
@@ -297,9 +305,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 children: [
                   Container(
                     padding: const EdgeInsets.all(AppConstants.paddingLarge),
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: AppConstants.primaryColor,
-                      borderRadius: const BorderRadius.only(
+                      borderRadius: BorderRadius.only(
                         topLeft: Radius.circular(AppConstants.borderRadiusLarge),
                         topRight: Radius.circular(AppConstants.borderRadiusLarge),
                       ),
@@ -346,7 +354,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   'Họ tên',
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    fontSize: AppConstants.fontSizeMedium,
+                                    fontSize: AppConstants.fontSizeLarge,
                                   ),
                                 ),
                               ),
@@ -356,7 +364,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   'MSHS',
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    fontSize: AppConstants.fontSizeMedium,
+                                    fontSize: AppConstants.fontSizeLarge,
                                   ),
                                 ),
                               ),
@@ -366,7 +374,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   'Lớp',
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    fontSize: AppConstants.fontSizeMedium,
+                                    fontSize: AppConstants.fontSizeLarge,
                                   ),
                                 ),
                               ),
@@ -376,7 +384,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   'Ngày tham gia',
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    fontSize: AppConstants.fontSizeMedium,
+                                    fontSize: AppConstants.fontSizeLarge,
                                   ),
                                 ),
                               ),
@@ -431,18 +439,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Row(
+        title: const Row(
           children: [
             Icon(Icons.notifications, color: AppConstants.primaryColor),
-            const SizedBox(width: AppConstants.paddingSmall),
-            const Text('Thông báo'),
+            SizedBox(width: AppConstants.paddingSmall),
+            Text(
+              'Thông báo',
+              style: TextStyle(
+                fontSize: AppConstants.fontSizeXLarge,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ],
         ),
-        content: const Text('Chưa có thông báo mới.'),
+        content: const Text(
+          'Chưa có thông báo mới.',
+          style: TextStyle(fontSize: AppConstants.fontSizeLarge),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Đóng'),
+            child: const Text(
+              'Đóng',
+              style: TextStyle(fontSize: AppConstants.fontSizeLarge),
+            ),
           ),
         ],
       ),
@@ -460,26 +480,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
             color: Colors.grey[400],
           ),
           const SizedBox(height: AppConstants.paddingMedium),
-          Text(
+          const Text(
             'Cài đặt',
             style: TextStyle(
               fontSize: AppConstants.fontSizeXLarge,
               fontWeight: FontWeight.bold,
-              color: Colors.grey[600],
+              color: AppConstants.textSecondaryColor,
             ),
           ),
           const SizedBox(height: AppConstants.paddingMedium),
-          Text(
+          const Text(
             'Đang phát triển...',
             style: TextStyle(
-              color: Colors.grey[500],
+              fontSize: AppConstants.fontSizeLarge,
+              color: AppConstants.textSecondaryColor,
             ),
           ),
         ],
       ),
     );
   }
-
 
   Widget _buildMemberRow(
     String name,
@@ -504,7 +524,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: Text(
               name,
               style: const TextStyle(
-                fontSize: AppConstants.fontSizeMedium,
+                fontSize: AppConstants.fontSizeLarge,
               ),
             ),
           ),
@@ -513,7 +533,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: Text(
               studentId,
               style: const TextStyle(
-                fontSize: AppConstants.fontSizeMedium,
+                fontSize: AppConstants.fontSizeLarge,
               ),
             ),
           ),
@@ -522,7 +542,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: Text(
               className,
               style: const TextStyle(
-                fontSize: AppConstants.fontSizeMedium,
+                fontSize: AppConstants.fontSizeLarge,
               ),
             ),
           ),
@@ -530,9 +550,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
             flex: 3,
             child: Text(
               joinDate,
-              style: TextStyle(
-                fontSize: AppConstants.fontSizeMedium,
-                color: Colors.grey[600],
+              style: const TextStyle(
+                fontSize: AppConstants.fontSizeLarge,
+                color: AppConstants.textSecondaryColor,
               ),
             ),
           ),
@@ -549,15 +569,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
           ),
-          title: Row(
+          title: const Row(
             children: [
               Icon(
                 Icons.logout,
                 color: AppConstants.warningColor,
                 size: 28,
               ),
-              const SizedBox(width: AppConstants.paddingSmall),
-              const Text(
+              SizedBox(width: AppConstants.paddingSmall),
+              Text(
                 'Đăng xuất',
                 style: TextStyle(
                   fontSize: AppConstants.fontSizeXLarge,
@@ -568,7 +588,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           content: const Text(
             'Bạn có chắc chắn muốn đăng xuất khỏi ứng dụng?',
-            style: TextStyle(fontSize: AppConstants.fontSizeMedium),
+            style: TextStyle(fontSize: AppConstants.fontSizeLarge),
           ),
           actions: [
             TextButton(
@@ -578,6 +598,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 style: TextStyle(
                   color: Colors.grey,
                   fontWeight: FontWeight.w600,
+                  fontSize: AppConstants.fontSizeLarge,
                 ),
               ),
             ),
@@ -599,7 +620,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
               child: const Text(
                 'Đăng xuất',
-                style: TextStyle(fontWeight: FontWeight.w600),
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: AppConstants.fontSizeLarge,
+                ),
               ),
             ),
           ],

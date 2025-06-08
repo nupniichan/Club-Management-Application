@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../constants/app_constants.dart';
-import '../../services/auth_service.dart';
-import '../login_screen.dart';
 import '../../widgets/manager/manager_drawer_widget.dart';
+import '../../widgets/manager/manager_app_bar_widget.dart';
 
 class ManagerEventApprovalScreen extends StatefulWidget {
   const ManagerEventApprovalScreen({super.key});
@@ -21,86 +20,66 @@ class _ManagerEventApprovalScreenState extends State<ManagerEventApprovalScreen>
     'Đã duyệt',
   ];
 
-  // Sample event data
+  // Updated event data based on MongoDB structure
   final List<Map<String, dynamic>> _events = [
     {
-      'id': 1,
-      'title': 'Giải bóng đá liên trường',
-      'description': 'Giải đấu bóng đá thường niên giữa các trường',
-      'club': 'Câu lạc bộ Bóng đá',
-      'date': '25/02/2024',
-      'time': '14:00',
-      'location': 'Sân bóng trường',
-      'status': 'Chờ duyệt',
-      'participants': 50,
-      'budget': '5,000,000 VNĐ',
-      'submittedDate': '15/02/2024',
+      '_id': '673c5d577f6aae48b37a856b',
+      'ten': 'IT Day',
+      'ngayToChuc': '2024-11-22T00:00:00.000Z',
+      'thoiGianBatDau': '12:00',
+      'thoiGianKetThuc': '15:00',
+      'diaDiem': 'Sân trường',
+      'noiDung': 'Sự kiện IT Day được tổ chức nhằm giới thiệu cho mọi người về thế giới công nghệ thông tin hiện đại',
+      'nguoiPhuTrach': 'Nguyễn Phi Quốc Bảo',
+      'khachMoi': ['Công ty ABC', 'Trường ĐH XYZ'],
+      'club': '67160c5ad55fc5f816de7644',
+      'trangThai': 'daDuyet',
     },
     {
-      'id': 2,
-      'title': 'Đêm nhạc acoustic',
-      'description': 'Buổi biểu diễn âm nhạc acoustic của CLB',
-      'club': 'Câu lạc bộ Âm nhạc',
-      'date': '20/02/2024',
-      'time': '19:00',
-      'location': 'Hội trường A',
-      'status': 'Đã duyệt',
-      'participants': 30,
-      'budget': '2,000,000 VNĐ',
-      'submittedDate': '10/02/2024',
+      '_id': '673c5d577f6aae48b37a856c',
+      'ten': 'Workshop Lập trình Web',
+      'ngayToChuc': '2024-12-01T00:00:00.000Z',
+      'thoiGianBatDau': '08:00',
+      'thoiGianKetThuc': '17:00',
+      'diaDiem': 'Phòng Lab A',
+      'noiDung': 'Workshop dạy lập trình web với React và Node.js dành cho sinh viên',
+      'nguoiPhuTrach': 'Trần Văn A',
+      'khachMoi': ['Chuyên gia IT'],
+      'club': '67160c5ad55fc5f816de7644',
+      'trangThai': 'choPheDuyet',
     },
     {
-      'id': 3,
-      'title': 'Workshop lập trình AI',
-      'description': 'Hội thảo về trí tuệ nhân tạo và machine learning',
-      'club': 'Câu lạc bộ Tin học',
-      'date': '28/02/2024',
-      'time': '09:00',
-      'location': 'Phòng máy tính 1',
-      'status': 'Chờ duyệt',
-      'participants': 25,
-      'budget': '1,500,000 VNĐ',
-      'submittedDate': '18/02/2024',
+      '_id': '673c5d577f6aae48b37a856d',
+      'ten': 'Buổi biểu diễn âm nhạc',
+      'ngayToChuc': '2024-11-30T00:00:00.000Z',
+      'thoiGianBatDau': '19:00',
+      'thoiGianKetThuc': '21:00',
+      'diaDiem': 'Hội trường chính',
+      'noiDung': 'Buổi biểu diễn âm nhạc acoustic của câu lạc bộ âm nhạc',
+      'nguoiPhuTrach': 'Lê Thị B',
+      'khachMoi': ['Ban nhạc ABC'],
+      'club': '67160c5ad55fc5f816de7645',
+      'trangThai': 'daDuyet',
     },
     {
-      'id': 4,
-      'title': 'Triển lãm tranh sinh viên',
-      'description': 'Triển lãm các tác phẩm nghệ thuật của sinh viên',
-      'club': 'Câu lạc bộ Mỹ thuật',
-      'date': '15/02/2024',
-      'time': '08:00',
-      'location': 'Thư viện trường',
-      'status': 'Đã duyệt',
-      'participants': 40,
-      'budget': '3,000,000 VNĐ',
-      'submittedDate': '05/02/2024',
+      '_id': '673c5d577f6aae48b37a856e',
+      'ten': 'Giải chạy marathon',
+      'ngayToChuc': '2024-12-15T00:00:00.000Z',
+      'thoiGianBatDau': '06:00',
+      'thoiGianKetThuc': '10:00',
+      'diaDiem': 'Quanh trường học',
+      'noiDung': 'Giải chạy marathon thường niên nhằm rèn luyện sức khỏe cho sinh viên',
+      'nguoiPhuTrach': 'Phạm Văn C',
+      'khachMoi': [],
+      'club': '67160c5ad55fc5f816de7646',
+      'trangThai': 'choPheDuyet',
     },
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_currentTitle),
-        backgroundColor: AppConstants.primaryColor,
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            tooltip: 'Thông báo',
-            onPressed: () {
-              _showNotifications(context);
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Đăng xuất',
-            onPressed: () {
-              _showLogoutDialog(context);
-            },
-          ),
-        ],
-      ),
+      appBar: ManagerAppBarWidget(title: _currentTitle),
       drawer: const ManagerDrawerWidget(
         currentPage: 'event_approval',
         userName: 'Nguyễn Phi Quốc Bảo',
@@ -144,10 +123,10 @@ class _ManagerEventApprovalScreenState extends State<ManagerEventApprovalScreen>
         filteredEvents = _events;
         break;
       case 1:
-        filteredEvents = _events.where((event) => event['status'] == 'Chờ duyệt').toList();
+        filteredEvents = _events.where((event) => event['trangThai'] == 'choPheDuyet').toList();
         break;
       case 2:
-        filteredEvents = _events.where((event) => event['status'] == 'Đã duyệt').toList();
+        filteredEvents = _events.where((event) => event['trangThai'] == 'daDuyet').toList();
         break;
       default:
         filteredEvents = _events;
@@ -173,7 +152,7 @@ class _ManagerEventApprovalScreenState extends State<ManagerEventApprovalScreen>
               Expanded(
                 child: _buildStatsCard(
                   'Chờ duyệt',
-                  '${_events.where((e) => e['status'] == 'Chờ duyệt').length}',
+                  '${_events.where((e) => e['trangThai'] == 'choPheDuyet').length}',
                   Icons.pending,
                   Colors.orange,
                 ),
@@ -182,7 +161,7 @@ class _ManagerEventApprovalScreenState extends State<ManagerEventApprovalScreen>
               Expanded(
                 child: _buildStatsCard(
                   'Đã duyệt',
-                  '${_events.where((e) => e['status'] == 'Đã duyệt').length}',
+                  '${_events.where((e) => e['trangThai'] == 'daDuyet').length}',
                   Icons.check_circle,
                   Colors.green,
                 ),
@@ -288,173 +267,619 @@ class _ManagerEventApprovalScreenState extends State<ManagerEventApprovalScreen>
     );
   }
 
+  String _formatDate(String isoDateString) {
+    final date = DateTime.parse(isoDateString);
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+  }
+
+  String _getStatusText(String status) {
+    switch (status) {
+      case 'daDuyet':
+        return 'Đã duyệt';
+      case 'choPheDuyet':
+        return 'Chờ duyệt';
+      case 'hoanThanh':
+        return 'Hoàn thành';
+      case 'daHuy':
+        return 'Đã hủy';
+      case 'dangDienRa':
+        return 'Đang diễn ra';
+      default:
+        return status;
+    }
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case 'daDuyet':
+        return Colors.green;
+      case 'choPheDuyet':
+        return Colors.orange;
+      case 'hoanThanh':
+        return Colors.blue;
+      case 'daHuy':
+        return Colors.red;
+      case 'dangDienRa':
+        return Colors.purple;
+      default:
+        return Colors.grey;
+    }
+  }
+
   Widget _buildEventCard(Map<String, dynamic> event) {
+    final statusColor = _getStatusColor(event['trangThai']);
+    final statusText = _getStatusText(event['trangThai']);
+    
     return Card(
       margin: const EdgeInsets.only(bottom: AppConstants.paddingMedium),
-      child: Padding(
-        padding: const EdgeInsets.all(AppConstants.paddingMedium),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    event['title'],
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: AppConstants.fontSizeLarge,
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            colors: [
+              Colors.white,
+              statusColor.withOpacity(0.03),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(AppConstants.paddingLarge),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          statusColor,
+                          statusColor.withOpacity(0.7),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: statusColor.withOpacity(0.3),
+                          blurRadius: 6,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
                     ),
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: event['status'] == 'Đã duyệt' ? Colors.green : Colors.orange,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    event['status'],
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppConstants.paddingSmall),
-            
-            Text(
-              event['description'],
-              style: TextStyle(
-                color: Colors.grey[600],
-                fontSize: AppConstants.fontSizeMedium,
-              ),
-            ),
-            const SizedBox(height: AppConstants.paddingSmall),
-            
-            Row(
-              children: [
-                Icon(Icons.business, size: 16, color: Colors.grey[600]),
-                const SizedBox(width: 4),
-                Text(event['club']),
-              ],
-            ),
-            const SizedBox(height: 4),
-            
-            Row(
-              children: [
-                Icon(Icons.calendar_today, size: 16, color: Colors.grey[600]),
-                const SizedBox(width: 4),
-                Text('${event['date']} - ${event['time']}'),
-                const SizedBox(width: AppConstants.paddingMedium),
-                Icon(Icons.location_on, size: 16, color: Colors.grey[600]),
-                const SizedBox(width: 4),
-                Text(event['location']),
-              ],
-            ),
-            const SizedBox(height: 4),
-            
-            Row(
-              children: [
-                Icon(Icons.people, size: 16, color: Colors.grey[600]),
-                const SizedBox(width: 4),
-                Text('${event['participants']} người tham gia'),
-                const SizedBox(width: AppConstants.paddingMedium),
-                Icon(Icons.attach_money, size: 16, color: Colors.grey[600]),
-                const SizedBox(width: 4),
-                Text(event['budget']),
-              ],
-            ),
-            const SizedBox(height: AppConstants.paddingMedium),
-            
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Nộp ngày: ${event['submittedDate']}',
-                  style: TextStyle(
-                    fontSize: AppConstants.fontSizeSmall,
-                    color: Colors.grey[500],
-                  ),
-                ),
-                Row(
-                  children: [
-                    TextButton.icon(
-                      onPressed: () => _showEventDetails(event),
-                      icon: const Icon(Icons.visibility, size: 16),
-                      label: const Text('Chi tiết'),
-                    ),
-                    if (event['status'] == 'Chờ duyệt') ...[
-                      const SizedBox(width: 8),
-                      ElevatedButton.icon(
-                        onPressed: () => _approveEvent(event),
-                        icon: const Icon(Icons.check, size: 16),
-                        label: const Text('Duyệt'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          foregroundColor: Colors.white,
-                          minimumSize: const Size(80, 32),
+                    child: Center(
+                      child: Text(
+                        event['ten'][0].toUpperCase(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      ElevatedButton.icon(
-                        onPressed: () => _rejectEvent(event),
-                        icon: const Icon(Icons.close, size: 16),
-                        label: const Text('Từ chối'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          foregroundColor: Colors.white,
-                          minimumSize: const Size(80, 32),
+                    ),
+                  ),
+                  const SizedBox(width: AppConstants.paddingMedium),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          event['ten'],
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
                         ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Người phụ trách: ${event['nguoiPhuTrach']}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: statusColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: statusColor.withOpacity(0.3),
+                      ),
+                    ),
+                    child: Text(
+                      statusText,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: statusColor,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppConstants.paddingMedium),
+              Container(
+                padding: const EdgeInsets.all(AppConstants.paddingMedium),
+                decoration: BoxDecoration(
+                  color: Colors.grey[50],
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey[200]!),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.calendar_today,
+                          size: 16,
+                          color: Colors.grey[600],
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Ngày: ',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                        Text(
+                          _formatDate(event['ngayToChuc']),
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Icon(
+                          Icons.access_time,
+                          size: 16,
+                          color: Colors.grey[600],
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '${event['thoiGianBatDau']} - ${event['thoiGianKetThuc']}',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.location_on,
+                          size: 16,
+                          color: Colors.grey[600],
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Địa điểm: ',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                        Expanded(
+                          child: Text(
+                            event['diaDiem'],
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.black87,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (event['khachMoi'].isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.people_outline,
+                            size: 16,
+                            color: Colors.grey[600],
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Khách mời: ',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                          Expanded(
+                            child: Text(
+                              event['khachMoi'].join(', '),
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.black87,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ],
                 ),
-              ],
-            ),
-          ],
+              ),
+              const SizedBox(height: AppConstants.paddingMedium),
+              Text(
+                event['noiDung'],
+                style: TextStyle(
+                  color: Colors.grey[700],
+                  fontSize: 14,
+                  height: 1.4,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: AppConstants.paddingMedium),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  OutlinedButton.icon(
+                    onPressed: () => _showEventDetails(event),
+                    icon: const Icon(Icons.visibility, size: 16),
+                    label: const Text('Chi tiết'),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      side: const BorderSide(color: Colors.blue),
+                      foregroundColor: Colors.blue,
+                    ),
+                  ),
+                  if (event['trangThai'] == 'choPheDuyet') ...[
+                    const SizedBox(width: 8),
+                    FilledButton.icon(
+                      onPressed: () => _approveEvent(event),
+                      icon: const Icon(Icons.check, size: 16),
+                      label: const Text('Duyệt'),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    FilledButton.icon(
+                      onPressed: () => _rejectEvent(event),
+                      icon: const Icon(Icons.close, size: 16),
+                      label: const Text('Từ chối'),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
   void _showEventDetails(Map<String, dynamic> event) {
+    final statusColor = _getStatusColor(event['trangThai']);
+    final statusText = _getStatusText(event['trangThai']);
+    
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(event['title']),
-        content: SingleChildScrollView(
+      builder: (context) => Dialog(
+        elevation: 5,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
+        ),
+        child: Container(
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width * 0.9,
+            maxHeight: MediaQuery.of(context).size.height * 0.8,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Mô tả: ${event['description']}'),
-              const SizedBox(height: 8),
-              Text('Câu lạc bộ: ${event['club']}'),
-              const SizedBox(height: 8),
-              Text('Ngày: ${event['date']}'),
-              const SizedBox(height: 8),
-              Text('Thời gian: ${event['time']}'),
-              const SizedBox(height: 8),
-              Text('Địa điểm: ${event['location']}'),
-              const SizedBox(height: 8),
-              Text('Số người tham gia: ${event['participants']}'),
-              const SizedBox(height: 8),
-              Text('Ngân sách: ${event['budget']}'),
-              const SizedBox(height: 8),
-              Text('Trạng thái: ${event['status']}'),
-              const SizedBox(height: 8),
-              Text('Ngày nộp: ${event['submittedDate']}'),
+              // Header
+              Container(
+                padding: const EdgeInsets.all(AppConstants.paddingLarge),
+                decoration: BoxDecoration(
+                  color: statusColor.withAlpha((0.1 * 255).round()),
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(AppConstants.borderRadiusLarge),
+                    topRight: Radius.circular(AppConstants.borderRadiusLarge),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: statusColor.withAlpha(51),
+                      ),
+                      child: Center(
+                        child: Text(
+                          event['ten'][0].toUpperCase(),
+                          style: TextStyle(
+                            color: statusColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: AppConstants.fontSizeXLarge,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: AppConstants.paddingMedium),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            event['ten'] ?? 'Sự kiện',
+                            style: const TextStyle(
+                              fontSize: AppConstants.fontSizeXLarge,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: statusColor.withAlpha(51),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              statusText,
+                              style: TextStyle(
+                                fontSize: AppConstants.fontSizeSmall,
+                                fontWeight: FontWeight.bold,
+                                color: statusColor,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              
+              // Content
+              Flexible(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(AppConstants.paddingLarge),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildDetailRow(
+                        Icons.calendar_today, 
+                        'Ngày tổ chức', 
+                        _formatDate(event['ngayToChuc'])
+                      ),
+                      const SizedBox(height: AppConstants.paddingSmall),
+                      _buildDetailRow(
+                        Icons.access_time, 
+                        'Thời gian', 
+                        '${event['thoiGianBatDau']} - ${event['thoiGianKetThuc']}'
+                      ),
+                      const SizedBox(height: AppConstants.paddingSmall),
+                      _buildDetailRow(
+                        Icons.location_on, 
+                        'Địa điểm', 
+                        event['diaDiem'] ?? 'Chưa có thông tin'
+                      ),
+                      const SizedBox(height: AppConstants.paddingSmall),
+                      _buildDetailRow(
+                        Icons.person, 
+                        'Người phụ trách', 
+                        event['nguoiPhuTrach'] ?? 'Chưa có thông tin'
+                      ),
+                      
+                      if (event['khachMoi'] != null && event['khachMoi'].isNotEmpty) ...[
+                        const SizedBox(height: AppConstants.paddingSmall),
+                        _buildDetailRow(
+                          Icons.people, 
+                          'Khách mời', 
+                          event['khachMoi'].join(', ')
+                        ),
+                      ],
+                      
+                      if (event['noiDung'] != null && event['noiDung'].isNotEmpty) ...[
+                        const SizedBox(height: AppConstants.paddingMedium),
+                        const Text(
+                          'Nội dung sự kiện',
+                          style: TextStyle(
+                            fontSize: AppConstants.fontSizeLarge,
+                            fontWeight: FontWeight.bold,
+                            color: AppConstants.textPrimaryColor,
+                          ),
+                        ),
+                        const SizedBox(height: AppConstants.paddingSmall),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(AppConstants.paddingMedium),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[50],
+                            borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+                            border: Border.all(color: Colors.grey[200]!),
+                          ),
+                          child: Text(
+                            event['noiDung'],
+                            style: const TextStyle(
+                              fontSize: AppConstants.fontSizeMedium,
+                              height: 1.5,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+              
+              // Footer Actions
+              Container(
+                padding: const EdgeInsets.all(AppConstants.paddingLarge),
+                decoration: BoxDecoration(
+                  color: Colors.grey[50],
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(AppConstants.borderRadiusLarge),
+                    bottomRight: Radius.circular(AppConstants.borderRadiusLarge),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    if (event['trangThai'] == 'choPheDuyet') ...[
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            _rejectEvent(event);
+                          },
+                          icon: const Icon(Icons.close, color: Colors.red),
+                          label: const Text(
+                            'Từ chối',
+                            style: TextStyle(
+                              fontSize: AppConstants.fontSizeLarge,
+                              color: Colors.red,
+                            ),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: AppConstants.paddingMedium),
+                            side: const BorderSide(color: Colors.red),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: AppConstants.paddingMedium),
+                      Expanded(
+                        child: FilledButton.icon(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            _approveEvent(event);
+                          },
+                          icon: const Icon(Icons.check),
+                          label: const Text(
+                            'Duyệt',
+                            style: TextStyle(fontSize: AppConstants.fontSizeLarge),
+                          ),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            padding: const EdgeInsets.symmetric(vertical: AppConstants.paddingMedium),
+                          ),
+                        ),
+                      ),
+                    ] else ...[
+                      Expanded(
+                        child: FilledButton.icon(
+                          onPressed: () => Navigator.of(context).pop(),
+                          icon: const Icon(Icons.close),
+                          label: const Text(
+                            'Đóng',
+                            style: TextStyle(fontSize: AppConstants.fontSizeLarge),
+                          ),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: AppConstants.primaryColor,
+                            padding: const EdgeInsets.symmetric(vertical: AppConstants.paddingMedium),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
             ],
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Đóng'),
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(IconData icon, String label, String value) {
+    return Container(
+      padding: const EdgeInsets.all(AppConstants.paddingMedium),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+        border: Border.all(color: Colors.grey[200]!),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 2,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            color: AppConstants.primaryColor,
+            size: 20,
+          ),
+          const SizedBox(width: AppConstants.paddingMedium),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    color: AppConstants.textSecondaryColor,
+                    fontSize: AppConstants.fontSizeSmall,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: AppConstants.fontSizeMedium,
+                    fontWeight: FontWeight.w600,
+                    color: AppConstants.textPrimaryColor,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -466,7 +891,7 @@ class _ManagerEventApprovalScreenState extends State<ManagerEventApprovalScreen>
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Xác nhận duyệt sự kiện'),
-        content: Text('Bạn có chắc chắn muốn duyệt sự kiện "${event['title']}"?'),
+        content: Text('Bạn có chắc chắn muốn duyệt sự kiện "${event['ten']}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -475,10 +900,10 @@ class _ManagerEventApprovalScreenState extends State<ManagerEventApprovalScreen>
           ElevatedButton(
             onPressed: () {
               setState(() {
-                event['status'] = 'Đã duyệt';
+                event['trangThai'] = 'daDuyet';
               });
               Navigator.pop(context);
-              _showSuccessDialog('Đã duyệt sự kiện "${event['title']}"');
+              _showSuccessDialog('Đã duyệt sự kiện "${event['ten']}"');
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
             child: const Text('Duyệt', style: TextStyle(color: Colors.white)),
@@ -496,7 +921,7 @@ class _ManagerEventApprovalScreenState extends State<ManagerEventApprovalScreen>
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Bạn có chắc chắn muốn từ chối sự kiện "${event['title']}"?'),
+            Text('Bạn có chắc chắn muốn từ chối sự kiện "${event['ten']}"?'),
             const SizedBox(height: 16),
             TextField(
               decoration: const InputDecoration(
@@ -515,10 +940,10 @@ class _ManagerEventApprovalScreenState extends State<ManagerEventApprovalScreen>
           ElevatedButton(
             onPressed: () {
               setState(() {
-                event['status'] = 'Từ chối';
+                event['trangThai'] = 'daHuy';
               });
               Navigator.pop(context);
-              _showSuccessDialog('Đã từ chối sự kiện "${event['title']}"');
+              _showSuccessDialog('Đã từ chối sự kiện "${event['ten']}"');
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('Từ chối', style: TextStyle(color: Colors.white)),
@@ -550,90 +975,5 @@ class _ManagerEventApprovalScreenState extends State<ManagerEventApprovalScreen>
     );
   }
 
-  void _showNotifications(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            Icon(Icons.notifications, color: AppConstants.primaryColor),
-            const SizedBox(width: AppConstants.paddingSmall),
-            const Text('Thông báo'),
-          ],
-        ),
-        content: const Text('Chưa có thông báo mới.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Đóng'),
-          ),
-        ],
-      ),
-    );
-  }
 
-  void _showLogoutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
-        ),
-        title: Row(
-          children: [
-            Icon(
-              Icons.logout,
-              color: AppConstants.warningColor,
-              size: 28,
-            ),
-            const SizedBox(width: AppConstants.paddingSmall),
-            const Text(
-              'Đăng xuất',
-              style: TextStyle(
-                fontSize: AppConstants.fontSizeXLarge,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-        content: const Text(
-          'Bạn có chắc chắn muốn đăng xuất khỏi ứng dụng?',
-          style: TextStyle(fontSize: AppConstants.fontSizeMedium),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text(
-              'Hủy',
-              style: TextStyle(
-                color: Colors.grey,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              AuthService().logout();
-              Navigator.of(context).pop();
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const LoginScreen()),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppConstants.warningColor,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
-              ),
-            ),
-            child: const Text(
-              'Đăng xuất',
-              style: TextStyle(fontWeight: FontWeight.w600),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 } 

@@ -2,9 +2,8 @@
 
 import 'package:flutter/material.dart';
 import '../../constants/app_constants.dart';
-import '../../services/auth_service.dart';
-import '../login_screen.dart';
 import '../../widgets/manager/manager_drawer_widget.dart';
+import '../../widgets/manager/manager_app_bar_widget.dart';
 
 class ManagerReportsScreen extends StatefulWidget {
   const ManagerReportsScreen({super.key});
@@ -16,15 +15,80 @@ class ManagerReportsScreen extends StatefulWidget {
 class _ManagerReportsScreenState extends State<ManagerReportsScreen> {
   int _selectedIndex = 0;
 
-  final List<Map<String, dynamic>> _reports = List.generate(
-    5,
-    (index) => {
-      'title': 'Báo cáo ngày 21',
-      'date': '11/22/2024',
-      'manager': 'Nguyễn Văn A',
-      'club': 'Tin học',
+  // Updated reports data based on MongoDB structure
+  final List<Map<String, dynamic>> _reports = [
+    {
+      '_id': '673c6cb889b097623521cf58',
+      'tenBaoCao': 'Báo cáo tháng 11',
+      'ngayBaoCao': '2024-11-19T00:00:00.000Z',
+      'nhanSuPhuTrach': 'Nguyễn Phi Quốc Bảo',
+      'danhSachSuKien': [
+        {
+          'ten': 'IT Day',
+          'nguoiPhuTrach': 'Nguyễn Phi Quốc Bảo',
+          'ngayToChuc': '2024-11-22T00:00:00.000Z',
+          'diaDiem': 'Sân trường',
+        }
+      ],
+      'danhSachGiai': [
+        {
+          'tenGiai': 'Giải Nhất Lập trình',
+          'loaiGiai': 'Cấp trường',
+          'ngayDatGiai': '2024-11-20T00:00:00.000Z',
+          'thanhVienDatGiai': 'Trần Văn A',
+        }
+      ],
+      'tongNganSachChiTieu': 4000000,
+      'tongThu': 5000000,
+      'ketQuaDatDuoc': 'Sự kiện diễn ra hơn cả mong đợi, các doanh nghiệp muốn hợp tác với câu lạc bộ trong tương lai',
+      'club': '67160c5ad55fc5f816de7644',
     },
-  );
+    {
+      '_id': '673c6cb889b097623521cf59',
+      'tenBaoCao': 'Báo cáo tháng 10',
+      'ngayBaoCao': '2024-10-25T00:00:00.000Z',
+      'nhanSuPhuTrach': 'Trần Văn B',
+      'danhSachSuKien': [
+        {
+          'ten': 'Workshop Lập trình Web',
+          'nguoiPhuTrach': 'Trần Văn A',
+          'ngayToChuc': '2024-10-20T00:00:00.000Z',
+          'diaDiem': 'Phòng Lab A',
+        }
+      ],
+      'danhSachGiai': [],
+      'tongNganSachChiTieu': 2000000,
+      'tongThu': 1500000,
+      'ketQuaDatDuoc': 'Workshop được tổ chức thành công với sự tham gia đông đảo của sinh viên',
+      'club': '67160c5ad55fc5f816de7644',
+    },
+    {
+      '_id': '673c6cb889b097623521cf60',
+      'tenBaoCao': 'Báo cáo tháng 9',
+      'ngayBaoCao': '2024-09-28T00:00:00.000Z',
+      'nhanSuPhuTrach': 'Lê Thị C',
+      'danhSachSuKien': [
+        {
+          'ten': 'Buổi biểu diễn âm nhạc',
+          'nguoiPhuTrach': 'Lê Thị B',
+          'ngayToChuc': '2024-09-25T00:00:00.000Z',
+          'diaDiem': 'Hội trường chính',
+        }
+      ],
+      'danhSachGiai': [
+        {
+          'tenGiai': 'Giải Ba Ca hát',
+          'loaiGiai': 'Cấp trường',
+          'ngayDatGiai': '2024-09-26T00:00:00.000Z',
+          'thanhVienDatGiai': 'Nguyễn Thị D',
+        }
+      ],
+      'tongNganSachChiTieu': 1500000,
+      'tongThu': 2000000,
+      'ketQuaDatDuoc': 'Buổi biểu diễn thu hút được nhiều khán giả và nhận được phản hồi tích cực',
+      'club': '67160c5ad55fc5f816de7645',
+    },
+  ];
 
   bool isMobile(BuildContext context) =>
       MediaQuery.of(context).size.width < 600;
@@ -32,23 +96,7 @@ class _ManagerReportsScreenState extends State<ManagerReportsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Báo cáo câu lạc bộ'),
-        backgroundColor: AppConstants.primaryColor,
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            tooltip: 'Thông báo',
-            onPressed: () => _showNotifications(context),
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Đăng xuất',
-            onPressed: () => _showLogoutDialog(context),
-          ),
-        ],
-      ),
+      appBar: const ManagerAppBarWidget(title: 'Báo cáo câu lạc bộ'),
       drawer: const ManagerDrawerWidget(
         currentPage: 'reports',
         userName: 'Nguyễn Phi Quốc Bảo',
@@ -76,158 +124,349 @@ class _ManagerReportsScreenState extends State<ManagerReportsScreen> {
     );
   }
 
+  String _formatDate(String isoDateString) {
+    final date = DateTime.parse(isoDateString);
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+  }
+
+  String _formatCurrency(int amount) {
+    if (amount >= 1000000) {
+      return '${(amount / 1000000).toStringAsFixed(1)}M VNĐ';
+    } else if (amount >= 1000) {
+      return '${(amount / 1000).toStringAsFixed(0)}K VNĐ';
+    } else {
+      return '${amount} VNĐ';
+    }
+  }
+
   Widget _buildReportList(BuildContext context) {
-    return Padding(
+    return Column(
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                AppConstants.primaryColor.withOpacity(0.1),
+                AppConstants.primaryColor.withOpacity(0.05),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          padding: const EdgeInsets.all(AppConstants.paddingMedium),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppConstants.primaryColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.analytics,
+                  size: 20,
+                  color: AppConstants.primaryColor,
+                ),
+              ),
+              const SizedBox(width: AppConstants.paddingMedium),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Báo cáo hoạt động',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: AppConstants.primaryColor,
+                      ),
+                    ),
+                    Text(
+                      'Tổng số: ${_reports.length} báo cáo',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppConstants.primaryColor,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  '${_reports.length}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: _reports.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.analytics_outlined,
+                        size: 64,
+                        color: Colors.grey[400],
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Chưa có báo cáo nào',
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.grey[600],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Báo cáo sẽ hiển thị ở đây',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[500],
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.all(AppConstants.paddingMedium),
+                  itemCount: _reports.length,
+                  itemBuilder: (context, index) => _buildReportCard(_reports[index]),
+                ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildReportCard(Map<String, dynamic> report) {
+    
+    return Card(
+      margin: const EdgeInsets.only(bottom: AppConstants.paddingMedium),
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            colors: [
+              Colors.white,
+              Colors.blue.withOpacity(0.03),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Padding(
       padding: const EdgeInsets.all(AppConstants.paddingLarge),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Danh sách báo cáo'),
-          const SizedBox(height: AppConstants.paddingMedium),
+              Row(
+                children: [
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.blue,
+                          Colors.blue.withOpacity(0.7),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.blue.withOpacity(0.3),
+                          blurRadius: 6,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: Text(
+                        report['tenBaoCao'][0].toUpperCase(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: AppConstants.paddingMedium),
           Expanded(
-            child:
-                isMobile(context)
-                    ? ListView.separated(
-                      itemCount: _reports.length,
-                      separatorBuilder: (_, __) => const Divider(),
-                      itemBuilder: (context, index) {
-                        final report = _reports[index];
-                        return ListTile(
-                          title: Text(
-                            report['title'],
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          subtitle: Column(
+                    child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Ngày: ${report['date']}'),
-                              Text('Quản lý: ${report['manager']}'),
-                              Text('CLB: ${report['club']}'),
-                            ],
+                        Text(
+                          report['tenBaoCao'],
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
                           ),
-                          trailing: IconButton(
-                            icon: const Icon(
-                              Icons.remove_red_eye,
-                              color: Colors.blue,
-                            ),
-                            onPressed: () => _viewReport(report),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'ID: ${report['_id'].substring(0, 8)} • CLB: ${report['club'].substring(0, 8)}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[600],
                           ),
-                        );
-                      },
-                    )
-                    : ListView(
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${report['nhanSuPhuTrach']} • ${_formatDate(report['ngayBaoCao'])}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                                  ),
+                ],
+              ),
+              const SizedBox(height: AppConstants.paddingMedium),
+              Container(
+                padding: const EdgeInsets.all(AppConstants.paddingMedium),
+                decoration: BoxDecoration(
+                  color: Colors.grey[50],
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey[200]!),
+                ),
+                child: Column(
+                  children: [
+                    Row(
                       children: [
-                        Table(
-                          columnWidths: const {
-                            0: FlexColumnWidth(3),
-                            1: FlexColumnWidth(2),
-                            2: FlexColumnWidth(3),
-                            3: FlexColumnWidth(2),
-                            4: IntrinsicColumnWidth(),
-                          },
-                          children: [
-                            TableRow(
-                              decoration: BoxDecoration(
-                                color: AppConstants.primaryColor.withAlpha(
-                                  (255 * 0.1).toInt(),
-                                ),
-                              ),
-                              children: const [
-                                Padding(
-                                  padding: EdgeInsets.all(12),
-                                  child: Text(
-                                    'TÊN BÁO CÁO',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.all(12),
-                                  child: Text(
-                                    'NGÀY BÁO CÁO',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.all(12),
-                                  child: Text(
-                                    'NHÂN SỰ PHỤ TRÁCH',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.all(12),
-                                  child: Text(
-                                    'CLB',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.all(12),
-                                  child: Text(
-                                    'HÀNH ĐỘNG',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            ..._reports.map(
-                              (report) => TableRow(
-                                decoration: const BoxDecoration(
-                                  border: Border(
-                                    bottom: BorderSide(color: Colors.black12),
-                                  ),
-                                ),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
                                 children: [
-                                  Padding(
-                                    padding: const EdgeInsets.all(12),
-                                    child: Text(
-                                      report['title'],
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
+                                  Icon(
+                                    Icons.calendar_today,
+                                    size: 16,
+                                    color: Colors.grey[600],
                                   ),
-                                  Padding(
-                                    padding: const EdgeInsets.all(12),
-                                    child: Text(report['date']),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.all(12),
-                                    child: Text(report['manager']),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.all(12),
-                                    child: Text(report['club']),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.all(4),
-                                    child: IconButton(
-                                      icon: const Icon(
-                                        Icons.remove_red_eye,
-                                        color: Colors.blue,
-                                      ),
-                                      onPressed: () => _viewReport(report),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Ngày báo cáo:',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.grey[600],
                                     ),
                                   ),
                                 ],
                               ),
-                            ),
-                          ],
+                              const SizedBox(height: 4),
+                              Text(
+                                _formatDate(report['ngayBaoCao']),
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
+                        Container(
+                          width: 1,
+                          height: 40,
+                          color: Colors.grey[300],
+                        ),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.event,
+                                    size: 16,
+                                    color: Colors.blue[600],
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Sự kiện:',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '${report['danhSachSuKien'].length}',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blue[700],
+                                  ),
+                                ),
+                              ],
+                            ),
+                        ),
+
                       ],
                     ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppConstants.paddingMedium),
+              Text(
+                report['ketQuaDatDuoc'],
+                style: TextStyle(
+                  color: Colors.grey[700],
+                  fontSize: 14,
+                  height: 1.4,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: AppConstants.paddingMedium),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  OutlinedButton.icon(
+                    onPressed: () => _viewReport(report),
+                    icon: const Icon(Icons.visibility, size: 16),
+                    label: const Text('Xem chi tiết'),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      side: const BorderSide(color: Colors.blue),
+                      foregroundColor: Colors.blue,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -298,59 +537,125 @@ class _ManagerReportsScreenState extends State<ManagerReportsScreen> {
   void _viewReport(Map<String, dynamic> report) {
     showDialog(
       context: context,
-      builder:
-          (context) => AlertDialog(
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
             title: Row(
               children: [
-                const Icon(Icons.description, color: AppConstants.primaryColor),
-                const SizedBox(width: AppConstants.paddingSmall),
-                Text(report['title']),
-              ],
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppConstants.primaryColor,
+                    AppConstants.primaryColor.withOpacity(0.7),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Center(
+                child: Text(
+                  report['tenBaoCao'][0].toUpperCase(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
             ),
-            content: SingleChildScrollView(
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    report['tenBaoCao'],
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    _formatDate(report['ngayBaoCao']),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _sectionTitle('Thông tin cơ bản', Colors.lightBlue.shade100),
-                  _infoRow('Tên báo cáo', report['title']),
-                  _infoRow('Ngày báo cáo', report['date']),
-                  _infoRow('Nhân sự phụ trách', 'Bảo'),
-                  _infoRow('Câu lạc bộ', report['club']),
+              _infoRow('Tên báo cáo', report['tenBaoCao']),
+              _infoRow('Ngày báo cáo', _formatDate(report['ngayBaoCao'])),
+              _infoRow('Nhân sự phụ trách', report['nhanSuPhuTrach']),
                   const SizedBox(height: 16),
+              
                   _sectionTitle('Danh sách sự kiện', Colors.lightBlue.shade100),
+              if (report['danhSachSuKien'].isNotEmpty) ...[
                   _tableRow([
                     'Tên sự kiện',
                     'Người phụ trách',
                     'Ngày tổ chức',
                     'Địa điểm',
                   ], isHeader: true),
-                  _tableRow([
-                    'Lễ khánh thành',
-                    'Nguyễn Văn A',
-                    '8/2/2025',
-                    'TP.HCM',
-                  ]),
+                ...report['danhSachSuKien'].map<Widget>((event) => _tableRow([
+                  event['ten'],
+                  event['nguoiPhuTrach'],
+                  _formatDate(event['ngayToChuc']),
+                  event['diaDiem'],
+                ])),
+              ] else ...[
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8.0),
+                  child: Text('Không có sự kiện nào'),
+                ),
+              ],
                   const SizedBox(height: 16),
-                  _sectionTitle(
-                    'Danh sách giải thưởng',
-                    Colors.lightBlue.shade100,
-                  ),
+              
+              _sectionTitle('Danh sách giải thưởng', Colors.purple.shade100),
+              if (report['danhSachGiai'].isNotEmpty) ...[
                   _tableRow([
                     'Tên giải thưởng',
                     'Loại giải',
                     'Ngày đạt giải',
                     'Thành viên đạt giải',
                   ], isHeader: true),
-                  _tableRow(['VIP 100', 'VIP', '8/2/2025', 'Nguyễn Văn B']),
+                ...report['danhSachGiai'].map<Widget>((award) => _tableRow([
+                  award['tenGiai'],
+                  award['loaiGiai'],
+                  _formatDate(award['ngayDatGiai']),
+                  award['thanhVienDatGiai'],
+                ])),
+              ] else ...[
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8.0),
+                  child: Text('Không có giải thưởng nào'),
+                ),
+              ],
                   const SizedBox(height: 16),
+              
                   _sectionTitle('Thông tin tài chính', Colors.green.shade100),
-                  _infoRow('Tổng ngân sách chi tiêu', '100,000 VND'),
-                  _infoRow('Tổng thu', '100,000 VND'),
+              _infoRow('Tổng ngân sách chi tiêu', _formatCurrency(report['tongNganSachChiTieu'])),
+              _infoRow('Tổng thu', _formatCurrency(report['tongThu'])),
                   const SizedBox(height: 16),
+              
                   _sectionTitle('Kết quả đạt được', Colors.yellow.shade100),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 8.0),
-                    child: Text('Giải thưởng đã được trao'),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Text(
+                  report['ketQuaDatDuoc'],
+                  style: const TextStyle(height: 1.4),
+                ),
                   ),
                 ],
               ),
@@ -374,7 +679,7 @@ class _ManagerReportsScreenState extends State<ManagerReportsScreen> {
     );
   }
 
-  Widget _infoRow(String label, String value) {
+  Widget _infoRow(String label, String value, {Color? colorValue}) {
     return Container(
       decoration: const BoxDecoration(
         border: Border(bottom: BorderSide(color: Colors.black12)),
@@ -389,7 +694,16 @@ class _ManagerReportsScreenState extends State<ManagerReportsScreen> {
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
-          Expanded(child: Text(value, textAlign: TextAlign.right)),
+          Expanded(
+            child: Text(
+              value, 
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                color: colorValue ?? Colors.black87,
+                fontWeight: colorValue != null ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -422,80 +736,5 @@ class _ManagerReportsScreenState extends State<ManagerReportsScreen> {
     );
   }
 
-  void _showNotifications(BuildContext context) {
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: Row(
-              children: [
-                Icon(Icons.notifications, color: AppConstants.primaryColor),
-                const SizedBox(width: AppConstants.paddingSmall),
-                const Text('Thông báo'),
-              ],
-            ),
-            content: const Text('Chưa có thông báo mới.'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Đóng'),
-              ),
-            ],
-          ),
-    );
-  }
 
-  void _showLogoutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(
-                AppConstants.borderRadiusMedium,
-              ),
-            ),
-            title: Row(
-              children: [
-                Icon(Icons.logout, color: AppConstants.warningColor, size: 28),
-                const SizedBox(width: AppConstants.paddingSmall),
-                const Text(
-                  'Đăng xuất',
-                  style: TextStyle(
-                    fontSize: AppConstants.fontSizeXLarge,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            content: const Text(
-              'Bạn có chắc chắn muốn đăng xuất khỏi ứng dụng?',
-              style: TextStyle(fontSize: AppConstants.fontSizeMedium),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Hủy', style: TextStyle(color: Colors.grey)),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  AuthService().logout();
-                  Navigator.pop(context);
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (_) => const LoginScreen()),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppConstants.warningColor,
-                ),
-                child: const Text(
-                  'Đăng xuất',
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-            ],
-          ),
-    );
-  }
 }
