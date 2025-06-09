@@ -502,24 +502,28 @@ class _ManagerEventApprovalScreenState extends State<ManagerEventApprovalScreen>
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: AppConstants.paddingMedium),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+              Wrap(
+                alignment: WrapAlignment.end,
+                spacing: 8,
+                runSpacing: 8,
                 children: [
                   OutlinedButton.icon(
                     onPressed: () => _showEventDetails(event),
                     icon: const Icon(Icons.visibility, size: 16),
-                    label: const Text('Chi tiết'),
+                    label: const Text('Xem chi tiết'),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
+                        horizontal: 12,
                         vertical: 8,
                       ),
                       side: const BorderSide(color: Colors.blue),
                       foregroundColor: Colors.blue,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                   ),
                   if (event.trangThai == 'choPheDuyet') ...[
-                    const SizedBox(width: 8),
                     FilledButton.icon(
                       onPressed: () => _approveEvent(event),
                       icon: const Icon(Icons.check, size: 16),
@@ -527,12 +531,14 @@ class _ManagerEventApprovalScreenState extends State<ManagerEventApprovalScreen>
                       style: FilledButton.styleFrom(
                         backgroundColor: Colors.green,
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
+                          horizontal: 12,
                           vertical: 8,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
                     FilledButton.icon(
                       onPressed: () => _rejectEvent(event),
                       icon: const Icon(Icons.close, size: 16),
@@ -540,8 +546,11 @@ class _ManagerEventApprovalScreenState extends State<ManagerEventApprovalScreen>
                       style: FilledButton.styleFrom(
                         backgroundColor: Colors.red,
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
+                          horizontal: 12,
                           vertical: 8,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
                         ),
                       ),
                     ),

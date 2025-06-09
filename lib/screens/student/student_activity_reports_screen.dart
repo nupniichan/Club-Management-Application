@@ -180,21 +180,6 @@ class _StudentActivityReportsScreenState
                   ],
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: AppConstants.primaryColor,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  '${_filteredReports.length}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
             ],
           ),
         ),
@@ -320,9 +305,9 @@ class _StudentActivityReportsScreenState
                               Container(
                                 padding: const EdgeInsets.all(AppConstants.paddingMedium),
                                 decoration: BoxDecoration(
-                                  color: Colors.grey[50],
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: Colors.grey[200]!),
+                                  color: Colors.grey[100],
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: Colors.grey[300]!),
                                 ),
                                 child: Row(
                                   children: [
@@ -378,6 +363,9 @@ class _StudentActivityReportsScreenState
                                       ),
                                       side: const BorderSide(color: Colors.blue),
                                       foregroundColor: Colors.blue,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(width: 8),
@@ -392,6 +380,9 @@ class _StudentActivityReportsScreenState
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: 16, 
                                         vertical: 8
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
                                       ),
                                     ),
                                   ),
@@ -931,61 +922,7 @@ class _StudentActivityReportsScreenState
     return Padding(
       padding: const EdgeInsets.all(AppConstants.paddingLarge),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.all(AppConstants.paddingLarge),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  AppConstants.primaryColor.withOpacity(0.1),
-                  AppConstants.primaryColor.withOpacity(0.05),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppConstants.primaryColor.withOpacity(0.2)),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppConstants.primaryColor,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
-                    Icons.search,
-                    color: Colors.white,
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(width: AppConstants.paddingMedium),
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Tìm kiếm báo cáo',
-                        style: TextStyle(
-                          fontSize: AppConstants.fontSizeXLarge,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        'Tìm kiếm báo cáo theo tên hoặc người phụ trách',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: AppConstants.paddingLarge),
           Container(
             decoration: BoxDecoration(
               color: Colors.white,
@@ -1039,143 +976,189 @@ class _StudentActivityReportsScreenState
             ),
           ),
           const SizedBox(height: AppConstants.paddingMedium),
-          if (_searchQuery.isNotEmpty) ...[
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppConstants.paddingMedium,
-                vertical: AppConstants.paddingSmall,
-              ),
-              decoration: BoxDecoration(
-                color: AppConstants.primaryColor.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppConstants.primaryColor.withOpacity(0.1)),
-              ),
-              child: Row(
+
+          // Phần có thể cuộn
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(
-                    Icons.filter_list,
-                    size: 16,
-                    color: AppConstants.primaryColor,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Kết quả tìm kiếm: ${_filteredReports.length} báo cáo',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                      color: AppConstants.primaryColor,
+                  if (_searchQuery.isNotEmpty) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppConstants.paddingMedium,
+                        vertical: AppConstants.paddingSmall,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppConstants.primaryColor.withOpacity(0.05),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: AppConstants.primaryColor.withOpacity(0.1)),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.filter_list,
+                            size: 16,
+                            color: AppConstants.primaryColor,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Kết quả tìm kiếm: ${_filteredReports.length} báo cáo',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                              color: AppConstants.primaryColor,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: AppConstants.paddingMedium),
+                  ],
+                  
+                  // Kết quả tìm kiếm
+                  if (_searchQuery.isEmpty)
+                    Container(
+                      height: 200,
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.search,
+                              size: 48,
+                              color: Colors.grey[400],
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Nhập từ khóa để tìm kiếm',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Tìm kiếm báo cáo theo tên hoặc người phụ trách',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[500],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  else if (_filteredReports.isEmpty)
+                    Container(
+                      height: 200,
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.search_off,
+                              size: 48,
+                              color: Colors.grey[400],
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Không tìm thấy báo cáo',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Thử thay đổi từ khóa tìm kiếm',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[500],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  else
+                    Column(
+                      children: _filteredReports.map((report) {
+                        final profit = report.tongThu - report.tongNganSachChiTieu;
+                        final profitColor = profit >= 0 ? Colors.green : Colors.red;
+                        
+                        return Card(
+                          margin: const EdgeInsets.only(bottom: AppConstants.paddingSmall),
+                          elevation: 2,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: ListTile(
+                            leading: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [AppConstants.primaryColor, AppConstants.primaryColor.withOpacity(0.7)],
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Center(
+                                child: Icon(
+                                  Icons.assessment,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                              ),
+                            ),
+                            title: Text(
+                              report.tenBaoCao,
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                            subtitle: Text(
+                              '${_formatDate(report.ngayBaoCao)} • ${report.nhanSuPhuTrach}',
+                              style: TextStyle(color: Colors.grey[600]),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, 
+                                    vertical: 4
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: profitColor.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    _formatCurrency(profit),
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      color: profitColor,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Icon(Icons.arrow_forward_ios, 
+                                     size: 16, color: Colors.grey[400]),
+                              ],
+                            ),
+                            onTap: () => _showReportDetails(context, report),
+                          ),
+                        );
+                      }).toList(),
+                    ),
                 ],
               ),
             ),
-            const SizedBox(height: AppConstants.paddingMedium),
-          ],
-          Expanded(
-            child: _filteredReports.isEmpty && _searchQuery.isNotEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.search_off,
-                          size: 48,
-                          color: Colors.grey[400],
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Không tìm thấy báo cáo',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey[600],
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Thử thay đổi từ khóa tìm kiếm',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[500],
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : ListView.builder(
-                    itemCount: _searchQuery.isEmpty ? 0 : _filteredReports.length,
-                    itemBuilder: (context, index) {
-                      final report = _filteredReports[index];
-                      final profit = report.tongThu - report.tongNganSachChiTieu;
-                      final profitColor = profit >= 0 ? Colors.green : Colors.red;
-                      
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: AppConstants.paddingSmall),
-                        elevation: 2,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: ListTile(
-                          leading: Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [AppConstants.primaryColor, AppConstants.primaryColor.withOpacity(0.7)],
-                              ),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Center(
-                              child: Icon(
-                                Icons.assessment,
-                                color: Colors.white,
-                                size: 20,
-                              ),
-                            ),
-                          ),
-                          title: Text(
-                            report.tenBaoCao,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ),
-                          subtitle: Text(
-                            '${_formatDate(report.ngayBaoCao)} • ${report.nhanSuPhuTrach}',
-                            style: TextStyle(color: Colors.grey[600]),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, 
-                                  vertical: 4
-                                ),
-                                decoration: BoxDecoration(
-                                  color: profitColor.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  _formatCurrency(profit),
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    color: profitColor,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Icon(Icons.arrow_forward_ios, 
-                                   size: 16, color: Colors.grey[400]),
-                            ],
-                          ),
-                          onTap: () => _showReportDetails(context, report),
-                        ),
-                      );
-                    },
-                  ),
           ),
         ],
       ),

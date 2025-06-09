@@ -51,6 +51,9 @@ class _StudentEventManagementScreenState
   // Variable to store the event being edited
   Event? _editingEvent;
 
+  // Variable to track if we need to reset form for add event
+  bool _shouldResetAddForm = true;
+
   @override
   void initState() {
     super.initState();
@@ -162,6 +165,7 @@ class _StudentEventManagementScreenState
       setState(() {
         _selectedIndex = 0;
         _currentTitle = _titles[0];
+        _shouldResetAddForm = true;
       });
     }
   }
@@ -468,6 +472,112 @@ class _StudentEventManagementScreenState
     );
   }
 
+  // Mark event as completed
+  void _markEventCompleted(BuildContext context, Event event) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text(
+            'Xác nhận hoàn thành',
+            style: TextStyle(
+              fontSize: AppConstants.fontSizeXLarge,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: Text(
+            'Bạn có chắc chắn muốn đánh dấu sự kiện "${event.ten}" là hoàn thành không?',
+            style: const TextStyle(fontSize: AppConstants.fontSizeLarge),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text(
+                'Hủy',
+                style: TextStyle(fontSize: AppConstants.fontSizeLarge),
+              ),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(backgroundColor: Colors.green),
+              onPressed: () {
+                final updatedEvent = event.copyWith(trangThai: 'hoanThanh');
+                _eventService.updateEvent(updatedEvent);
+                _loadEvents();
+                Navigator.of(context).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      'Đã đánh dấu sự kiện hoàn thành',
+                      style: TextStyle(fontSize: AppConstants.fontSizeLarge),
+                    ),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              },
+              child: const Text(
+                'Hoàn thành',
+                style: TextStyle(fontSize: AppConstants.fontSizeLarge),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Mark event as cancelled
+  void _markEventCancelled(BuildContext context, Event event) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text(
+            'Xác nhận hủy sự kiện',
+            style: TextStyle(
+              fontSize: AppConstants.fontSizeXLarge,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: Text(
+            'Bạn có chắc chắn muốn hủy sự kiện "${event.ten}" không?',
+            style: const TextStyle(fontSize: AppConstants.fontSizeLarge),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text(
+                'Không',
+                style: TextStyle(fontSize: AppConstants.fontSizeLarge),
+              ),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(backgroundColor: Colors.red),
+              onPressed: () {
+                final updatedEvent = event.copyWith(trangThai: 'daHuy');
+                _eventService.updateEvent(updatedEvent);
+                _loadEvents();
+                Navigator.of(context).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      'Đã hủy sự kiện',
+                      style: TextStyle(fontSize: AppConstants.fontSizeLarge),
+                    ),
+                    backgroundColor: Colors.orange,
+                  ),
+                );
+              },
+              child: const Text(
+                'Hủy sự kiện',
+                style: TextStyle(fontSize: AppConstants.fontSizeLarge),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   // Show delete confirmation dialog
   void _showDeleteConfirmation(BuildContext context, Event event) {
     showDialog(
@@ -591,6 +701,10 @@ class _StudentEventManagementScreenState
               _searchController.clear();
               _searchQuery = '';
             }
+            // Reset form when switching to add event tab
+            if (index == 1) {
+              _shouldResetAddForm = true;
+            }
           });
         },
         type: BottomNavigationBarType.fixed,
@@ -673,21 +787,6 @@ class _StudentEventManagementScreenState
                       ),
                     ),
                   ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: AppConstants.primaryColor,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  '${_events.length}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
                 ),
               ),
             ],
@@ -830,6 +929,21 @@ class _StudentEventManagementScreenState
                                           tooltip: 'Xóa',
                                         ),
                                       ],
+                                      if (event.trangThai == 'daDuyet') ...[
+                                        _buildActionButton(
+                                          icon: Icons.check_circle,
+                                          color: Colors.green,
+                                          onPressed: () => _markEventCompleted(context, event),
+                                          tooltip: 'Hoàn thành',
+                                        ),
+                                        const SizedBox(width: 8),
+                                        _buildActionButton(
+                                          icon: Icons.cancel,
+                                          color: Colors.red,
+                                          onPressed: () => _markEventCancelled(context, event),
+                                          tooltip: 'Hủy',
+                                        ),
+                                      ],
                                     ],
                                   ),
                                 ],
@@ -859,6 +973,19 @@ class _StudentEventManagementScreenState
                                     ),
                                     Expanded(
                                       child: _buildEventStat(
+                                        'Thời gian',
+                                        '${event.thoiGianBatDau} - ${event.thoiGianKetThuc}',
+                                        Icons.access_time,
+                                        Colors.orange,
+                                      ),
+                                    ),
+                                    Container(
+                                      width: 1,
+                                      height: 40,
+                                      color: Colors.grey[300],
+                                    ),
+                                    Expanded(
+                                      child: _buildEventStat(
                                         'Trạng thái',
                                         _getStatusText(event.trangThai),
                                         Icons.circle,
@@ -867,24 +994,6 @@ class _StudentEventManagementScreenState
                                     ),
                                   ],
                                 ),
-                              ),
-                              const SizedBox(height: AppConstants.paddingMedium),
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.access_time,
-                                    size: 16,
-                                    color: Colors.grey[600],
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    '${_formatDate(event.ngayToChuc)} | ${event.thoiGianBatDau} - ${event.thoiGianKetThuc}',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.grey[600],
-                                    ),
-                                  ),
-                                ],
                               ),
                           ],
                         ),
@@ -899,8 +1008,9 @@ class _StudentEventManagementScreenState
   }
 
   Widget _buildAddEvent() {
-    if (_selectedIndex == 1) {
+    if (_selectedIndex == 1 && _shouldResetAddForm) {
       _resetForm();
+      _shouldResetAddForm = false;
     }
 
     return Container(
@@ -990,6 +1100,7 @@ class _StudentEventManagementScreenState
                             _resetForm();
                             _selectedIndex = 0;
                             _currentTitle = _titles[0];
+                            _shouldResetAddForm = true;
                           });
                         },
                         icon: const Icon(Icons.cancel),
@@ -1218,61 +1329,7 @@ class _StudentEventManagementScreenState
         child: Padding(
           padding: const EdgeInsets.all(AppConstants.paddingLarge),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.all(AppConstants.paddingLarge),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppConstants.primaryColor.withOpacity(0.1),
-                      AppConstants.primaryColor.withOpacity(0.05),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppConstants.primaryColor.withOpacity(0.2)),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: AppConstants.primaryColor,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.search,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                    ),
-                    const SizedBox(width: AppConstants.paddingMedium),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Tìm kiếm & Lọc sự kiện',
-                            style: TextStyle(
-                              fontSize: AppConstants.fontSizeXLarge,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(height: 4),
-                          Text(
-                            'Tìm kiếm và lọc sự kiện theo tiêu chí',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: AppConstants.paddingLarge),
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -1326,11 +1383,12 @@ class _StudentEventManagementScreenState
                 ),
               ),
               const SizedBox(height: AppConstants.paddingMedium),
+
+              // Phần có thể cuộn
               Expanded(
                 child: SingleChildScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
                     children: [
                       const Text(
                         'Bộ lọc',
@@ -1419,10 +1477,12 @@ class _StudentEventManagementScreenState
                         ),
                       ),
                       const SizedBox(height: AppConstants.paddingMedium),
-                      SizedBox(
-                        height: 300,
-                        child: _filteredEvents.isEmpty
-                            ? Center(
+                      
+                      // Kết quả tìm kiếm
+                      _filteredEvents.isEmpty
+                          ? Container(
+                              height: 200,
+                              child: Center(
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
@@ -1450,175 +1510,189 @@ class _StudentEventManagementScreenState
                                     ),
                                   ],
                                 ),
-                              )
-                            : ListView.builder(
-                                shrinkWrap: true,
-                                itemCount: _filteredEvents.length,
-                                itemBuilder: (context, index) {
-                                  final event = _filteredEvents[index];
-                                  final String statusText = _getStatusText(event.trangThai);
-                                  final Color statusColor = _getStatusColor(statusText);
-                                  return Card(
-                                    margin: const EdgeInsets.only(bottom: AppConstants.paddingSmall),
-                                    elevation: 2,
-                                    shape: RoundedRectangleBorder(
+                              ),
+                            )
+                          : Column(
+                              children: _filteredEvents.map((event) {
+                                final String statusText = _getStatusText(event.trangThai);
+                                final Color statusColor = _getStatusColor(statusText);
+                                
+                                return Card(
+                                  margin: const EdgeInsets.only(bottom: AppConstants.paddingSmall),
+                                  elevation: 2,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Container(
+                                    decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(12),
-                                        gradient: LinearGradient(
-                                          colors: [
-                                            Colors.white,
-                                            Colors.grey[50]!,
-                                          ],
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
-                                        ),
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          Colors.white,
+                                          Colors.grey[50]!,
+                                        ],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
                                       ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(AppConstants.paddingMedium),
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Row(
-                                              children: [
-                                                Container(
-                                                  width: 40,
-                                                  height: 40,
-                                                  decoration: BoxDecoration(
-                                                    gradient: LinearGradient(
-                                                      colors: [
-                                                        AppConstants.primaryColor,
-                                                        AppConstants.primaryColor.withOpacity(0.7),
-                                                      ],
-                                                    ),
-                                                    borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(AppConstants.paddingMedium),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Container(
+                                                width: 40,
+                                                height: 40,
+                                                decoration: BoxDecoration(
+                                                  gradient: LinearGradient(
+                                                    colors: [
+                                                      AppConstants.primaryColor,
+                                                      AppConstants.primaryColor.withOpacity(0.7),
+                                                    ],
                                                   ),
-                                                  child: Center(
-                                                    child: Text(
-                                                      event.ten[0].toUpperCase(),
+                                                  borderRadius: BorderRadius.circular(10),
+                                                ),
+                                                child: Center(
+                                                  child: Text(
+                                                    event.ten[0].toUpperCase(),
+                                                    style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 16,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(width: AppConstants.paddingSmall),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      event.ten,
                                                       style: const TextStyle(
-                                                        color: Colors.white,
                                                         fontWeight: FontWeight.bold,
                                                         fontSize: 16,
                                                       ),
+                                                      overflow: TextOverflow.ellipsis,
+                                                      maxLines: 1,
                                                     ),
-                                                  ),
-                                                ),
-                                                const SizedBox(width: AppConstants.paddingSmall),
-                                                Expanded(
-                                                  child: Column(
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                    children: [
-                                                      Text(
-                                                        event.ten,
-                                                        style: const TextStyle(
-                                                          fontWeight: FontWeight.bold,
-                                                          fontSize: 16,
-                                                        ),
-                                                        overflow: TextOverflow.ellipsis,
-                                                        maxLines: 1,
+                                                    const SizedBox(height: 2),
+                                                    Text(
+                                                      'Phụ trách: ${event.nguoiPhuTrach}',
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                        color: Colors.grey[600],
                                                       ),
-                                                      const SizedBox(height: 2),
-                                                      Text(
-                                                        'Phụ trách: ${event.nguoiPhuTrach}',
-                                                        style: TextStyle(
-                                                          fontSize: 12,
-                                                          color: Colors.grey[600],
-                                                        ),
-                                                        overflow: TextOverflow.ellipsis,
-                                                        maxLines: 1,
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                                Row(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  children: [
-                                                    _buildActionButton(
-                                                      icon: Icons.visibility,
-                                                      color: Colors.blue,
-                                                      onPressed: () => _showEventDetails(context, event),
-                                                      tooltip: 'Xem chi tiết',
+                                                      overflow: TextOverflow.ellipsis,
+                                                      maxLines: 1,
                                                     ),
-                                                    if (event.trangThai == 'choPheDuyet') ...[
-                                                      const SizedBox(width: 6),
-                                                      _buildActionButton(
-                                                        icon: Icons.edit,
-                                                        color: Colors.green,
-                                                        onPressed: () => _navigateToEditEvent(context, event),
-                                                        tooltip: 'Chỉnh sửa',
-                                                      ),
-                                                    ],
                                                   ],
+                                                ),
+                                              ),
+                                              Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  _buildActionButton(
+                                                    icon: Icons.visibility,
+                                                    color: Colors.blue,
+                                                    onPressed: () => _showEventDetails(context, event),
+                                                    tooltip: 'Xem chi tiết',
+                                                  ),
+                                                  if (event.trangThai == 'choPheDuyet') ...[
+                                                    const SizedBox(width: 6),
+                                                    _buildActionButton(
+                                                      icon: Icons.edit,
+                                                      color: Colors.green,
+                                                      onPressed: () => _navigateToEditEvent(context, event),
+                                                      tooltip: 'Chỉnh sửa',
+                                                    ),
+                                                  ],
+                                                  if (event.trangThai == 'daDuyet') ...[
+                                                    const SizedBox(width: 6),
+                                                    _buildActionButton(
+                                                      icon: Icons.check_circle,
+                                                      color: Colors.green,
+                                                      onPressed: () => _markEventCompleted(context, event),
+                                                      tooltip: 'Hoàn thành',
+                                                    ),
+                                                    const SizedBox(width: 6),
+                                                    _buildActionButton(
+                                                      icon: Icons.cancel,
+                                                      color: Colors.red,
+                                                      onPressed: () => _markEventCancelled(context, event),
+                                                      tooltip: 'Hủy',
+                                                    ),
+                                                  ],
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: AppConstants.paddingSmall),
+                                          Container(
+                                            padding: const EdgeInsets.all(AppConstants.paddingSmall),
+                                            decoration: BoxDecoration(
+                                              color: Colors.grey[100],
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                            child: Row(
+                                              children: [
+                                                Expanded(
+                                                  child: Row(
+                                                    children: [
+                                                      Icon(Icons.calendar_today, size: 16, color: AppConstants.primaryColor),
+                                                      const SizedBox(width: 4),
+                                                      Flexible(
+                                                        child: Text(
+                                                          _formatDate(event.ngayToChuc),
+                                                          style: TextStyle(
+                                                            fontSize: 12,
+                                                            fontWeight: FontWeight.w600,
+                                                            color: AppConstants.primaryColor,
+                                                          ),
+                                                          overflow: TextOverflow.ellipsis,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                Container(
+                                                  width: 1,
+                                                  height: 20,
+                                                  color: Colors.grey[300],
+                                                ),
+                                                Expanded(
+                                                  child: Row(
+                                                    mainAxisAlignment: MainAxisAlignment.end,
+                                                    children: [
+                                                      Icon(Icons.circle, size: 16, color: statusColor),
+                                                      const SizedBox(width: 4),
+                                                      Flexible(
+                                                        child: Text(
+                                                          statusText,
+                                                          style: TextStyle(
+                                                            fontSize: 12,
+                                                            fontWeight: FontWeight.w600,
+                                                            color: statusColor,
+                                                          ),
+                                                          overflow: TextOverflow.ellipsis,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
                                                 ),
                                               ],
                                             ),
-                                            const SizedBox(height: AppConstants.paddingSmall),
-                                            Container(
-                                              padding: const EdgeInsets.all(AppConstants.paddingSmall),
-                                              decoration: BoxDecoration(
-                                                color: Colors.grey[100],
-                                                borderRadius: BorderRadius.circular(8),
-                                              ),
-                                              child: Row(
-                                                children: [
-                                                  Expanded(
-                                                    child: Row(
-                                                      children: [
-                                                        Icon(Icons.calendar_today, size: 16, color: AppConstants.primaryColor),
-                                                        const SizedBox(width: 4),
-                                                        Flexible(
-                                                          child: Text(
-                                                            _formatDate(event.ngayToChuc),
-                                                            style: TextStyle(
-                                                              fontSize: 12,
-                                                              fontWeight: FontWeight.w600,
-                                                              color: AppConstants.primaryColor,
-                                                            ),
-                                                            overflow: TextOverflow.ellipsis,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  Container(
-                                                    width: 1,
-                                                    height: 20,
-                                                    color: Colors.grey[300],
-                                                  ),
-                                                  Expanded(
-                                                    child: Row(
-                                                      mainAxisAlignment: MainAxisAlignment.end,
-                                                      children: [
-                                                        Icon(Icons.circle, size: 16, color: statusColor),
-                                                        const SizedBox(width: 4),
-                                                        Flexible(
-                                                          child: Text(
-                                                            statusText,
-                                                            style: TextStyle(
-                                                              fontSize: 12,
-                                                              fontWeight: FontWeight.w600,
-                                                              color: statusColor,
-                                                            ),
-                                                            overflow: TextOverflow.ellipsis,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                  );
-                                },
-                              ),
-                      ),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
                     ],
                   ),
                 ),

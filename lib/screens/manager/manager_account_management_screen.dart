@@ -133,21 +133,6 @@ class _ManagerAccountManagementScreenState
                   ],
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: AppConstants.primaryColor,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  '${_accounts.length}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
             ],
           ),
         ),
@@ -458,6 +443,9 @@ class _ManagerAccountManagementScreenState
                       ),
                       side: const BorderSide(color: Colors.blue),
                       foregroundColor: Colors.blue,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -470,6 +458,9 @@ class _ManagerAccountManagementScreenState
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16, 
                         vertical: 8
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
                       ),
                     ),
                   ),
@@ -540,49 +531,134 @@ class _ManagerAccountManagementScreenState
     return Padding(
       padding: const EdgeInsets.all(AppConstants.paddingLarge),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Tìm kiếm & Lọc',
-            style: TextStyle(
-              fontSize: AppConstants.fontSizeXLarge,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: AppConstants.paddingLarge),
+          // Thanh tìm kiếm
           _buildTextField('Tìm kiếm theo tên hoặc email', Icons.search),
           const SizedBox(height: AppConstants.paddingMedium),
-          _buildDropdownField('Vai trò', [
-            'Tất cả',
-            'Sinh viên',
-            'Quản lý',
-            'Giảng viên',
-          ]),
-          _buildDropdownField('Trạng thái', [
-            'Tất cả',
-            'Hoạt động',
-            'Tạm khóa',
-          ]),
-          const SizedBox(height: AppConstants.paddingLarge),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () {},
-                  child: const Text('Xóa lọc'),
-                ),
-              ),
-              const SizedBox(width: AppConstants.paddingMedium),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppConstants.primaryColor,
+          
+          // Phần có thể cuộn
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Bộ lọc',
+                    style: TextStyle(
+                      fontSize: AppConstants.fontSizeLarge,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  child: const Text('Áp dụng'),
-                ),
+                  _buildDropdownField('Vai trò', [
+                    'Tất cả',
+                    'Sinh viên',
+                    'Quản lý',
+                    'Giảng viên',
+                  ]),
+                  _buildDropdownField('Trạng thái', [
+                    'Tất cả',
+                    'Hoạt động',
+                    'Tạm khóa',
+                  ]),
+                  const SizedBox(height: AppConstants.paddingLarge),
+                  
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppConstants.paddingMedium,
+                      vertical: AppConstants.paddingSmall,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppConstants.primaryColor.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppConstants.primaryColor.withOpacity(0.1)),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.filter_list,
+                          size: 16,
+                          color: AppConstants.primaryColor,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Kết quả: ${_accounts.length} tài khoản',
+                            style: TextStyle(
+                              fontSize: AppConstants.fontSizeMedium,
+                              fontWeight: FontWeight.w500,
+                              color: AppConstants.primaryColor,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: AppConstants.paddingLarge),
+                  
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () {},
+                          child: const Text('Xóa lọc'),
+                        ),
+                      ),
+                      const SizedBox(width: AppConstants.paddingMedium),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {},
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppConstants.primaryColor,
+                          ),
+                          child: const Text('Áp dụng'),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppConstants.paddingMedium),
+                  
+                  // Kết quả tìm kiếm
+                  if (_accounts.isEmpty)
+                    Container(
+                      height: 200,
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.search,
+                              size: 48,
+                              color: Colors.grey[400],
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Nhập từ khóa để tìm kiếm',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Tìm kiếm theo tên hoặc email',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[500],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  else
+                    Column(
+                      children: _accounts.map((account) => _buildAccountCard(account)).toList(),
+                    ),
+                ],
               ),
-            ],
+            ),
           ),
         ],
       ),
@@ -690,17 +766,9 @@ class _ManagerAccountManagementScreenState
             children: [
               _buildDetailRow('Họ tên', account.name, Icons.person),
               const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildDetailRow('Mã người dùng', account.userId, Icons.badge),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _buildDetailRow('Email', account.email, Icons.email),
-                  ),
-                ],
-              ),
+              _buildDetailRow('Mã người dùng', account.userId, Icons.badge),
+              const SizedBox(height: 8),
+              _buildDetailRow('Email', account.email, Icons.email),
               const SizedBox(height: 8),
               Row(
                 children: [

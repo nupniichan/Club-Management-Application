@@ -193,6 +193,8 @@ class _ManagerClubManagementScreenState extends State<ManagerClubManagementScree
     }
   }
 
+
+
   Widget _buildClubList() {
     final activeClubs = _clubService.getActiveClubs().length;
     final displayClubs = _selectedIndex == 2 ? _filteredClubs : _clubs;
@@ -584,7 +586,7 @@ class _ManagerClubManagementScreenState extends State<ManagerClubManagementScree
                   OutlinedButton.icon(
                     onPressed: () => _showClubDetails(club),
                     icon: const Icon(Icons.visibility, size: 16),
-                    label: const Text('Chi tiết'),
+                    label: const Text('Xem chi tiết'),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16, 
@@ -592,6 +594,9 @@ class _ManagerClubManagementScreenState extends State<ManagerClubManagementScree
                       ),
                       side: const BorderSide(color: Colors.blue),
                       foregroundColor: Colors.blue,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -604,6 +609,9 @@ class _ManagerClubManagementScreenState extends State<ManagerClubManagementScree
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16, 
                         vertical: 8
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
                       ),
                     ),
                   ),
@@ -761,20 +769,11 @@ class _ManagerClubManagementScreenState extends State<ManagerClubManagementScree
   }
 
   Widget _buildSearchAndFilter() {
-    return Container(
+    return Padding(
       padding: const EdgeInsets.all(AppConstants.paddingLarge),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Tìm kiếm & Lọc',
-            style: TextStyle(
-              fontSize: AppConstants.fontSizeXLarge,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: AppConstants.paddingLarge),
-          
+          // Thanh tìm kiếm
           TextField(
             controller: _searchController,
             decoration: InputDecoration(
@@ -787,97 +786,183 @@ class _ManagerClubManagementScreenState extends State<ManagerClubManagementScree
           ),
           const SizedBox(height: AppConstants.paddingMedium),
           
-          const Text(
-            'Bộ lọc',
-            style: TextStyle(
-              fontSize: AppConstants.fontSizeLarge,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: AppConstants.paddingMedium),
-          
-          DropdownButtonFormField<String>(
-            value: _filterCategory,
-            decoration: InputDecoration(
-              labelText: 'Danh mục',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
-              ),
-            ),
-            items: ['Tất cả', ..._categories].map((item) => DropdownMenuItem(
-              value: item,
-              child: Text(item),
-            )).toList(),
-            onChanged: (value) {
-              setState(() {
-                _filterCategory = value!;
-              });
-              _performSearch();
-            },
-          ),
-          const SizedBox(height: AppConstants.paddingMedium),
-          DropdownButtonFormField<String>(
-            value: _filterStatus,
-            decoration: InputDecoration(
-              labelText: 'Trạng thái',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
-              ),
-            ),
-            items: ['Tất cả', 'Hoạt động', 'Tạm dừng'].map((item) => DropdownMenuItem(
-              value: item,
-              child: Text(item),
-            )).toList(),
-            onChanged: (value) {
-              setState(() {
-                _filterStatus = value!;
-              });
-              _performSearch();
-            },
-          ),
-          const SizedBox(height: AppConstants.paddingMedium),
-          
-          Text(
-            'Kết quả: ${_filteredClubs.length} câu lạc bộ',
-            style: TextStyle(
-              fontSize: AppConstants.fontSizeMedium,
-              fontWeight: FontWeight.w500,
-              color: Colors.grey[600],
-            ),
-          ),
-          const SizedBox(height: AppConstants.paddingLarge),
-          
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: _clearFilters,
-                  child: const Text('Xóa bộ lọc'),
-                ),
-              ),
-              const SizedBox(width: AppConstants.paddingMedium),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      _selectedIndex = 0;
-                      _currentTitle = _titles[0];
-                    });
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppConstants.primaryColor,
-                    foregroundColor: Colors.white,
-                  ),
-                  child: const Text('Xem kết quả'),
-                ),
-              ),
-            ],
-          ),
-          
-          const SizedBox(height: AppConstants.paddingMedium),
-          
+          // Phần có thể cuộn
           Expanded(
-            child: _buildClubList(),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Bộ lọc',
+                    style: TextStyle(
+                      fontSize: AppConstants.fontSizeLarge,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: AppConstants.paddingMedium),
+                  
+                  DropdownButtonFormField<String>(
+                    value: _filterCategory,
+                    decoration: InputDecoration(
+                      labelText: 'Danh mục',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+                      ),
+                    ),
+                    items: ['Tất cả', ..._categories].map((item) => DropdownMenuItem(
+                      value: item,
+                      child: Text(
+                        item,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    )).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _filterCategory = value!;
+                      });
+                      _performSearch();
+                    },
+                  ),
+                  const SizedBox(height: AppConstants.paddingMedium),
+                  
+                  DropdownButtonFormField<String>(
+                    value: _filterStatus,
+                    decoration: InputDecoration(
+                      labelText: 'Trạng thái',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+                      ),
+                    ),
+                    items: ['Tất cả', 'Hoạt động', 'Tạm dừng'].map((item) => DropdownMenuItem(
+                      value: item,
+                      child: Text(
+                        item,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    )).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _filterStatus = value!;
+                      });
+                      _performSearch();
+                    },
+                  ),
+                  const SizedBox(height: AppConstants.paddingMedium),
+                  
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppConstants.paddingMedium,
+                      vertical: AppConstants.paddingSmall,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppConstants.primaryColor.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppConstants.primaryColor.withOpacity(0.1)),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.filter_list,
+                          size: 16,
+                          color: AppConstants.primaryColor,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Kết quả: ${_filteredClubs.length} câu lạc bộ',
+                            style: TextStyle(
+                              fontSize: AppConstants.fontSizeMedium,
+                              fontWeight: FontWeight.w500,
+                              color: AppConstants.primaryColor,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: AppConstants.paddingLarge),
+                  
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: _clearFilters,
+                          child: const Text(
+                            'Xóa bộ lọc',
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: AppConstants.paddingMedium),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              _selectedIndex = 0;
+                              _currentTitle = _titles[0];
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppConstants.primaryColor,
+                            foregroundColor: Colors.white,
+                          ),
+                          child: const Text(
+                            'Xem kết quả',
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppConstants.paddingMedium),
+                  
+                  // Kết quả tìm kiếm
+                  if (_filteredClubs.isEmpty)
+                    Container(
+                      height: 200,
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              _searchController.text.isEmpty ? Icons.search : Icons.search_off,
+                              size: 48,
+                              color: Colors.grey[400],
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              _searchController.text.isEmpty 
+                                ? 'Nhập từ khóa để tìm kiếm'
+                                : 'Không tìm thấy câu lạc bộ',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              _searchController.text.isEmpty
+                                ? 'Tìm kiếm theo tên câu lạc bộ, lĩnh vực hoặc giáo viên'
+                                : 'Thử thay đổi từ khóa tìm kiếm hoặc bộ lọc',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[500],
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  else
+                    Column(
+                      children: _filteredClubs.map((club) => _buildClubCard(club)).toList(),
+                    ),
+                ],
+              ),
+            ),
           ),
         ],
       ),
