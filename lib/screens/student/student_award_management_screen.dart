@@ -207,21 +207,6 @@ class _StudentAwardManagementScreenState
                   ],
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: AppConstants.primaryColor,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  '${_filteredAwards.length}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
             ],
           ),
         ),
@@ -265,13 +250,13 @@ class _StudentAwardManagementScreenState
                     
                     return Card(
                       margin: const EdgeInsets.only(bottom: AppConstants.paddingMedium),
-                      elevation: 3,
+                      elevation: 2,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                       child: Container(
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(12),
                           gradient: LinearGradient(
                             colors: [
                               Colors.white,
@@ -287,11 +272,10 @@ class _StudentAwardManagementScreenState
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Container(
-                                    width: 60,
-                                    height: 60,
+                                    width: 50,
+                                    height: 50,
                                     decoration: BoxDecoration(
                                       gradient: LinearGradient(
                                         colors: [
@@ -299,20 +283,13 @@ class _StudentAwardManagementScreenState
                                           awardColor.withOpacity(0.7),
                                         ],
                                       ),
-                                      borderRadius: BorderRadius.circular(16),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: awardColor.withOpacity(0.3),
-                                          blurRadius: 8,
-                                          offset: const Offset(0, 4),
-                                        ),
-                                      ],
+                                      borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: const Center(
                                       child: Icon(
                                         Icons.emoji_events,
                                         color: Colors.white,
-                                        size: 28,
+                                        size: 24,
                                       ),
                                     ),
                                   ),
@@ -325,18 +302,17 @@ class _StudentAwardManagementScreenState
                                           award.tenGiaiThuong,
                                           style: const TextStyle(
                                             fontWeight: FontWeight.bold,
-                                            fontSize: 18,
+                                            fontSize: 16,
                                           ),
                                           overflow: TextOverflow.ellipsis,
-                                          maxLines: 2,
+                                          maxLines: 1,
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
-                                          'Thành viên: ${award.thanhVienDatGiai}',
+                                          award.thanhVienDatGiai,
                                           style: TextStyle(
                                             fontSize: 14,
                                             color: Colors.grey[600],
-                                            fontWeight: FontWeight.w500,
                                           ),
                                           overflow: TextOverflow.ellipsis,
                                           maxLines: 1,
@@ -344,163 +320,65 @@ class _StudentAwardManagementScreenState
                                       ],
                                     ),
                                   ),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                    decoration: BoxDecoration(
-                                      color: awardColor.withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(20),
-                                      border: Border.all(color: awardColor.withOpacity(0.3)),
-                                    ),
-                                    child: Text(
-                                      award.loaiGiai,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                        color: awardColor,
+                                  Column(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: awardColor.withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(12),
+                                          border: Border.all(color: awardColor.withOpacity(0.3)),
+                                        ),
+                                        child: Text(
+                                          award.loaiGiai,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                            color: awardColor,
+                                          ),
+                                        ),
                                       ),
-                                    ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        _formatDate(award.ngayDatGiai),
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey[600],
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
                               const SizedBox(height: AppConstants.paddingMedium),
-                              Container(
-                                padding: const EdgeInsets.all(AppConstants.paddingMedium),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[50],
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: Colors.grey[200]!),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      child: Column(
-                                        children: [
-                                          Icon(Icons.calendar_today, 
-                                               color: Colors.blue, size: 20),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            'Ngày đạt giải',
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: Colors.grey[600],
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 2),
-                                          Text(
-                                            _formatDate(award.ngayDatGiai),
-                                            style: const TextStyle(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.blue,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Container(
-                                      width: 1,
-                                      height: 50,
-                                      color: Colors.grey[300],
-                                    ),
-                                    Expanded(
-                                      child: Column(
-                                        children: [
-                                          Icon(Icons.person, 
-                                               color: Colors.green, size: 20),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            'Thành viên',
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: Colors.grey[600],
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 2),
-                                          Text(
-                                            award.thanhVienDatGiai,
-                                            style: const TextStyle(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.green,
-                                            ),
-                                            overflow: TextOverflow.ellipsis,
-                                            maxLines: 1,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Container(
-                                      width: 1,
-                                      height: 50,
-                                      color: Colors.grey[300],
-                                    ),
-                                    Expanded(
-                                      child: Column(
-                                        children: [
-                                          Icon(Icons.image, 
-                                               color: Colors.orange, size: 20),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            'Hình ảnh',
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: Colors.grey[600],
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 2),
-                                          Text(
-                                            award.anhDatGiai.isNotEmpty ? 'Có' : 'Không',
-                                            style: const TextStyle(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.orange,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              if (award.ghiChu.isNotEmpty) ...[
-                                const SizedBox(height: AppConstants.paddingMedium),
-                                Text(
-                                  award.ghiChu,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey[700],
-                                  ),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                              const SizedBox(height: AppConstants.paddingMedium),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
+                              Wrap(
+                                alignment: WrapAlignment.end,
+                                spacing: 8,
+                                runSpacing: 8,
                                 children: [
                                   OutlinedButton.icon(
                                     onPressed: () => _showAwardDetails(context, award),
                                     icon: const Icon(Icons.visibility, size: 16),
                                     label: const Text('Xem chi tiết'),
                                     style: OutlinedButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 16, vertical: 8),
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                                       side: const BorderSide(color: Colors.blue),
                                       foregroundColor: Colors.blue,
+                                      shape: RoundedRectangleBorder( 
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
                                     ),
                                   ),
-                                  const SizedBox(width: 8),
                                   FilledButton.icon(
                                     onPressed: () => _navigateToEditAward(award),
                                     icon: const Icon(Icons.edit, size: 16),
                                     label: const Text('Chỉnh sửa'),
                                     style: FilledButton.styleFrom(
                                       backgroundColor: Colors.green,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 16, vertical: 8),
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                      shape: RoundedRectangleBorder( 
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -518,16 +396,7 @@ class _StudentAwardManagementScreenState
   }
 
   Widget _buildAddAward() {
-    return const Center(
-      child: Text(
-        'Chức năng thêm giải thưởng (đang phát triển)',
-        style: TextStyle(fontSize: 16, color: Colors.grey),
-      ),
-    );
-  }
-
-  Widget _buildSearchAndFilter() {
-    return Padding(
+    return Container(
       padding: const EdgeInsets.all(AppConstants.paddingLarge),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -553,7 +422,7 @@ class _StudentAwardManagementScreenState
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(
-                    Icons.search,
+                    Icons.add_circle_outline,
                     color: Colors.white,
                     size: 24,
                   ),
@@ -564,7 +433,7 @@ class _StudentAwardManagementScreenState
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Tìm kiếm giải thưởng',
+                        'Thêm giải thưởng mới',
                         style: TextStyle(
                           fontSize: AppConstants.fontSizeXLarge,
                           fontWeight: FontWeight.bold,
@@ -572,7 +441,7 @@ class _StudentAwardManagementScreenState
                       ),
                       SizedBox(height: 4),
                       Text(
-                        'Tìm kiếm theo tên giải thưởng, loại giải hoặc thành viên',
+                        'Thêm thông tin giải thưởng cho câu lạc bộ',
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.grey,
@@ -585,6 +454,169 @@ class _StudentAwardManagementScreenState
             ),
           ),
           const SizedBox(height: AppConstants.paddingLarge),
+          Expanded(
+            child: SingleChildScrollView(
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    TextFormField(
+                      controller: awardNameController,
+                      decoration: InputDecoration(
+                        labelText: 'Tên giải thưởng',
+                        hintText: 'Ví dụ: Cuộc thi lập trình ABC 2024',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+                        ),
+                        prefixIcon: const Icon(Icons.emoji_events),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Vui lòng nhập tên giải thưởng';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: AppConstants.paddingMedium),
+                    
+                    DropdownButtonFormField<String>(
+                      value: selectedAwardType,
+                      decoration: InputDecoration(
+                        labelText: 'Loại giải',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+                        ),
+                        prefixIcon: const Icon(Icons.military_tech),
+                      ),
+                      items: ['Giải nhất', 'Giải nhì', 'Giải ba', 'Giải khuyến khích']
+                          .map((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                      onChanged: (newValue) {
+                        setState(() {
+                          selectedAwardType = newValue!;
+                        });
+                      },
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Vui lòng chọn loại giải';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: AppConstants.paddingMedium),
+                    
+                    TextFormField(
+                      controller: memberNameController,
+                      decoration: InputDecoration(
+                        labelText: 'Thành viên đạt giải',
+                        hintText: 'Ví dụ: Nguyễn Văn A',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+                        ),
+                        prefixIcon: const Icon(Icons.person),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Vui lòng nhập tên thành viên';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: AppConstants.paddingMedium),
+                    
+                    TextFormField(
+                      controller: dateController,
+                      decoration: InputDecoration(
+                        labelText: 'Ngày đạt giải',
+                        hintText: 'Chọn ngày đạt giải',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+                        ),
+                        prefixIcon: const Icon(Icons.calendar_today),
+                        suffixIcon: const Icon(Icons.date_range),
+                      ),
+                      readOnly: true,
+                      onTap: () => _selectDate(context),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Vui lòng chọn ngày';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: AppConstants.paddingMedium),
+                    
+                    TextFormField(
+                      controller: noteController,
+                      decoration: InputDecoration(
+                        labelText: 'Ghi chú',
+                        hintText: 'Mô tả thêm về giải thưởng (không bắt buộc)',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+                        ),
+                        prefixIcon: const Icon(Icons.note),
+                        alignLabelWithHint: true,
+                      ),
+                      maxLines: 3,
+                    ),
+                    const SizedBox(height: AppConstants.paddingLarge),
+                    
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.icon(
+                        onPressed: _addAward,
+                        icon: const Icon(Icons.add),
+                        label: const Text(
+                          'Thêm giải thưởng',
+                          style: TextStyle(fontSize: AppConstants.fontSizeLarge),
+                        ),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppConstants.primaryColor,
+                          padding: const EdgeInsets.all(AppConstants.paddingMedium),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: AppConstants.paddingMedium),
+                    
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: _resetForm,
+                        icon: const Icon(Icons.refresh),
+                        label: const Text(
+                          'Xóa form',
+                          style: TextStyle(fontSize: AppConstants.fontSizeLarge),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.all(AppConstants.paddingMedium),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSearchAndFilter() {
+    return Padding(
+      padding: const EdgeInsets.all(AppConstants.paddingLarge),
+      child: Column(
+        children: [
           Container(
             decoration: BoxDecoration(
               color: Colors.white,
@@ -638,142 +670,188 @@ class _StudentAwardManagementScreenState
             ),
           ),
           const SizedBox(height: AppConstants.paddingMedium),
-          if (_searchQuery.isNotEmpty) ...[
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppConstants.paddingMedium,
-                vertical: AppConstants.paddingSmall,
-              ),
-              decoration: BoxDecoration(
-                color: AppConstants.primaryColor.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppConstants.primaryColor.withOpacity(0.1)),
-              ),
-              child: Row(
+
+          // Phần có thể cuộn
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(
-                    Icons.filter_list,
-                    size: 16,
-                    color: AppConstants.primaryColor,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Kết quả tìm kiếm: ${_filteredAwards.length} giải thưởng',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                      color: AppConstants.primaryColor,
+                  if (_searchQuery.isNotEmpty) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppConstants.paddingMedium,
+                        vertical: AppConstants.paddingSmall,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppConstants.primaryColor.withOpacity(0.05),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: AppConstants.primaryColor.withOpacity(0.1)),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.filter_list,
+                            size: 16,
+                            color: AppConstants.primaryColor,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Kết quả tìm kiếm: ${_filteredAwards.length} giải thưởng',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                              color: AppConstants.primaryColor,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: AppConstants.paddingMedium),
+                  ],
+                  
+                  // Kết quả tìm kiếm
+                  if (_searchQuery.isEmpty)
+                    Container(
+                      height: 200,
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.search,
+                              size: 48,
+                              color: Colors.grey[400],
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Nhập từ khóa để tìm kiếm',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Tìm kiếm theo tên giải thưởng, loại giải hoặc thành viên',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[500],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  else if (_filteredAwards.isEmpty)
+                    Container(
+                      height: 200,
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.search_off,
+                              size: 48,
+                              color: Colors.grey[400],
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Không tìm thấy giải thưởng',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Thử thay đổi từ khóa tìm kiếm',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[500],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  else
+                    Column(
+                      children: _filteredAwards.map((award) {
+                        final Color awardColor = _getAwardTypeColor(award.loaiGiai);
+                        
+                        return Card(
+                          margin: const EdgeInsets.only(bottom: AppConstants.paddingSmall),
+                          elevation: 2,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: ListTile(
+                            leading: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [awardColor, awardColor.withOpacity(0.7)],
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Center(
+                                child: Icon(
+                                  Icons.emoji_events,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                              ),
+                            ),
+                            title: Text(
+                              award.tenGiaiThuong,
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                            subtitle: Text(
+                              '${award.loaiGiai} • ${award.thanhVienDatGiai}',
+                              style: TextStyle(color: Colors.grey[600]),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, 
+                                    vertical: 4
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: awardColor.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    award.loaiGiai,
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      color: awardColor,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Icon(Icons.arrow_forward_ios, 
+                                     size: 16, color: Colors.grey[400]),
+                              ],
+                            ),
+                            onTap: () => _showAwardDetails(context, award),
+                          ),
+                        );
+                      }).toList(),
+                    ),
                 ],
               ),
             ),
-            const SizedBox(height: AppConstants.paddingMedium),
-          ],
-          Expanded(
-            child: _filteredAwards.isEmpty && _searchQuery.isNotEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.search_off,
-                          size: 48,
-                          color: Colors.grey[400],
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Không tìm thấy giải thưởng',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey[600],
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Thử thay đổi từ khóa tìm kiếm',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[500],
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : ListView.builder(
-                    itemCount: _searchQuery.isEmpty ? 0 : _filteredAwards.length,
-                    itemBuilder: (context, index) {
-                      final award = _filteredAwards[index];
-                      final Color awardColor = _getAwardTypeColor(award.loaiGiai);
-                      
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: AppConstants.paddingSmall),
-                        elevation: 2,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: ListTile(
-                          leading: Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [awardColor, awardColor.withOpacity(0.7)],
-                              ),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Center(
-                              child: Icon(
-                                Icons.emoji_events,
-                                color: Colors.white,
-                                size: 20,
-                              ),
-                            ),
-                          ),
-                          title: Text(
-                            award.tenGiaiThuong,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ),
-                          subtitle: Text(
-                            '${award.loaiGiai} • ${award.thanhVienDatGiai}',
-                            style: TextStyle(color: Colors.grey[600]),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, 
-                                  vertical: 4
-                                ),
-                                decoration: BoxDecoration(
-                                  color: awardColor.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  award.loaiGiai,
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    color: awardColor,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Icon(Icons.arrow_forward_ios, 
-                                   size: 16, color: Colors.grey[400]),
-                            ],
-                          ),
-                          onTap: () => _showAwardDetails(context, award),
-                        ),
-                      );
-                    },
-                  ),
           ),
         ],
       ),
@@ -955,6 +1033,42 @@ class _StudentAwardManagementScreenState
     );
   }
 
+  // Add new award
+  void _addAward() {
+    if (_formKey.currentState!.validate()) {
+      final newAward = Award(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        tenGiaiThuong: awardNameController.text,
+        loaiGiai: selectedAwardType,
+        thanhVienDatGiai: memberNameController.text,
+        ngayDatGiai: _convertDateFormat(dateController.text),
+        ghiChu: noteController.text,
+        anhDatGiai: '', // Default empty image path
+      );
+
+      _awardService.addAward(newAward);
+      _loadAwards();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Đã thêm giải thưởng "${newAward.tenGiaiThuong}" thành công',
+            style: const TextStyle(fontSize: AppConstants.fontSizeLarge),
+          ),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      _resetForm();
+      
+      // Switch to awards list to see the new award
+      setState(() {
+        _selectedIndex = 0;
+        _currentTitle = _titles[0];
+      });
+    }
+  }
+
   // Reset form
   void _resetForm() {
     awardNameController.clear();
@@ -1122,7 +1236,9 @@ class _StudentAwardManagementScreenState
                         const SizedBox(height: AppConstants.paddingMedium),
                         _buildDetailRow(Icons.calendar_today, 'Ngày đạt giải', _formatDate(award.ngayDatGiai)),
                         const SizedBox(height: AppConstants.paddingMedium),
-                        _buildDetailRow(Icons.note, 'Ghi chú', award.ghiChu),
+                        _buildDetailRow(Icons.image, 'Hình ảnh', award.anhDatGiai.isNotEmpty ? 'Có hình ảnh' : 'Chưa có hình ảnh'),
+                        const SizedBox(height: AppConstants.paddingMedium),
+                        _buildDetailRow(Icons.note, 'Ghi chú', award.ghiChu.isNotEmpty ? award.ghiChu : 'Không có ghi chú'),
                       ],
                     ),
                   ),

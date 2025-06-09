@@ -863,33 +863,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
       margin: const EdgeInsets.only(bottom: AppConstants.paddingMedium),
       padding: const EdgeInsets.all(AppConstants.paddingMedium),
       decoration: BoxDecoration(
-        color: Colors.grey[50],
+        color: Colors.white,
         borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
         border: Border.all(
-          color: Colors.grey[200]!,
+          color: Colors.grey[300]!,
           width: 1,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha((0.05 * 255).round()),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      child: Column(
+      child: Row(
         children: [
-          // Top row: Avatar + Name + Role Badge
-          Row(
-            children: [
-              // Avatar
-              CircleAvatar(
-                radius: 22,
-                backgroundColor: roleColor.withAlpha((0.1 * 255).round()),
-                child: Icon(
-                  roleIcon,
-                  color: roleColor,
-                  size: 18,
-                ),
-              ),
-              const SizedBox(width: AppConstants.paddingMedium),
-              
-              // Name
-              Expanded(
-                child: Text(
+          // Avatar
+          CircleAvatar(
+            radius: 24,
+            backgroundColor: roleColor.withAlpha((0.15 * 255).round()),
+            child: Icon(
+              roleIcon,
+              color: roleColor,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: AppConstants.paddingMedium),
+          
+          // Name and info section
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Name
+                Text(
                   name,
                   style: const TextStyle(
                     fontSize: AppConstants.fontSizeLarge,
@@ -899,96 +907,99 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,
                 ),
-              ),
-              const SizedBox(width: AppConstants.paddingSmall),
-              
-              // Role Badge
-              Flexible(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppConstants.paddingSmall,
-                    vertical: 3,
-                  ),
-                  decoration: BoxDecoration(
-                    color: roleColor.withAlpha((0.1 * 255).round()),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: roleColor.withAlpha((0.3 * 255).round()),
-                      width: 1,
-                    ),
-                  ),
-                  child: Text(
-                    role,
-                    style: TextStyle(
-                      fontSize: AppConstants.fontSizeSmall,
-                      fontWeight: FontWeight.w600,
-                      color: roleColor,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          
-          const SizedBox(height: AppConstants.paddingSmall),
-          
-          // Bottom row: MSHS + Class info
-          Row(
-            children: [
-              const SizedBox(width: 52), // Space for avatar alignment
-              Expanded(
-                child: Wrap(
-                  spacing: AppConstants.paddingMedium,
-                  runSpacing: 4,
+                const SizedBox(height: 6),
+                
+                // MSHS + Class info with better styling
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.badge_outlined,
-                          size: 14,
-                          color: Colors.grey[600],
-                        ),
-                        const SizedBox(width: 4),
-                        Flexible(
-                          child: Text(
-                            'MSHS: $studentId',
-                            style: TextStyle(
-                              fontSize: AppConstants.fontSizeMedium,
-                              color: Colors.grey[600],
-                            ),
-                            overflow: TextOverflow.ellipsis,
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppConstants.primaryColor.withAlpha((0.1 * 255).round()),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.badge,
+                            size: 10,
+                            color: AppConstants.primaryColor,
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 3),
+                          Text(
+                            studentId,
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: AppConstants.primaryColor,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.class_outlined,
-                          size: 14,
-                          color: Colors.grey[600],
-                        ),
-                        const SizedBox(width: 4),
-                        Flexible(
-                          child: Text(
+                    const SizedBox(height: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withAlpha((0.1 * 255).round()),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.school,
+                            size: 10,
+                            color: Colors.blue[700],
+                          ),
+                          const SizedBox(width: 3),
+                          Text(
                             className,
                             style: TextStyle(
-                              fontSize: AppConstants.fontSizeMedium,
-                              color: Colors.grey[600],
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.blue[700],
                             ),
-                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ],
                 ),
+              ],
+            ),
+          ),
+          
+          // Role Badge - moved to the right
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 6,
+            ),
+            decoration: BoxDecoration(
+              color: roleColor.withAlpha((0.15 * 255).round()),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: roleColor.withAlpha((0.3 * 255).round()),
+                width: 1,
               ),
-            ],
+            ),
+            child: Text(
+              role,
+              style: TextStyle(
+                fontSize: AppConstants.fontSizeSmall,
+                fontWeight: FontWeight.w700,
+                color: roleColor,
+              ),
+            ),
           ),
         ],
       ),

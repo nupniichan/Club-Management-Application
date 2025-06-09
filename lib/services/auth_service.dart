@@ -22,7 +22,7 @@ class AuthService {
     'hocsinh@club.com': {
       'id': '2',
       'password': '123456',
-      'name': 'Trần Thị Học',
+      'name': 'Huỳnh Minh Quân',
       'email': 'hocsinh@club.com',
       'role': 'Học sinh',
       'createdAt': DateTime.now().subtract(const Duration(days: 15)).toIso8601String(),

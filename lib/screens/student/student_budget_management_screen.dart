@@ -675,21 +675,6 @@ class _StudentBudgetManagementScreenState
                   ],
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: AppConstants.primaryColor,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  '${_budgets.length}',
-                style: const TextStyle(
-                    color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                  ),
-                ),
-              ),
             ],
           ),
         ),
@@ -1248,61 +1233,7 @@ class _StudentBudgetManagementScreenState
         child: Padding(
           padding: const EdgeInsets.all(AppConstants.paddingLarge),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.all(AppConstants.paddingLarge),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppConstants.primaryColor.withOpacity(0.1),
-                      AppConstants.primaryColor.withOpacity(0.05),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppConstants.primaryColor.withOpacity(0.2)),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: AppConstants.primaryColor,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.search,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                    ),
-                    const SizedBox(width: AppConstants.paddingMedium),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                'Tìm kiếm & Lọc ngân sách',
-                style: TextStyle(
-                  fontSize: AppConstants.fontSizeXLarge,
-                  fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(height: 4),
-                          Text(
-                            'Tìm kiếm và lọc ngân sách theo tiêu chí',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: AppConstants.paddingLarge),
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -1356,11 +1287,12 @@ class _StudentBudgetManagementScreenState
                 ),
               ),
               const SizedBox(height: AppConstants.paddingMedium),
+
+              // Phần có thể cuộn
               Expanded(
                 child: SingleChildScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
                     children: [
                       const Text(
                         'Bộ lọc',
@@ -1493,21 +1425,22 @@ class _StudentBudgetManagementScreenState
                         ),
                       ),
                       const SizedBox(height: AppConstants.paddingMedium),
-                      SizedBox(
-                        height: 300,
-                        child:
-                            _filteredBudgets.isEmpty
-                                ? Center(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.search_off,
-                                        size: 48,
-                                        color: Colors.grey[400],
-                                      ),
-                                      const SizedBox(height: 16),
-                                      Text(
+                      
+                      // Kết quả tìm kiếm
+                      _filteredBudgets.isEmpty
+                          ? Container(
+                              height: 200,
+                              child: Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.search_off,
+                                      size: 48,
+                                      color: Colors.grey[400],
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Text(
                                     'Không tìm thấy ngân sách',
                                     style: TextStyle(
                                       fontSize: 16,
@@ -1515,206 +1448,203 @@ class _StudentBudgetManagementScreenState
                                           fontWeight: FontWeight.w500,
                                         ),
                                       ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        'Thử thay đổi từ khóa tìm kiếm hoặc bộ lọc',
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          color: Colors.grey[500],
-                                        ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Thử thay đổi từ khóa tìm kiếm hoặc bộ lọc',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.grey[500],
                                       ),
-                                    ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
+                          : Column(
+                              children: _filteredBudgets.map((budget) {
+                                return Card(
+                                  margin: const EdgeInsets.only(bottom: AppConstants.paddingSmall),
+                                  elevation: 2,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
-                                )
-                                : ListView.builder(
-                                  shrinkWrap: true,
-                                  itemCount: _filteredBudgets.length,
-                                  itemBuilder: (context, index) {
-                                    final budget = _filteredBudgets[index];
-                                    return Card(
-                                      margin: const EdgeInsets.only(bottom: AppConstants.paddingSmall),
-                                      elevation: 2,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(12),
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          Colors.white,
+                                          Colors.grey[50]!,
+                                        ],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
                                       ),
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(12),
-                                          gradient: LinearGradient(
-                                            colors: [
-                                              Colors.white,
-                                              Colors.grey[50]!,
-                                            ],
-                                            begin: Alignment.topLeft,
-                                            end: Alignment.bottomRight,
-                                          ),
-                                        ),
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(AppConstants.paddingMedium),
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(AppConstants.paddingMedium),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
                                             children: [
-                                              Row(
-                                                children: [
-                                                  Container(
-                                                    width: 40,
-                                                    height: 40,
-                                                    decoration: BoxDecoration(
-                                                      gradient: LinearGradient(
-                                                        colors: [
-                                                          AppConstants.primaryColor,
-                                                          AppConstants.primaryColor.withOpacity(0.7),
-                                                        ],
-                                                      ),
-                                                      borderRadius: BorderRadius.circular(10),
-                                                    ),
-                                                    child: Center(
-                                        child: Text(
-                                          budget.ten[0].toUpperCase(),
-                                                        style: const TextStyle(
-                                                          color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                                          fontSize: 16,
-                                          ),
-                                        ),
-                                      ),
-                                                  ),
-                                                  const SizedBox(width: AppConstants.paddingSmall),
-                                                  Expanded(
-                                                    child: Column(
-                                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                                      children: [
-                                                        Text(
-                                                          budget.ten ?? '',
-                                                          style: const TextStyle(
-                                                            fontWeight: FontWeight.bold,
-                                                            fontSize: 16,
-                                                          ),
-                                                          overflow: TextOverflow.ellipsis,
-                                                          maxLines: 1,
-                                                        ),
-                                                        const SizedBox(height: 2),
-                                                        Text(
-                                                          'Phụ trách: ${budget.thanhVienChiuTrachNhiem ?? '-'}',
-                                                          style: TextStyle(
-                                                            fontSize: 12,
-                                                            color: Colors.grey[600],
-                                                          ),
-                                                          overflow: TextOverflow.ellipsis,
-                                                          maxLines: 1,
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  Row(
-                                                    mainAxisSize: MainAxisSize.min,
-                                                    children: [
-                                                      _buildActionButton(
-                                                        icon: Icons.visibility,
-                                                        color: Colors.blue,
-                                                        onPressed: () => _showBudgetDetails(context, budget),
-                                                        tooltip: 'Xem chi tiết',
-                                                      ),
-                                                      const SizedBox(width: 6),
-                                                      _buildActionButton(
-                                                        icon: Icons.edit,
-                                                        color: Colors.green,
-                                                        onPressed: () => _navigateToEditBudget(context, budget),
-                                                        tooltip: 'Chỉnh sửa',
-                                                      ),
+                                              Container(
+                                                width: 40,
+                                                height: 40,
+                                                decoration: BoxDecoration(
+                                                  gradient: LinearGradient(
+                                                    colors: [
+                                                      AppConstants.primaryColor,
+                                                      AppConstants.primaryColor.withOpacity(0.7),
                                                     ],
                                                   ),
-                                                ],
-                                              ),
-                                              const SizedBox(height: AppConstants.paddingSmall),
-                                              Container(
-                                                padding: const EdgeInsets.all(AppConstants.paddingSmall),
-                                        decoration: BoxDecoration(
-                                                  color: Colors.grey[100],
-                                                  borderRadius: BorderRadius.circular(8),
+                                                  borderRadius: BorderRadius.circular(10),
                                                 ),
-                                                child: Row(
+                                                child: Center(
+                                      child: Text(
+                                        budget.ten[0].toUpperCase(),
+                                                      style: const TextStyle(
+                                                        color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                                        fontSize: 16,
+                                        ),
+                                      ),
+                                    ),
+                                              ),
+                                              const SizedBox(width: AppConstants.paddingSmall),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
                                                   children: [
-                                                    Expanded(
-                                                      child: Row(
-                                                        children: [
-                                                          Icon(Icons.account_balance_wallet, size: 16, color: Colors.green),
-                                                          const SizedBox(width: 4),
-                                                          Flexible(
-                                                            child: Text(
-                                                              _formatCurrency(budget.nguonThu),
-                                                              style: const TextStyle(
-                                                                fontSize: 12,
-                                                                fontWeight: FontWeight.w600,
-                                                                color: Colors.green,
-                                                              ),
-                                                              overflow: TextOverflow.ellipsis,
-                                                            ),
-                                                          ),
-                                                        ],
+                                                    Text(
+                                                      budget.ten ?? '',
+                                                      style: const TextStyle(
+                                                        fontWeight: FontWeight.bold,
+                                                        fontSize: 16,
                                                       ),
+                                                      overflow: TextOverflow.ellipsis,
+                                                      maxLines: 1,
                                                     ),
-                                                    Container(
-                                                      width: 1,
-                                                      height: 20,
-                                                      color: Colors.grey[300],
-                                                    ),
-                                                    Expanded(
-                                                      child: Row(
-                                                        mainAxisAlignment: MainAxisAlignment.center,
-                                                        children: [
-                                                          Icon(Icons.money_off, size: 16, color: Colors.orange),
-                                                          const SizedBox(width: 4),
-                                                          Flexible(
-                                        child: Text(
-                                                              _formatCurrency(budget.khoanChiTieu),
-                                          style: const TextStyle(
-                                            fontSize: 12,
-                                                                fontWeight: FontWeight.w600,
-                                                                color: Colors.orange,
-                                                              ),
-                                                              overflow: TextOverflow.ellipsis,
-                                                            ),
-                                                          ),
-                                                        ],
+                                                    const SizedBox(height: 2),
+                                                    Text(
+                                                      'Phụ trách: ${budget.thanhVienChiuTrachNhiem ?? '-'}',
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                        color: Colors.grey[600],
                                                       ),
-                                                    ),
-                                                    Container(
-                                                      width: 1,
-                                                      height: 20,
-                                                      color: Colors.grey[300],
-                                                    ),
-                                                    Expanded(
-                                                      child: Row(
-                                                        mainAxisAlignment: MainAxisAlignment.end,
-                                                        children: [
-                                                          Icon(Icons.calendar_today, size: 16, color: Colors.blue),
-                                                          const SizedBox(width: 4),
-                                                          Flexible(
-                                                            child: Text(
-                                                              _formatDate(budget.ngay),
-                                                              style: const TextStyle(
-                                                                fontSize: 12,
-                                                                fontWeight: FontWeight.w600,
-                                                                color: Colors.blue,
-                                                              ),
-                                                              overflow: TextOverflow.ellipsis,
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
+                                                      overflow: TextOverflow.ellipsis,
+                                                      maxLines: 1,
                                                     ),
                                                   ],
                                                 ),
                                               ),
+                                              Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  _buildActionButton(
+                                                    icon: Icons.visibility,
+                                                    color: Colors.blue,
+                                                    onPressed: () => _showBudgetDetails(context, budget),
+                                                    tooltip: 'Xem chi tiết',
+                                                  ),
+                                                  const SizedBox(width: 6),
+                                                  _buildActionButton(
+                                                    icon: Icons.edit,
+                                                    color: Colors.green,
+                                                    onPressed: () => _navigateToEditBudget(context, budget),
+                                                    tooltip: 'Chỉnh sửa',
+                                                  ),
+                                                ],
+                                              ),
                                             ],
                                           ),
-                                        ),
+                                          const SizedBox(height: AppConstants.paddingSmall),
+                                          Container(
+                                            padding: const EdgeInsets.all(AppConstants.paddingSmall),
+                                      decoration: BoxDecoration(
+                                                color: Colors.grey[100],
+                                                borderRadius: BorderRadius.circular(8),
+                                              ),
+                                            child: Row(
+                                              children: [
+                                                Expanded(
+                                                  child: Row(
+                                                    children: [
+                                                      Icon(Icons.account_balance_wallet, size: 16, color: Colors.green),
+                                                      const SizedBox(width: 4),
+                                                      Flexible(
+                                                        child: Text(
+                                                          _formatCurrency(budget.nguonThu),
+                                                          style: const TextStyle(
+                                                            fontSize: 12,
+                                                            fontWeight: FontWeight.w600,
+                                                            color: Colors.green,
+                                                          ),
+                                                          overflow: TextOverflow.ellipsis,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                Container(
+                                                  width: 1,
+                                                  height: 20,
+                                                  color: Colors.grey[300],
+                                                ),
+                                                Expanded(
+                                                  child: Row(
+                                                    mainAxisAlignment: MainAxisAlignment.center,
+                                                    children: [
+                                                      Icon(Icons.money_off, size: 16, color: Colors.orange),
+                                                      const SizedBox(width: 4),
+                                                      Flexible(
+                                      child: Text(
+                                                            _formatCurrency(budget.khoanChiTieu),
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                                              fontWeight: FontWeight.w600,
+                                                              color: Colors.orange,
+                                                            ),
+                                                            overflow: TextOverflow.ellipsis,
+                                                          ),
+                                                        ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                Container(
+                                                  width: 1,
+                                                  height: 20,
+                                                  color: Colors.grey[300],
+                                                ),
+                                                Expanded(
+                                                  child: Row(
+                                                    mainAxisAlignment: MainAxisAlignment.end,
+                                                    children: [
+                                                      Icon(Icons.calendar_today, size: 16, color: Colors.blue),
+                                                      const SizedBox(width: 4),
+                                                      Flexible(
+                                                        child: Text(
+                                                          _formatDate(budget.ngay),
+                                                          style: const TextStyle(
+                                                            fontSize: 12,
+                                                            fontWeight: FontWeight.w600,
+                                                            color: Colors.blue,
+                                                          ),
+                                                          overflow: TextOverflow.ellipsis,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                    );
-                                  },
-                                ),
-                      ),
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
                     ],
                   ),
                 ),

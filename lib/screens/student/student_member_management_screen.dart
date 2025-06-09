@@ -268,21 +268,6 @@ class _StudentMemberManagementScreenState
                   ],
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: AppConstants.primaryColor,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  '${_filteredMembers.length}',
-                style: const TextStyle(
-                    color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                  ),
-                ),
-              ),
             ],
           ),
         ),
@@ -1238,61 +1223,7 @@ class _StudentMemberManagementScreenState
         child: Padding(
           padding: const EdgeInsets.all(AppConstants.paddingLarge),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.all(AppConstants.paddingLarge),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppConstants.primaryColor.withOpacity(0.1),
-                      AppConstants.primaryColor.withOpacity(0.05),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppConstants.primaryColor.withOpacity(0.2)),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: AppConstants.primaryColor,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.search,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                    ),
-                    const SizedBox(width: AppConstants.paddingMedium),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                'Tìm kiếm & Lọc thành viên',
-                style: TextStyle(
-                  fontSize: AppConstants.fontSizeXLarge,
-                  fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(height: 4),
-                          Text(
-                            'Tìm kiếm thành viên theo tên, mã số hoặc lớp',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: AppConstants.paddingLarge),
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -1352,7 +1283,6 @@ class _StudentMemberManagementScreenState
                 child: SingleChildScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
                     children: [
                       // Bộ lọc
                       const Text(
@@ -1447,10 +1377,12 @@ class _StudentMemberManagementScreenState
                         ),
                       ),
                       const SizedBox(height: AppConstants.paddingMedium),
-                      SizedBox(
-                        height: 300,
-                        child: _filteredMembers.isEmpty
-                            ? Center(
+                      
+                      // Kết quả tìm kiếm
+                      _filteredMembers.isEmpty
+                          ? Container(
+                              height: 200,
+                              child: Center(
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
@@ -1477,202 +1409,199 @@ class _StudentMemberManagementScreenState
                                       ),
                                     ),
                                   ],
+                                ),
+                              ),
+                            )
+                          : Column(
+                              children: _filteredMembers.map((member) {
+                                final Color genderColor = member.gender == 'Nam' ? Colors.blue : Colors.pink;
+                                final Color roleColor = _getRoleColor(member.role);
+                                
+                                return Card(
+                                  margin: const EdgeInsets.only(bottom: AppConstants.paddingSmall),
+                                  elevation: 2,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
-                                )
-                                : ListView.builder(
-                                  shrinkWrap: true,
-                                  itemCount: _filteredMembers.length,
-                                  itemBuilder: (context, index) {
-                                    final member = _filteredMembers[index];
-                                  final Color genderColor = member.gender == 'Nam' ? Colors.blue : Colors.pink;
-                                  final Color roleColor = _getRoleColor(member.role);
-                                  
-                                  return Card(
-                                    margin: const EdgeInsets.only(bottom: AppConstants.paddingSmall),
-                                    elevation: 2,
-                                    shape: RoundedRectangleBorder(
+                                  child: Container(
+                                    decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(12),
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          Colors.white,
+                                          Colors.grey[50]!,
+                                        ],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      ),
                                     ),
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(12),
-                                        gradient: LinearGradient(
-                                          colors: [
-                                            Colors.white,
-                                            Colors.grey[50]!,
-                                          ],
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
-                                        ),
-                                      ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(AppConstants.paddingMedium),
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Row(
-                                              children: [
-                                                Container(
-                                                  width: 40,
-                                                  height: 40,
-                                                  decoration: BoxDecoration(
-                                                    gradient: LinearGradient(
-                                                      colors: [
-                                                        genderColor,
-                                                        genderColor.withOpacity(0.7),
-                                                      ],
-                                                    ),
-                                                    borderRadius: BorderRadius.circular(10),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(AppConstants.paddingMedium),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Container(
+                                                width: 40,
+                                                height: 40,
+                                                decoration: BoxDecoration(
+                                                  gradient: LinearGradient(
+                                                    colors: [
+                                                      genderColor,
+                                                      genderColor.withOpacity(0.7),
+                                                    ],
                                                   ),
-                                                  child: Center(
-                                        child: Text(
-                                          _getInitials(member.name),
-                                                      style: const TextStyle(
-                                                        color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                                        fontSize: 16,
-                                          ),
+                                                  borderRadius: BorderRadius.circular(10),
+                                                ),
+                                                child: Center(
+                                      child: Text(
+                                        _getInitials(member.name),
+                                                    style: const TextStyle(
+                                                      color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                                      fontSize: 16,
                                         ),
                                       ),
-                                                ),
-                                                const SizedBox(width: AppConstants.paddingSmall),
-                                                Expanded(
-                                                  child: Column(
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                    children: [
-                                                      Text(
-                                                        member.name,
-                                                        style: const TextStyle(
-                                                          fontWeight: FontWeight.bold,
-                                                          fontSize: 16,
-                                                        ),
-                                                        overflow: TextOverflow.ellipsis,
-                                                        maxLines: 1,
+                                    ),
+                                              ),
+                                              const SizedBox(width: AppConstants.paddingSmall),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      member.name,
+                                                      style: const TextStyle(
+                                                        fontWeight: FontWeight.bold,
+                                                        fontSize: 16,
                                                       ),
-                                                      const SizedBox(height: 2),
-                                                      Text(
-                                        '${member.id} - ${member.className}',
-                                                        style: TextStyle(
-                                                          fontSize: 12,
-                                                          color: Colors.grey[600],
+                                                      overflow: TextOverflow.ellipsis,
+                                                      maxLines: 1,
+                                                    ),
+                                                    const SizedBox(height: 2),
+                                                    Text(
+                                      '${member.id} - ${member.className}',
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                        color: Colors.grey[600],
+                                                      ),
+                                                      overflow: TextOverflow.ellipsis,
+                                                      maxLines: 1,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  _buildActionButton(
+                                                    icon: Icons.visibility,
+                                                    color: Colors.blue,
+                                                    onPressed: () => _showMemberDetails(context, member),
+                                                    tooltip: 'Xem chi tiết',
+                                                  ),
+                                                  const SizedBox(width: 6),
+                                                  _buildActionButton(
+                                                    icon: Icons.edit,
+                                                    color: Colors.green,
+                                                    onPressed: () => _navigateToEditMember(context, member),
+                                                    tooltip: 'Chỉnh sửa',
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: AppConstants.paddingSmall),
+                                          Container(
+                                            padding: const EdgeInsets.all(AppConstants.paddingSmall),
+                                      decoration: BoxDecoration(
+                                              color: Colors.grey[100],
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                            child: Row(
+                                              children: [
+                                                Expanded(
+                                                  child: Row(
+                                                    children: [
+                                                      Icon(member.gender == 'Nam' ? Icons.male : Icons.female, 
+                                                           size: 16, color: genderColor),
+                                                      const SizedBox(width: 4),
+                                                      Flexible(
+                                                        child: Text(
+                                                          member.gender,
+                                                          style: TextStyle(
+                                                            fontSize: 12,
+                                                            fontWeight: FontWeight.w600,
+                                                            color: genderColor,
+                                                          ),
+                                                          overflow: TextOverflow.ellipsis,
                                                         ),
-                                                        overflow: TextOverflow.ellipsis,
-                                                        maxLines: 1,
                                                       ),
                                                     ],
                                                   ),
                                                 ),
-                                                Row(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  children: [
-                                                    _buildActionButton(
-                                                      icon: Icons.visibility,
-                                                      color: Colors.blue,
-                                                      onPressed: () => _showMemberDetails(context, member),
-                                                      tooltip: 'Xem chi tiết',
-                                                    ),
-                                                    const SizedBox(width: 6),
-                                                    _buildActionButton(
-                                                      icon: Icons.edit,
-                                                      color: Colors.green,
-                                                      onPressed: () => _navigateToEditMember(context, member),
-                                                      tooltip: 'Chỉnh sửa',
-                                                    ),
-                                                  ],
+                                                Container(
+                                                  width: 1,
+                                                  height: 20,
+                                                  color: Colors.grey[300],
+                                                ),
+                                                Expanded(
+                                                  child: Row(
+                                                    mainAxisAlignment: MainAxisAlignment.center,
+                                                    children: [
+                                                      Icon(Icons.class_, size: 16, color: Colors.blue),
+                                                      const SizedBox(width: 4),
+                                                      Flexible(
+                                      child: Text(
+                                                          member.className,
+                                                          style: const TextStyle(
+                                                            fontSize: 12,
+                                                            fontWeight: FontWeight.w600,
+                                                            color: Colors.blue,
+                                                          ),
+                                                          overflow: TextOverflow.ellipsis,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                Container(
+                                                  width: 1,
+                                                  height: 20,
+                                                  color: Colors.grey[300],
+                                                ),
+                                                Expanded(
+                                                  child: Row(
+                                                    mainAxisAlignment: MainAxisAlignment.end,
+                                                    children: [
+                                                      Icon(Icons.work, size: 16, color: roleColor),
+                                                      const SizedBox(width: 4),
+                                                      Flexible(
+                                                        child: Text(
+                                                          member.role == 'THÀNH VIÊN' ? 'TV' : 
+                                                          (member.role == 'PHÓ CÂU LẠC BỘ' ? 'PHÓ' : 'TRƯỞNG'),
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                                            fontWeight: FontWeight.w600,
+                                                            color: roleColor,
+                                                          ),
+                                                          overflow: TextOverflow.ellipsis,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
                                                 ),
                                               ],
                                             ),
-                                            const SizedBox(height: AppConstants.paddingSmall),
-                                            Container(
-                                              padding: const EdgeInsets.all(AppConstants.paddingSmall),
-                                        decoration: BoxDecoration(
-                                                color: Colors.grey[100],
-                                                borderRadius: BorderRadius.circular(8),
-                                              ),
-                                              child: Row(
-                                                children: [
-                                                  Expanded(
-                                                    child: Row(
-                                                      children: [
-                                                        Icon(member.gender == 'Nam' ? Icons.male : Icons.female, 
-                                                             size: 16, color: genderColor),
-                                                        const SizedBox(width: 4),
-                                                        Flexible(
-                                                          child: Text(
-                                                            member.gender,
-                                                            style: TextStyle(
-                                                              fontSize: 12,
-                                                              fontWeight: FontWeight.w600,
-                                                              color: genderColor,
-                                                            ),
-                                                            overflow: TextOverflow.ellipsis,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  Container(
-                                                    width: 1,
-                                                    height: 20,
-                                                    color: Colors.grey[300],
-                                                  ),
-                                                  Expanded(
-                                                    child: Row(
-                                                      mainAxisAlignment: MainAxisAlignment.center,
-                                                      children: [
-                                                        Icon(Icons.class_, size: 16, color: Colors.blue),
-                                                        const SizedBox(width: 4),
-                                                        Flexible(
-                                        child: Text(
-                                                            member.className,
-                                                            style: const TextStyle(
-                                                              fontSize: 12,
-                                                              fontWeight: FontWeight.w600,
-                                                              color: Colors.blue,
-                                                            ),
-                                                            overflow: TextOverflow.ellipsis,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  Container(
-                                                    width: 1,
-                                                    height: 20,
-                                                    color: Colors.grey[300],
-                                                  ),
-                                                  Expanded(
-                                                    child: Row(
-                                                      mainAxisAlignment: MainAxisAlignment.end,
-                                                      children: [
-                                                        Icon(Icons.work, size: 16, color: roleColor),
-                                                        const SizedBox(width: 4),
-                                                        Flexible(
-                                                          child: Text(
-                                                            member.role == 'THÀNH VIÊN' ? 'TV' : 
-                                                            (member.role == 'PHÓ CÂU LẠC BỘ' ? 'PHÓ' : 'TRƯỞNG'),
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                                              fontWeight: FontWeight.w600,
-                                                              color: roleColor,
-                                                            ),
-                                                            overflow: TextOverflow.ellipsis,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
                                           ),
-                                    );
-                                  },
-                                ),
-                      ),
+                                        ],
+                                      ),
+                                    ),
+                                        ),
+                                  );
+                                }).toList(),
+                              ),
                     ],
                   ),
                 ),

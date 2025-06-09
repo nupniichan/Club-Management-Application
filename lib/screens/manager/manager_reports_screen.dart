@@ -81,6 +81,21 @@ class _ManagerReportsScreenState extends State<ManagerReportsScreen> {
     }
   }
 
+  Color _getAwardColor(String loaiGiai) {
+    switch (loaiGiai) {
+      case 'Giải nhất':
+        return Colors.red;
+      case 'Giải nhì':
+        return Colors.orange;
+      case 'Giải ba':
+        return Colors.blue;
+      case 'Giải khuyến khích':
+        return Colors.green;
+      default:
+        return Colors.amber;
+    }
+  }
+
   Widget _buildReportList(BuildContext context) {
     return Column(
       children: [
@@ -131,21 +146,6 @@ class _ManagerReportsScreenState extends State<ManagerReportsScreen> {
                       ),
                     ),
                   ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: AppConstants.primaryColor,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  '${_reports.length}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
                 ),
               ),
             ],
@@ -402,6 +402,9 @@ class _ManagerReportsScreenState extends State<ManagerReportsScreen> {
                       ),
                       side: const BorderSide(color: Colors.blue),
                       foregroundColor: Colors.blue,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                   ),
                 ],
@@ -417,13 +420,8 @@ class _ManagerReportsScreenState extends State<ManagerReportsScreen> {
     return Padding(
       padding: const EdgeInsets.all(AppConstants.paddingLarge),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Tìm kiếm & Lọc báo cáo',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: AppConstants.paddingMedium),
+          // Thanh tìm kiếm
           TextField(
             decoration: const InputDecoration(
               hintText: 'Tìm kiếm theo tên báo cáo',
@@ -433,43 +431,175 @@ class _ManagerReportsScreenState extends State<ManagerReportsScreen> {
             onChanged: (value) {},
           ),
           const SizedBox(height: AppConstants.paddingMedium),
-          DropdownButtonFormField<String>(
-            decoration: const InputDecoration(border: OutlineInputBorder()),
-            value: 'Tất cả CLB',
-            items: const [
-              DropdownMenuItem(value: 'Tất cả CLB', child: Text('Tất cả CLB')),
-              DropdownMenuItem(value: 'Tin học', child: Text('Tin học')),
-              DropdownMenuItem(value: 'Toán học', child: Text('Toán học')),
-            ],
-            onChanged: (value) {},
-          ),
-          const SizedBox(height: AppConstants.paddingMedium),
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  readOnly: true,
-                  decoration: const InputDecoration(
-                    hintText: 'mm/dd/yyyy',
-                    prefixIcon: Icon(Icons.calendar_today),
-                    border: OutlineInputBorder(),
+          
+          // Phần có thể cuộn
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Bộ lọc',
+                    style: TextStyle(
+                      fontSize: AppConstants.fontSizeLarge,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  onTap: () async {},
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: TextField(
-                  readOnly: true,
-                  decoration: const InputDecoration(
-                    hintText: 'mm/dd/yyyy',
-                    prefixIcon: Icon(Icons.calendar_today),
-                    border: OutlineInputBorder(),
+                  const SizedBox(height: AppConstants.paddingMedium),
+                  
+                  DropdownButtonFormField<String>(
+                    decoration: const InputDecoration(
+                      labelText: 'Câu lạc bộ',
+                      border: OutlineInputBorder(),
+                    ),
+                    value: 'Tất cả CLB',
+                    items: const [
+                      DropdownMenuItem(value: 'Tất cả CLB', child: Text('Tất cả CLB')),
+                      DropdownMenuItem(value: 'Tin học', child: Text('Tin học')),
+                      DropdownMenuItem(value: 'Toán học', child: Text('Toán học')),
+                    ],
+                    onChanged: (value) {},
                   ),
-                  onTap: () async {},
-                ),
+                  const SizedBox(height: AppConstants.paddingMedium),
+                  
+                  const Text(
+                    'Thời gian báo cáo',
+                    style: TextStyle(
+                      fontSize: AppConstants.fontSizeMedium,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: AppConstants.paddingSmall),
+                  
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          readOnly: true,
+                          decoration: const InputDecoration(
+                            labelText: 'Từ ngày',
+                            hintText: 'mm/dd/yyyy',
+                            prefixIcon: Icon(Icons.calendar_today),
+                            border: OutlineInputBorder(),
+                          ),
+                          onTap: () async {},
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: TextField(
+                          readOnly: true,
+                          decoration: const InputDecoration(
+                            labelText: 'Đến ngày',
+                            hintText: 'mm/dd/yyyy',
+                            prefixIcon: Icon(Icons.calendar_today),
+                            border: OutlineInputBorder(),
+                          ),
+                          onTap: () async {},
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppConstants.paddingLarge),
+                  
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppConstants.paddingMedium,
+                      vertical: AppConstants.paddingSmall,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppConstants.primaryColor.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppConstants.primaryColor.withOpacity(0.1)),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.filter_list,
+                          size: 16,
+                          color: AppConstants.primaryColor,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Kết quả: ${_reports.length} báo cáo',
+                            style: TextStyle(
+                              fontSize: AppConstants.fontSizeMedium,
+                              fontWeight: FontWeight.w500,
+                              color: AppConstants.primaryColor,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: AppConstants.paddingLarge),
+                  
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () {},
+                          child: const Text('Xóa bộ lọc'),
+                        ),
+                      ),
+                      const SizedBox(width: AppConstants.paddingMedium),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {},
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppConstants.primaryColor,
+                          ),
+                          child: const Text('Áp dụng'),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppConstants.paddingMedium),
+                  
+                  // Kết quả tìm kiếm
+                  if (_reports.isEmpty)
+                    Container(
+                      height: 200,
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.search,
+                              size: 48,
+                              color: Colors.grey[400],
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Nhập từ khóa để tìm kiếm',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Tìm kiếm theo tên báo cáo hoặc sử dụng bộ lọc',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[500],
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  else
+                    Column(
+                      children: _reports.map((report) => _buildReportCard(report)).toList(),
+                    ),
+                ],
               ),
-            ],
+            ),
           ),
         ],
       ),
@@ -575,64 +705,40 @@ class _ManagerReportsScreenState extends State<ManagerReportsScreen> {
                         report.tenBaoCao
                       ),
                       const SizedBox(height: AppConstants.paddingSmall),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildReportDetailRow(
-                              Icons.calendar_today, 
-                              'Ngày báo cáo', 
-                              _formatDate(report.ngayBaoCao)
-                            ),
-                          ),
-                          const SizedBox(width: AppConstants.paddingSmall),
-                          Expanded(
-                            child: _buildReportDetailRow(
-                              Icons.attach_money, 
-                              'Chi tiêu', 
-                              _formatCurrency(report.tongNganSachChiTieu)
-                            ),
-                          ),
-                        ],
+                      _buildReportDetailRow(
+                        Icons.calendar_today, 
+                        'Ngày báo cáo', 
+                        _formatDate(report.ngayBaoCao)
                       ),
                       const SizedBox(height: AppConstants.paddingSmall),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildReportDetailRow(
-                              Icons.person, 
-                              'Nhân sự phụ trách', 
-                              report.nhanSuPhuTrach
-                            ),
-                          ),
-                          const SizedBox(width: AppConstants.paddingSmall),
-                          Expanded(
-                            child: _buildReportDetailRow(
-                              Icons.account_balance_wallet, 
-                              'Tổng thu', 
-                              _formatCurrency(report.tongThu)
-                            ),
-                          ),
-                        ],
+                      _buildReportDetailRow(
+                        Icons.person, 
+                        'Nhân sự phụ trách', 
+                        report.nhanSuPhuTrach
                       ),
                       const SizedBox(height: AppConstants.paddingSmall),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildReportDetailRow(
-                              Icons.event, 
-                              'Số sự kiện', 
-                              '${report.danhSachSuKien.length} sự kiện'
-                            ),
-                          ),
-                          const SizedBox(width: AppConstants.paddingSmall),
-                          Expanded(
-                            child: _buildReportDetailRow(
-                              Icons.star, 
-                              'Số giải thưởng', 
-                              '${report.danhSachGiai.length} giải thưởng'
-                            ),
-                          ),
-                        ],
+                      _buildReportDetailRow(
+                        Icons.event, 
+                        'Số sự kiện', 
+                        '${report.danhSachSuKien.length} sự kiện'
+                      ),
+                      const SizedBox(height: AppConstants.paddingSmall),
+                      _buildReportDetailRow(
+                        Icons.star, 
+                        'Số giải thưởng', 
+                        '${report.danhSachGiai.length} giải thưởng'
+                      ),
+                      const SizedBox(height: AppConstants.paddingSmall),
+                      _buildReportDetailRow(
+                        Icons.attach_money, 
+                        'Chi tiêu', 
+                        _formatCurrency(report.tongNganSachChiTieu)
+                      ),
+                      const SizedBox(height: AppConstants.paddingSmall),
+                      _buildReportDetailRow(
+                        Icons.account_balance_wallet, 
+                        'Tổng thu', 
+                        _formatCurrency(report.tongThu)
                       ),
                       
                       const SizedBox(height: AppConstants.paddingMedium),
@@ -664,78 +770,257 @@ class _ManagerReportsScreenState extends State<ManagerReportsScreen> {
                       
                       if (report.danhSachSuKien.isNotEmpty) ...[
                         const SizedBox(height: AppConstants.paddingMedium),
-                        const Text(
-                          'Danh sách sự kiện',
-                          style: TextStyle(
-                            fontSize: AppConstants.fontSizeLarge,
-                            fontWeight: FontWeight.bold,
-                            color: AppConstants.textPrimaryColor,
-                          ),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.event,
+                              color: Colors.blue,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Danh sách sự kiện (${report.danhSachSuKien.length})',
+                              style: const TextStyle(
+                                fontSize: AppConstants.fontSizeLarge,
+                                fontWeight: FontWeight.bold,
+                                color: AppConstants.textPrimaryColor,
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: AppConstants.paddingSmall),
-                        ...report.danhSachSuKien.map<Widget>((event) => Container(
-                          margin: const EdgeInsets.only(bottom: AppConstants.paddingSmall),
-                          padding: const EdgeInsets.all(AppConstants.paddingMedium),
-                          decoration: BoxDecoration(
-                            color: Colors.blue.withOpacity(0.05),
-                            borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
-                            border: Border.all(color: Colors.blue.withOpacity(0.2)),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                event.ten,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: AppConstants.fontSizeMedium,
+                        ...report.danhSachSuKien.asMap().entries.map<Widget>((entry) {
+                          int index = entry.key;
+                          var event = entry.value;
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: AppConstants.paddingSmall),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+                              border: Border.all(color: Colors.blue.withOpacity(0.2)),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.blue.withOpacity(0.1),
+                                  spreadRadius: 1,
+                                  blurRadius: 3,
+                                  offset: const Offset(0, 1),
                                 ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text('Người phụ trách: ${event.nguoiPhuTrach}'),
-                              Text('Ngày: ${_formatDate(event.ngayToChuc)}'),
-                              Text('Địa điểm: ${event.diaDiem}'),
-                            ],
-                          ),
-                        )),
+                              ],
+                            ),
+                            child: Column(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(AppConstants.paddingMedium),
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue.withOpacity(0.05),
+                                    borderRadius: const BorderRadius.only(
+                                      topLeft: Radius.circular(AppConstants.borderRadiusMedium),
+                                      topRight: Radius.circular(AppConstants.borderRadiusMedium),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        width: 30,
+                                        height: 30,
+                                        decoration: BoxDecoration(
+                                          color: Colors.blue,
+                                          borderRadius: BorderRadius.circular(15),
+                                        ),
+                                        child: Center(
+                                          child: Text(
+                                            '${index + 1}',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Text(
+                                          event.ten,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: AppConstants.fontSizeMedium,
+                                            color: Colors.blue,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(AppConstants.paddingMedium),
+                                  child: Column(
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Icon(Icons.person, size: 16, color: Colors.grey[600]),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Text('Người phụ trách: ${event.nguoiPhuTrach}'),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Row(
+                                        children: [
+                                          Icon(Icons.calendar_today, size: 16, color: Colors.grey[600]),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Text('Ngày: ${_formatDate(event.ngayToChuc)}'),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Row(
+                                        children: [
+                                          Icon(Icons.location_on, size: 16, color: Colors.grey[600]),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Text('Địa điểm: ${event.diaDiem}'),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }),
                       ],
                       
                       if (report.danhSachGiai.isNotEmpty) ...[
                         const SizedBox(height: AppConstants.paddingMedium),
-                        const Text(
-                          'Danh sách giải thưởng',
-                          style: TextStyle(
-                            fontSize: AppConstants.fontSizeLarge,
-                            fontWeight: FontWeight.bold,
-                            color: AppConstants.textPrimaryColor,
-                          ),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.emoji_events,
+                              color: Colors.amber[600],
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Danh sách giải thưởng (${report.danhSachGiai.length})',
+                              style: const TextStyle(
+                                fontSize: AppConstants.fontSizeLarge,
+                                fontWeight: FontWeight.bold,
+                                color: AppConstants.textPrimaryColor,
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: AppConstants.paddingSmall),
-                        ...report.danhSachGiai.map<Widget>((award) => Container(
-                          margin: const EdgeInsets.only(bottom: AppConstants.paddingSmall),
-                          padding: const EdgeInsets.all(AppConstants.paddingMedium),
-                          decoration: BoxDecoration(
-                            color: Colors.amber.withOpacity(0.05),
-                            borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
-                            border: Border.all(color: Colors.amber.withOpacity(0.2)),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                award.tenGiai,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: AppConstants.fontSizeMedium,
+                        ...report.danhSachGiai.asMap().entries.map<Widget>((entry) {
+                          int index = entry.key;
+                          var award = entry.value;
+                          Color awardColor = _getAwardColor(award.loaiGiai);
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: AppConstants.paddingSmall),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+                              border: Border.all(color: awardColor.withOpacity(0.3)),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: awardColor.withOpacity(0.1),
+                                  spreadRadius: 1,
+                                  blurRadius: 3,
+                                  offset: const Offset(0, 1),
                                 ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text('Loại giải: ${award.loaiGiai}'),
-                              Text('Ngày đạt giải: ${_formatDate(award.ngayDatGiai)}'),
-                              Text('Thành viên: ${award.thanhVienDatGiai}'),
-                            ],
-                          ),
-                        )),
+                              ],
+                            ),
+                            child: Column(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(AppConstants.paddingMedium),
+                                  decoration: BoxDecoration(
+                                    color: awardColor.withOpacity(0.05),
+                                    borderRadius: const BorderRadius.only(
+                                      topLeft: Radius.circular(AppConstants.borderRadiusMedium),
+                                      topRight: Radius.circular(AppConstants.borderRadiusMedium),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        width: 30,
+                                        height: 30,
+                                        decoration: BoxDecoration(
+                                          color: awardColor,
+                                          borderRadius: BorderRadius.circular(15),
+                                        ),
+                                        child: const Center(
+                                          child: Icon(
+                                            Icons.emoji_events,
+                                            color: Colors.white,
+                                            size: 16,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Text(
+                                          award.tenGiai,
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: AppConstants.fontSizeMedium,
+                                            color: awardColor,
+                                          ),
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: awardColor.withOpacity(0.2),
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        child: Text(
+                                          award.loaiGiai,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                            color: awardColor,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(AppConstants.paddingMedium),
+                                  child: Column(
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Icon(Icons.calendar_today, size: 16, color: Colors.grey[600]),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Text('Ngày đạt giải: ${_formatDate(award.ngayDatGiai)}'),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Row(
+                                        children: [
+                                          Icon(Icons.person, size: 16, color: Colors.grey[600]),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Text('Thành viên: ${award.thanhVienDatGiai}'),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }),
                       ],
                     ],
                   ),
