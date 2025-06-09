@@ -49,7 +49,7 @@ class StatsCardWidget extends StatelessWidget {
           Text(
             value,
             style: TextStyle(
-              fontSize: value.length > 15 ? 18 : value.length > 10 ? 22 : 28,
+              fontSize: AppConstants.fontSizeXLarge,
               fontWeight: FontWeight.bold,
               color: color,
             ),
@@ -59,9 +59,9 @@ class StatsCardWidget extends StatelessWidget {
           const SizedBox(height: AppConstants.paddingSmall),
           Text(
             title,
-            style: TextStyle(
-              fontSize: AppConstants.fontSizeSmall,
-              color: Colors.grey[600],
+            style: const TextStyle(
+              fontSize: AppConstants.fontSizeMedium,
+              color: AppConstants.textSecondaryColor,
               fontWeight: FontWeight.w500,
             ),
           ),
