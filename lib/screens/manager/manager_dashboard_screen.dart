@@ -19,7 +19,7 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
   bool _isLoading = true;
   Map<String, dynamic>? _dashboardData;
   List<dynamic> _pendingEvents = [];
-  
+
   int _totalClubs = 0;
   int _totalStudents = 0;
   int _totalEvents = 0;
@@ -27,7 +27,7 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
   
   List<int> _schoolEventStats = List.filled(12, 0);
   List<int> _schoolAwardsStats = List.filled(12, 0);
-
+  
   @override
   void initState() {
     super.initState();
@@ -99,7 +99,7 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
 
       if (pendingResponse.statusCode == 200) {
         final pendingData = jsonDecode(pendingResponse.body);
-        setState(() {
+    setState(() {
           _pendingEvents = pendingData;
           // Sort events by date (newest first)
           _pendingEvents.sort((a, b) => 
@@ -118,7 +118,7 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
     } finally {
       setState(() {
         _isLoading = false;
-      });
+    });
     }
   }
 
@@ -392,19 +392,19 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Row(
-                          children: [
-                            Icon(
+                      children: [
+                        Icon(
                               Icons.pending_actions,
-                              color: Colors.white,
-                              size: 24,
-                            ),
-                            SizedBox(width: AppConstants.paddingSmall),
-                            Text(
-                              'Sự Kiện Chờ Duyệt',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: AppConstants.fontSizeXLarge,
-                                fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                        SizedBox(width: AppConstants.paddingSmall),
+                        Text(
+                          'Sự Kiện Chờ Duyệt',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: AppConstants.fontSizeXLarge,
+                            fontWeight: FontWeight.bold,
                               ),
                             ),
                           ],
@@ -469,13 +469,13 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
                 ),
                 const SizedBox(height: AppConstants.paddingSmall),
                 Text(
-                  'Không có sự kiện chờ duyệt',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: AppConstants.fontSizeMedium,
+              'Không có sự kiện chờ duyệt',
+              style: TextStyle(
+                color: Colors.grey[600],
+                fontSize: AppConstants.fontSizeMedium,
                     fontWeight: FontWeight.w500,
                   ),
-                ),
+              ),
               ],
             ),
           ),
