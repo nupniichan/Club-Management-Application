@@ -8,6 +8,7 @@ class AuthService {
   static final AuthService _instance = AuthService._internal();
   factory AuthService() => _instance;
   AuthService._internal();
+  static const String apiUrl = 'https://club-management-application.onrender.com/api';
 
   User? _currentUser;
   User? get currentUser => _currentUser;
@@ -16,7 +17,7 @@ class AuthService {
   Future<AuthResult> login(String email, String password) async {
     try {
       final response = await http.post(
-        Uri.parse('https://club-management-application.onrender.com/api/login'),
+        Uri.parse('$apiUrl/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'email': email,
@@ -68,7 +69,7 @@ class AuthService {
         // Lấy thông tin chi tiết của tài khoản
         try {
           final accountResponse = await http.get(
-            Uri.parse('https://club-management-application.onrender.com/api/get-account/$userId'),
+            Uri.parse('$apiUrl/get-account/$userId'),
             headers: {'Authorization': 'Bearer $token'},
           );
 
@@ -101,7 +102,7 @@ class AuthService {
             print('User is not manager, checking clubs...');
             try {
               final clubsResponse = await http.get(
-                Uri.parse('https://club-management-application.onrender.com/api/check-account-clubs/${accountData['userId']}'),
+                Uri.parse('$apiUrl/check-account-clubs/${accountData['userId']}'),
                 headers: {'Authorization': 'Bearer $token'},
               );
               
@@ -114,7 +115,7 @@ class AuthService {
                   print('User has active clubs, getting details...');
                   // Lấy thông tin chi tiết của CLB
                   final clubDetailsResponse = await http.get(
-                    Uri.parse('https://club-management-application.onrender.com/api/get-managed-clubs/${accountData['userId']}'),
+                    Uri.parse('$apiUrl/get-managed-clubs/${accountData['userId']}'),
                     headers: {'Authorization': 'Bearer $token'},
                   );
                   
