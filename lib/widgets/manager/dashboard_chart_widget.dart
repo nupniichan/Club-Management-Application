@@ -7,12 +7,14 @@ class DashboardChartWidget extends StatelessWidget {
   final String title;
   final ChartType chartType;
   final Color color;
+  final List<int>? data;
 
   const DashboardChartWidget({
     super.key,
     required this.title,
     required this.chartType,
     required this.color,
+    this.data,
   });
 
   @override
@@ -82,6 +84,7 @@ class DashboardChartWidget extends StatelessWidget {
               painter: LineChartPainter(
                 color: color,
                 chartType: chartType,
+                data: data,
               ),
             ),
           ),
@@ -94,10 +97,12 @@ class DashboardChartWidget extends StatelessWidget {
 class LineChartPainter extends CustomPainter {
   final Color color;
   final ChartType chartType;
+  final List<int>? data;
 
   LineChartPainter({
     required this.color,
     required this.chartType,
+    this.data,
   });
 
   @override

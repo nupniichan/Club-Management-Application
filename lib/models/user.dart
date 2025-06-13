@@ -5,6 +5,7 @@ class User {
   final String role;
   final DateTime createdAt;
   final bool isActive;
+  final List<Map<String, dynamic>>? managedClubs;
 
   const User({
     required this.id,
@@ -13,6 +14,7 @@ class User {
     required this.role,
     required this.createdAt,
     this.isActive = true,
+    this.managedClubs,
   });
 
   // Factory constructor để tạo User từ Map (JSON)
@@ -24,6 +26,9 @@ class User {
       role: map['role'] ?? '',
       createdAt: DateTime.parse(map['createdAt'] ?? DateTime.now().toIso8601String()),
       isActive: map['isActive'] ?? true,
+      managedClubs: map['managedClubs'] != null 
+          ? List<Map<String, dynamic>>.from(map['managedClubs'])
+          : null,
     );
   }
 
@@ -36,6 +41,7 @@ class User {
       'role': role,
       'createdAt': createdAt.toIso8601String(),
       'isActive': isActive,
+      'managedClubs': managedClubs,
     };
   }
 
@@ -47,6 +53,7 @@ class User {
     String? role,
     DateTime? createdAt,
     bool? isActive,
+    List<Map<String, dynamic>>? managedClubs,
   }) {
     return User(
       id: id ?? this.id,
@@ -55,6 +62,7 @@ class User {
       role: role ?? this.role,
       createdAt: createdAt ?? this.createdAt,
       isActive: isActive ?? this.isActive,
+      managedClubs: managedClubs ?? this.managedClubs,
     );
   }
 

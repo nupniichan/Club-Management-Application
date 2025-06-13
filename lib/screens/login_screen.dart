@@ -70,7 +70,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
       if (!mounted) return;
 
       if (result.isSuccess && result.user != null) {
-        if (result.user!.role == AppConstants.roleManager) {
+        if (result.user!.role == 'manager') {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
@@ -79,7 +79,8 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                 userRole: result.user!.role,
               ),
             ),
-          );        } else {
+          );
+        } else {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
@@ -93,15 +94,22 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(result.errorMessage ?? AppConstants.unknownErrorMessage),
-            backgroundColor: AppConstants.errorColor,
+            content: Text(result.errorMessage ?? 'Đã xảy ra lỗi không xác định'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.all(16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
           ),
         );
       }
 
       setState(() {
         _isLoading = false;
-      });    }
+      });
+    }
   }
   
   void _onAccountSelected(String? email) {
