@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import '../../constants/app_constants.dart';
 import '../../widgets/manager/dashboard_chart_widget.dart';
 import '../../widgets/manager/stats_card_widget.dart';
-import '../../services/club_data_service.dart';
-import '../../services/member_data_service.dart';
-import '../../services/event_data_service.dart';
-import '../../services/award_data_service.dart';
+import '../../services/auth_service.dart';
 
 class ManagerDashboardScreen extends StatefulWidget {
   const ManagerDashboardScreen({super.key});
@@ -15,33 +14,126 @@ class ManagerDashboardScreen extends StatefulWidget {
 }
 
 class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
-  final ClubDataService _clubService = ClubDataService();
-  final MemberDataService _memberService = MemberDataService();
-  final EventDataService _eventService = EventDataService();
-  final AwardDataService _awardService = AwardDataService();
-
+  final AuthService _authService = AuthService();
+  
+  bool _isLoading = true;
+  Map<String, dynamic>? _dashboardData;
+  List<dynamic> _pendingEvents = [];
+  
   int _totalClubs = 0;
-  int _totalMembers = 0;
+  int _totalStudents = 0;
   int _totalEvents = 0;
   int _totalAwards = 0;
   
+  List<int> _schoolEventStats = List.filled(12, 0);
+  List<int> _schoolAwardsStats = List.filled(12, 0);
+
   @override
   void initState() {
     super.initState();
-    _loadStats();
+    _loadDashboardData();
   }
 
-  void _loadStats() {
-    setState(() {
-      _totalClubs = _clubService.getAllClubs().length;
-      _totalMembers = _memberService.getAllMembers().length;
-      _totalEvents = _eventService.getAllEvents().length;
-      _totalAwards = _awardService.getAllAwards().length;
-    });
+  Future<void> _loadDashboardData() async {
+    try {
+      setState(() {
+        _isLoading = true;
+      });
+
+      // Fetch dashboard data for manager
+      final response = await http.get(
+        Uri.parse('https://club-management-application.onrender.com/api/dashboard/teacher'),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        
+        // Fetch additional data for total students calculation
+        try {
+          // Fetch all students (accounts)
+          final studentsResponse = await http.get(
+            Uri.parse('https://club-management-application.onrender.com/api/students'),
+          );
+          final totalStudentsFromAccounts = studentsResponse.statusCode == 200 
+              ? jsonDecode(studentsResponse.body).length 
+              : 0;
+
+          // Fetch all club members
+          final membersResponse = await http.get(
+            Uri.parse('https://club-management-application.onrender.com/api/get-members'),
+          );
+          final totalMembers = membersResponse.statusCode == 200 
+              ? jsonDecode(membersResponse.body).length 
+              : 0;
+
+          // Calculate total participants
+          final totalParticipants = totalStudentsFromAccounts + totalMembers;
+
+          setState(() {
+            _dashboardData = data;
+            _totalClubs = data['totalClubs'] ?? 0;
+            _totalStudents = totalParticipants;
+            _totalEvents = data['totalEvents'] ?? 0;
+            _totalAwards = data['totalAwards'] ?? 0;
+            _schoolEventStats = List<int>.from(data['schoolEventStats'] ?? List.filled(12, 0));
+            _schoolAwardsStats = List<int>.from(data['schoolAwardsStats'] ?? List.filled(12, 0));
+          });
+        } catch (error) {
+          print('Error fetching additional data: $error');
+          setState(() {
+            _dashboardData = data;
+            _totalClubs = data['totalClubs'] ?? 0;
+            _totalStudents = data['totalStudents'] ?? 0;
+            _totalEvents = data['totalEvents'] ?? 0;
+            _totalAwards = data['totalAwards'] ?? 0;
+            _schoolEventStats = List<int>.from(data['schoolEventStats'] ?? List.filled(12, 0));
+            _schoolAwardsStats = List<int>.from(data['schoolAwardsStats'] ?? List.filled(12, 0));
+          });
+        }
+      }
+
+      // Fetch pending events
+      final pendingResponse = await http.get(
+        Uri.parse('https://club-management-application.onrender.com/api/get-pending-events'),
+      );
+
+      if (pendingResponse.statusCode == 200) {
+        final pendingData = jsonDecode(pendingResponse.body);
+        setState(() {
+          _pendingEvents = pendingData;
+          // Sort events by date (newest first)
+          _pendingEvents.sort((a, b) => 
+            DateTime.parse(b['ngayToChuc']).compareTo(DateTime.parse(a['ngayToChuc'])));
+        });
+      }
+
+    } catch (error) {
+      print('Error loading dashboard data: $error');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Lỗi khi tải dữ liệu: $error'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(
+            color: AppConstants.primaryColor,
+          ),
+        ),
+      );
+    }
+
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -99,9 +191,9 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
                                 color: Colors.grey[600],
                               ),
                             ),
-                            const Text(
-                              'Nguyễn Phi Quốc Bảo',
-                              style: TextStyle(
+                            Text(
+                              _authService.currentUser?.name ?? 'Quản lý',
+                              style: const TextStyle(
                                 fontSize: AppConstants.fontSizeXXLarge,
                                 fontWeight: FontWeight.bold,
                                 color: AppConstants.textPrimaryColor,
@@ -117,7 +209,7 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: const Text(
-                                'Quản lý câu lạc bộ',
+                                'Quản lý hệ thống',
                                 style: TextStyle(
                                   fontSize: AppConstants.fontSizeSmall,
                                   fontWeight: FontWeight.w600,
@@ -181,8 +273,8 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
                 const SizedBox(width: AppConstants.paddingMedium),
                 Expanded(
                   child: StatsCardWidget(
-                    title: 'Tổng Thành Viên',
-                    value: '$_totalMembers',
+                    title: 'Tổng Học Sinh Tham Gia',
+                    value: '$_totalStudents',
                     icon: Icons.people,
                     color: AppConstants.successColor,
                   ),
@@ -195,7 +287,7 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
               children: [
                 Expanded(
                   child: StatsCardWidget(
-                    title: 'Sự kiện đã tổ chức',
+                    title: 'Sự Kiện Đã Tổ Chức',
                     value: '$_totalEvents',
                     icon: Icons.event,
                     color: AppConstants.warningColor,
@@ -239,10 +331,11 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
                   ),
                 ],
               ),
-              child: const DashboardChartWidget(
+              child: DashboardChartWidget(
                 title: 'Thống Kê Sự Kiện',
                 chartType: ChartType.events,
                 color: AppConstants.primaryColor,
+                data: _schoolEventStats,
               ),
             ),
             const SizedBox(height: AppConstants.paddingLarge),
@@ -261,15 +354,16 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
                   ),
                 ],
               ),
-              child: const DashboardChartWidget(
+              child: DashboardChartWidget(
                 title: 'Thống Kê Giải Thưởng',
                 chartType: ChartType.awards,
                 color: Colors.purple,
+                data: _schoolAwardsStats,
               ),
             ),
             const SizedBox(height: AppConstants.paddingLarge),
 
-            // Recent Activities
+            // Pending Events
             Container(
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -287,27 +381,51 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
                 children: [
                   Container(
                     padding: const EdgeInsets.all(AppConstants.paddingLarge),
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: AppConstants.primaryColor,
-                      borderRadius: const BorderRadius.only(
+                      borderRadius: BorderRadius.only(
                         topLeft: Radius.circular(AppConstants.borderRadiusLarge),
                         topRight: Radius.circular(AppConstants.borderRadiusLarge),
                       ),
                     ),
-                    child: const Row(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Icon(
-                          Icons.history,
-                          color: Colors.white,
-                          size: 24,
+                        const Row(
+                          children: [
+                            Icon(
+                              Icons.pending_actions,
+                              color: Colors.white,
+                              size: 24,
+                            ),
+                            SizedBox(width: AppConstants.paddingSmall),
+                            Text(
+                              'Sự Kiện Chờ Duyệt',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: AppConstants.fontSizeXLarge,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
-                        SizedBox(width: AppConstants.paddingSmall),
-                        Text(
-                          'Sự Kiện Chờ Duyệt',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: AppConstants.fontSizeXLarge,
-                            fontWeight: FontWeight.bold,
+                        GestureDetector(
+                          onTap: () {
+                            // TODO: Navigate to approve events page
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Chức năng đang phát triển'),
+                                backgroundColor: AppConstants.primaryColor,
+                              ),
+                            );
+                          },
+                          child: const Text(
+                            'Xem tất cả →',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: AppConstants.fontSizeMedium,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                       ],
@@ -337,19 +455,28 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
   }
 
   List<Widget> _buildPendingEventsList() {
-    final pendingEvents = _eventService.getEventsByStatus('Chờ duyệt');
-    
-    if (pendingEvents.isEmpty) {
+    if (_pendingEvents.isEmpty) {
       return [
         Padding(
           padding: const EdgeInsets.all(AppConstants.paddingLarge),
           child: Center(
-            child: Text(
-              'Không có sự kiện chờ duyệt',
-              style: TextStyle(
-                color: Colors.grey[600],
-                fontSize: AppConstants.fontSizeMedium,
-              ),
+            child: Column(
+              children: [
+                Icon(
+                  Icons.event_busy,
+                  size: 48,
+                  color: Colors.grey[400],
+                ),
+                const SizedBox(height: AppConstants.paddingSmall),
+                Text(
+                  'Không có sự kiện chờ duyệt',
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: AppConstants.fontSizeMedium,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -357,17 +484,11 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
     }
 
     List<Widget> items = [];
-    for (int i = 0; i < pendingEvents.length && i < 3; i++) {
-      final event = pendingEvents[i];
-      items.add(_buildEventItem(
-        event.ten,
-        event.club,
-        _formatDate(event.ngayToChuc),
-        Icons.event,
-        AppConstants.warningColor,
-      ));
-      if (i < pendingEvents.length - 1 && i < 2) {
-        items.add(const Divider());
+    for (int i = 0; i < _pendingEvents.length && i < 5; i++) {
+      final event = _pendingEvents[i];
+      items.add(_buildEventItem(event));
+      if (i < _pendingEvents.length - 1 && i < 4) {
+        items.add(Divider(color: Colors.grey[200]));
       }
     }
     
@@ -379,13 +500,7 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
     return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
   }
 
-  Widget _buildEventItem(
-    String eventName,
-    String clubName,
-    String date,
-    IconData icon,
-    Color color,
-  ) {
+  Widget _buildEventItem(Map<String, dynamic> event) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: AppConstants.paddingSmall),
       child: Row(
@@ -393,12 +508,12 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
           Container(
             padding: const EdgeInsets.all(AppConstants.paddingSmall),
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
+              color: AppConstants.warningColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
             ),
-            child: Icon(
-              icon,
-              color: color,
+            child: const Icon(
+              Icons.event,
+              color: AppConstants.warningColor,
               size: 20,
             ),
           ),
@@ -408,14 +523,14 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  eventName,
+                  event['ten'] ?? 'Sự kiện không tên',
                   style: const TextStyle(
                     fontSize: AppConstants.fontSizeMedium,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 Text(
-                  clubName,
+                  event['club']?['ten'] ?? 'CLB không xác định',
                   style: TextStyle(
                     fontSize: AppConstants.fontSizeSmall,
                     color: Colors.grey[600],
@@ -425,10 +540,11 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
             ),
           ),
           Text(
-            date,
+            _formatDate(event['ngayToChuc']),
             style: TextStyle(
               fontSize: AppConstants.fontSizeSmall,
               color: Colors.grey[600],
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],

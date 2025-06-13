@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../login_screen.dart';
 import '../../constants/app_constants.dart';
 import '../../services/auth_service.dart';
-import '../../services/member_data_service.dart';
-import '../../services/budget_data_service.dart';
-import '../../services/event_data_service.dart';
-import '../../services/award_data_service.dart';
 import '../../widgets/student/dashboard_chart_widget.dart';
 import '../../widgets/student/stats_card_widget.dart';
 import '../../widgets/student/student_drawer_widget.dart';
@@ -25,32 +24,26 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  final AuthService _authService = AuthService();
+  
   int _selectedIndex = 0;
+  bool _isLoading = true;
   
   final List<String> _titles = [
     'Dashboard',
     'Quản lý thông tin CLB',
   ];
 
-  final MemberDataService _memberService = MemberDataService();
-  final BudgetDataService _budgetService = BudgetDataService();
-  final EventDataService _eventService = EventDataService();
-  final AwardDataService _awardService = AwardDataService();
-
+  // Dashboard data
+  Map<String, dynamic>? _dashboardData;
+  Map<String, dynamic>? _managedClub;
+  List<dynamic> _recentMembers = [];
+  int _currentBudget = 0;
   int _totalMembers = 0;
-  int _totalBudget = 0;
-  int _totalEvents = 0;
   int _totalAwards = 0;
-  String _clubName = 'Câu lạc bộ tin học';
-  String _clubField = 'Công Nghệ';
-  String _clubLogo = '/uploads/d034915e14df6c0d63b832c64483d6f6';
-  String _establishedDate = '21/10/2024';
-  String _responsibleTeacher = 'Thầy Nguyễn Văn A';
-  String _description = 'Câu lạc bộ tin học là nơi dành cho các bạn đam mê công nghệ và lập trình...';
-  String _regulations = 'Phải có mặt vào cuối tuần';
-  String _clubLeader = 'HS123456';
-  String _status = 'Còn hoạt động';
-  int _budget = 2000000;
+  
+  List<int> _eventStats = List.filled(12, 0);
+  List<int> _awardStats = List.filled(12, 0);
 
   @override
   void initState() {
@@ -58,18 +51,98 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _loadDashboardData();
   }
 
-  void _loadDashboardData() {
-    final members = _memberService.getAllMembers();
-    final budgets = _budgetService.getAllBudgets();
-    final events = _eventService.getAllEvents();
-    final awards = _awardService.getAllAwards();
+  Future<void> _loadDashboardData() async {
+    try {
+      setState(() {
+        _isLoading = true;
+      });
 
-    setState(() {
-      _totalMembers = members.length;
-      _totalBudget = budgets.fold<int>(0, (sum, budget) => sum + budget.nguonThu);
-      _totalEvents = events.length;
-      _totalAwards = awards.length;
-    });
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getString('userId');
+      
+      if (userId == null) {
+        _showError('Không tìm thấy thông tin người dùng');
+        return;
+      }
+
+      // Fetch dashboard data for student
+      final response = await http.get(
+        Uri.parse('https://club-management-application.onrender.com/api/dashboard/student/$userId'),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        
+        setState(() {
+          _dashboardData = data;
+          _managedClub = data['managedClubs']?.isNotEmpty == true 
+              ? data['managedClubs'][0] 
+              : null;
+          _recentMembers = data['recentMembers'] ?? [];
+          _totalAwards = data['totalAwards'] ?? 0;
+          _eventStats = List<int>.from(data['eventStats'] ?? List.filled(12, 0));
+          _awardStats = List<int>.from(data['awardStats'] ?? List.filled(12, 0));
+        });
+
+        // If student manages a club, fetch additional data
+        if (_managedClub != null) {
+          final clubId = _managedClub!['_id'];
+          
+          // Fetch club members count
+          try {
+            final membersResponse = await http.get(
+              Uri.parse('https://club-management-application.onrender.com/api/get-members-by-club/$clubId'),
+            );
+            
+            if (membersResponse.statusCode == 200) {
+              final membersData = jsonDecode(membersResponse.body);
+              setState(() {
+                _totalMembers = membersData.length + 1; // +1 for the manager
+              });
+            }
+          } catch (error) {
+            print('Error fetching club members: $error');
+          }
+
+          // Fetch club budget
+          try {
+            final budgetResponse = await http.get(
+              Uri.parse('https://club-management-application.onrender.com/api/get-club-budget/$clubId'),
+            );
+            
+            if (budgetResponse.statusCode == 200) {
+              final budgetData = jsonDecode(budgetResponse.body);
+              setState(() {
+                _currentBudget = budgetData['budget'] ?? 0;
+              });
+            }
+          } catch (error) {
+            print('Error fetching club budget: $error');
+          }
+        }
+      } else {
+        _showError('Không thể tải dữ liệu dashboard');
+      }
+
+    } catch (error) {
+      print('Error loading dashboard data: $error');
+      _showError('Lỗi khi tải dữ liệu: $error');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _showError(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
   
   @override
@@ -144,6 +217,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildBody() {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(
+          color: AppConstants.primaryColor,
+        ),
+      );
+    }
+
     switch (_selectedIndex) {
       case 0:
         return _buildDashboard();
@@ -195,7 +276,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         radius: 30,
                         backgroundColor: AppConstants.primaryColor.withAlpha((0.1 * 255).round()),
                         child: Icon(
-                          widget.userRole == 'Quản lý' 
+                          widget.userRole == 'manager' 
                               ? Icons.admin_panel_settings
                               : Icons.school,
                           size: 30,
@@ -235,7 +316,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Expanded(
                   child: StatsCardWidget(
                     title: 'CLB đang quản lý',
-                    value: _clubName,
+                    value: _managedClub?['ten'] ?? 'Chưa có CLB',
                     icon: Icons.business,
                     color: AppConstants.primaryColor,
                   ),
@@ -243,10 +324,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 const SizedBox(width: AppConstants.paddingMedium),
                 Expanded(
                   child: StatsCardWidget(
-                    title: 'Tổng Thành Viên',
-                    value: '$_totalMembers',
-                    icon: Icons.people,
-                    color: AppConstants.successColor,
+                    title: 'Ngân Sách Hiện Tại',
+                    value: '${(_currentBudget / 1000000).toStringAsFixed(1)}M VNĐ',
+                    icon: Icons.monetization_on,
+                    color: AppConstants.warningColor,
                   ),
                 ),
               ],
@@ -257,18 +338,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
               children: [
                 Expanded(
                   child: StatsCardWidget(
-                    title: 'Ngân Sách Hiện Tại',
-                    value: '${(_totalBudget / 1000000).toStringAsFixed(1)}M VNĐ',
-                    icon: Icons.monetization_on,
-                    color: AppConstants.warningColor,
+                    title: 'Tổng Thành Viên',
+                    value: '$_totalMembers',
+                    icon: Icons.people,
+                    color: AppConstants.successColor,
                   ),
                 ),
                 const SizedBox(width: AppConstants.paddingMedium),
                 Expanded(
                   child: StatsCardWidget(
-                    title: 'Lĩnh vực',
-                    value: _clubField,
-                    icon: Icons.computer,
+                    title: 'Tổng Giải Thưởng',
+                    value: '$_totalAwards',
+                    icon: Icons.emoji_events,
                     color: Colors.purple,
                   ),
                 ),
@@ -301,10 +382,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                 ],
               ),
-              child: const DashboardChartWidget(
+              child: DashboardChartWidget(
                 title: 'Hoạt động/Sự kiện',
                 chartType: ChartType.events,
                 color: AppConstants.primaryColor,
+                data: _eventStats,
               ),
             ),
             const SizedBox(height: AppConstants.paddingLarge),
@@ -323,15 +405,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                 ],
               ),
-              child: const DashboardChartWidget(
+              child: DashboardChartWidget(
                 title: 'Giải thưởng',
                 chartType: ChartType.awards,
                 color: Colors.purple,
+                data: _awardStats,
               ),
             ),
             const SizedBox(height: AppConstants.paddingLarge),
 
-            // New Members Section
+            // Recent Members Section
             Container(
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -360,19 +443,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Row(
-                      children: [
-                        Icon(
-                          Icons.people_alt,
-                          color: Colors.white,
-                          size: 24,
-                        ),
-                        SizedBox(width: AppConstants.paddingSmall),
-                        Text(
-                          'Thành Viên Mới',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: AppConstants.fontSizeXLarge,
-                            fontWeight: FontWeight.bold,
+                          children: [
+                            Icon(
+                              Icons.people_alt,
+                              color: Colors.white,
+                              size: 24,
+                            ),
+                            SizedBox(width: AppConstants.paddingSmall),
+                            Text(
+                              'Thành Viên Mới',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: AppConstants.fontSizeXLarge,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ],
@@ -387,7 +470,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            '${_memberService.getAllMembers().length} thành viên',
+                            '$_totalMembers thành viên',
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: AppConstants.fontSizeMedium,
@@ -400,53 +483,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                   Padding(
                     padding: const EdgeInsets.all(AppConstants.paddingMedium),
-                    child: Column(
-                      children: [
-                        // Member Cards
-                        ..._memberService.getAllMembers().take(4).map(
-                          (member) => _buildMemberCard(
-                            member.ten,
-                            member.id.toString(),
-                            member.lop,
-                            member.vaiTro,
-                          ),
-                        ),
-                        const SizedBox(height: AppConstants.paddingMedium),
-                        // View All Button
-                        SizedBox(
-                          width: double.infinity,
-                          child: TextButton(
-                            onPressed: () {
-                              // TODO: Navigate to all members page
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Chức năng đang phát triển'),
-                                  backgroundColor: AppConstants.primaryColor,
-                                ),
-                              );
-                            },
-                            style: TextButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: AppConstants.paddingMedium),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
-                                side: BorderSide(
-                                  color: AppConstants.primaryColor.withAlpha((0.3 * 255).round()),
-                                  width: 1,
-                                ),
-                              ),
-                            ),
-                            child: const Text(
-                              'Xem tất cả thành viên',
-                              style: TextStyle(
-                                color: AppConstants.primaryColor,
-                                fontSize: AppConstants.fontSizeLarge,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                    child: _buildRecentMembersList(),
                   ),
                 ],
               ),
@@ -455,6 +492,192 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildRecentMembersList() {
+    if (_recentMembers.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.all(AppConstants.paddingLarge),
+        child: Center(
+          child: Column(
+            children: [
+              Icon(
+                Icons.people_outline,
+                size: 48,
+                color: Colors.grey[400],
+              ),
+              const SizedBox(height: AppConstants.paddingSmall),
+              Text(
+                'Chưa có thành viên mới',
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: AppConstants.fontSizeMedium,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      children: [
+        // Member table header
+        Container(
+          padding: const EdgeInsets.all(AppConstants.paddingMedium),
+          decoration: BoxDecoration(
+            color: Colors.grey[50],
+            borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+          ),
+          child: Row(
+            children: [
+              const Expanded(
+                flex: 2,
+                child: Text(
+                  'Họ Tên',
+                  style: TextStyle(
+                    fontSize: AppConstants.fontSizeSmall,
+                    fontWeight: FontWeight.bold,
+                    color: AppConstants.textSecondaryColor,
+                  ),
+                ),
+              ),
+              const Expanded(
+                child: Text(
+                  'MSHS',
+                  style: TextStyle(
+                    fontSize: AppConstants.fontSizeSmall,
+                    fontWeight: FontWeight.bold,
+                    color: AppConstants.textSecondaryColor,
+                  ),
+                ),
+              ),
+              const Expanded(
+                child: Text(
+                  'Lớp',
+                  style: TextStyle(
+                    fontSize: AppConstants.fontSizeSmall,
+                    fontWeight: FontWeight.bold,
+                    color: AppConstants.textSecondaryColor,
+                  ),
+                ),
+              ),
+              const Expanded(
+                child: Text(
+                  'Ngày Tham Gia',
+                  style: TextStyle(
+                    fontSize: AppConstants.fontSizeSmall,
+                    fontWeight: FontWeight.bold,
+                    color: AppConstants.textSecondaryColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: AppConstants.paddingSmall),
+        // Member rows
+        ...(_recentMembers.take(4).map((member) => _buildMemberRow(member)).toList()),
+        const SizedBox(height: AppConstants.paddingMedium),
+        // View All Button
+        SizedBox(
+          width: double.infinity,
+          child: TextButton(
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Chức năng đang phát triển'),
+                  backgroundColor: AppConstants.primaryColor,
+                ),
+              );
+            },
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: AppConstants.paddingMedium),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+                side: BorderSide(
+                  color: AppConstants.primaryColor.withAlpha((0.3 * 255).round()),
+                  width: 1,
+                ),
+              ),
+            ),
+            child: const Text(
+              'Xem tất cả thành viên',
+              style: TextStyle(
+                color: AppConstants.primaryColor,
+                fontSize: AppConstants.fontSizeLarge,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMemberRow(Map<String, dynamic> member) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: AppConstants.paddingSmall),
+      padding: const EdgeInsets.all(AppConstants.paddingMedium),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
+        border: Border.all(color: Colors.grey[200]!),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 2,
+            child: Text(
+              member['hoTen'] ?? 'N/A',
+              style: const TextStyle(
+                fontSize: AppConstants.fontSizeSmall,
+                fontWeight: FontWeight.w600,
+                color: AppConstants.textPrimaryColor,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              member['maSoHocSinh'] ?? 'N/A',
+              style: const TextStyle(
+                fontSize: AppConstants.fontSizeSmall,
+                color: AppConstants.textSecondaryColor,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              member['lop'] ?? 'N/A',
+              style: const TextStyle(
+                fontSize: AppConstants.fontSizeSmall,
+                color: AppConstants.textSecondaryColor,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              _formatDate(member['ngayThamGia']),
+              style: const TextStyle(
+                fontSize: AppConstants.fontSizeSmall,
+                color: AppConstants.textSecondaryColor,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatDate(String? dateString) {
+    if (dateString == null) return 'N/A';
+    try {
+      final date = DateTime.parse(dateString);
+      return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+    } catch (e) {
+      return 'N/A';
+    }
   }
 
   void _showNotifications(BuildContext context) {
@@ -570,21 +793,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           ],
                         ),
                       ),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: IconButton(
-                          onPressed: _showEditClubInfoDialog,
-                          icon: const Icon(
-                            Icons.edit,
-                            color: Colors.white,
-                            size: 24,
-                          ),
-                          tooltip: 'Chỉnh sửa thông tin',
-                        ),
-                      ),
                     ],
                   ),
                 ),
@@ -594,85 +802,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   padding: const EdgeInsets.all(AppConstants.paddingLarge),
                   child: Column(
                     children: [
-                      // Thông tin cơ bản (không thể sửa)
-                      _buildInfoRow(Icons.badge, 'Tên câu lạc bộ', _clubName, canEdit: false),
-                      _buildInfoRow(Icons.category, 'Lĩnh vực', _clubField, canEdit: false),
-                      _buildInfoRow(Icons.calendar_today, 'Ngày thành lập', _establishedDate, canEdit: false),
-                      _buildInfoRow(Icons.info, 'Tình trạng', _status, canEdit: false),
-                      
-                      _buildSectionDivider('Thông tin có thể chỉnh sửa'),
-                      
-                      // Thông tin có thể chỉnh sửa
-                      _buildInfoRow(Icons.image, 'Logo CLB', 'Hình ảnh đại diện', canEdit: true),
-                      _buildInfoRow(Icons.person_outline, 'Giáo viên phụ trách', _responsibleTeacher, canEdit: true),
-                      _buildInfoRow(Icons.description, 'Miêu tả', _description.length > 50 ? '${_description.substring(0, 50)}...' : _description, canEdit: true),
-                      _buildInfoRow(Icons.rule, 'Quy định', _regulations, canEdit: true),
-                      _buildInfoRow(Icons.supervisor_account, 'Trưởng ban CLB', _clubLeader, canEdit: true),
-                      
-                      _buildSectionDivider('Thống kê tự động'),
-                      
-                      // Thông tin thống kê (không thể sửa)
-                      _buildInfoRow(Icons.people, 'Tổng thành viên', '$_totalMembers người', canEdit: false),
-                      _buildInfoRow(Icons.monetization_on, 'Ngân sách', '${(_budget / 1000000).toStringAsFixed(1)}M VNĐ', canEdit: false),
-                      _buildInfoRow(Icons.event, 'Tổng sự kiện', '$_totalEvents sự kiện', canEdit: false),
-                      _buildInfoRow(Icons.emoji_events, 'Tổng giải thưởng', '$_totalAwards giải thưởng', canEdit: false),
+                      _buildInfoRow(Icons.badge, 'Tên câu lạc bộ', _managedClub?['ten'] ?? 'Chưa có CLB'),
+                      _buildInfoRow(Icons.category, 'Lĩnh vực', _managedClub?['linhVuc'] ?? 'N/A'),
+                      _buildInfoRow(Icons.people, 'Tổng thành viên', '$_totalMembers người'),
+                      _buildInfoRow(Icons.monetization_on, 'Ngân sách', '${(_currentBudget / 1000000).toStringAsFixed(1)}M VNĐ'),
+                      _buildInfoRow(Icons.emoji_events, 'Tổng giải thưởng', '$_totalAwards giải thưởng'),
                     ],
                   ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: AppConstants.paddingLarge),
-          
-          // Quick Actions
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(AppConstants.paddingLarge),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withAlpha((0.1 * 255).round()),
-                  blurRadius: 10,
-                  offset: const Offset(0, 5),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.flash_on,
-                      color: AppConstants.primaryColor,
-                      size: 28,
-                    ),
-                    const SizedBox(width: AppConstants.paddingSmall),
-          const Text(
-                      'Thao tác nhanh',
-            style: TextStyle(
-                        fontSize: AppConstants.fontSizeXXLarge,
-                        fontWeight: FontWeight.bold,
-                        color: AppConstants.textPrimaryColor,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppConstants.paddingLarge),
-                
-                _buildActionButton(
-                  Icons.refresh,
-                  'Làm mới dữ liệu',
-                  'Cập nhật thống kê mới nhất',
-                  () => _loadDashboardData(),
-                ),
-                _buildActionButton(
-                  Icons.info_outline,
-                  'Thông tin ứng dụng',
-                  'Xem thông tin phiên bản',
-                  () => _showAppInfo(),
                 ),
               ],
             ),
@@ -682,29 +818,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String label, String value, {bool canEdit = false}) {
+  Widget _buildInfoRow(IconData icon, String label, String value) {
     return Container(
       margin: const EdgeInsets.only(bottom: AppConstants.paddingMedium),
       padding: const EdgeInsets.all(AppConstants.paddingMedium),
       decoration: BoxDecoration(
-        color: canEdit ? Colors.blue[50] : Colors.grey[50],
+        color: Colors.grey[50],
         borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
-        border: Border.all(
-          color: canEdit ? Colors.blue[200]! : Colors.grey[200]!,
-          width: 1,
-        ),
+        border: Border.all(color: Colors.grey[200]!),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: canEdit ? Colors.blue[100] : AppConstants.primaryColor.withOpacity(0.1),
+              color: AppConstants.primaryColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
               icon,
-              color: canEdit ? Colors.blue[700] : AppConstants.primaryColor,
+              color: AppConstants.primaryColor,
               size: 20,
             ),
           ),
@@ -724,603 +857,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
             flex: 3,
             child: Text(
               value,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: AppConstants.fontSizeLarge,
-                color: canEdit ? Colors.blue[800] : AppConstants.textSecondaryColor,
-                fontWeight: canEdit ? FontWeight.w600 : FontWeight.normal,
-              ),
-            ),
-          ),
-          if (canEdit)
-            Container(
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: Colors.blue[100],
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Icon(
-                Icons.edit,
-                size: 16,
-                color: Colors.blue[700],
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActionButton(
-    IconData icon,
-    String title,
-    String subtitle,
-    VoidCallback onTap,
-  ) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: AppConstants.paddingMedium),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
-        child: Container(
-          padding: const EdgeInsets.all(AppConstants.paddingMedium),
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: Colors.grey[300]!,
-              width: 1,
-            ),
-            borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(AppConstants.paddingSmall),
-                decoration: BoxDecoration(
-                  color: AppConstants.primaryColor.withAlpha((0.1 * 255).round()),
-                  borderRadius: BorderRadius.circular(AppConstants.borderRadiusSmall),
-                ),
-                child: Icon(
-                  icon,
-                  color: AppConstants.primaryColor,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: AppConstants.paddingMedium),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: AppConstants.fontSizeLarge,
-                        fontWeight: FontWeight.w600,
-                        color: AppConstants.textPrimaryColor,
-                      ),
-                    ),
-                    Text(
-                      subtitle,
-                      style: const TextStyle(
-                        fontSize: AppConstants.fontSizeMedium,
-                        color: AppConstants.textSecondaryColor,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Icon(
-                Icons.arrow_forward_ios,
-                color: Colors.grey[400],
-                size: 16,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showAppInfo() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Row(
-          children: [
-            Icon(Icons.info, color: AppConstants.primaryColor),
-            SizedBox(width: AppConstants.paddingSmall),
-            Text('Thông tin ứng dụng'),
-          ],
-        ),
-        content: const Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Ứng dụng quản lý câu lạc bộ'),
-            SizedBox(height: AppConstants.paddingSmall),
-            Text('Phiên bản: 1.0.0'),
-            SizedBox(height: AppConstants.paddingSmall),
-            Text('Phát triển bởi: Team Development'),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Đóng'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMemberCard(
-    String name,
-    String studentId,
-    String className,
-    String role,
-  ) {
-    Color roleColor = _getRoleColor(role);
-    IconData roleIcon = _getRoleIcon(role);
-    
-    return Container(
-      margin: const EdgeInsets.only(bottom: AppConstants.paddingMedium),
-      padding: const EdgeInsets.all(AppConstants.paddingMedium),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
-        border: Border.all(
-          color: Colors.grey[300]!,
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha((0.05 * 255).round()),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          // Avatar
-          CircleAvatar(
-            radius: 24,
-            backgroundColor: roleColor.withAlpha((0.15 * 255).round()),
-            child: Icon(
-              roleIcon,
-              color: roleColor,
-              size: 20,
-            ),
-          ),
-          const SizedBox(width: AppConstants.paddingMedium),
-          
-          // Name and info section
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Name
-                Text(
-                  name,
-                  style: const TextStyle(
-                    fontSize: AppConstants.fontSizeLarge,
-                    fontWeight: FontWeight.w600,
-                    color: AppConstants.textPrimaryColor,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                ),
-                const SizedBox(height: 6),
-                
-                // MSHS + Class info with better styling
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppConstants.primaryColor.withAlpha((0.1 * 255).round()),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.badge,
-                            size: 10,
-                            color: AppConstants.primaryColor,
-                          ),
-                          const SizedBox(width: 3),
-                          Text(
-                            studentId,
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                              color: AppConstants.primaryColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.blue.withAlpha((0.1 * 255).round()),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.school,
-                            size: 10,
-                            color: Colors.blue[700],
-                          ),
-                          const SizedBox(width: 3),
-                          Text(
-                            className,
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.blue[700],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          
-          // Role Badge - moved to the right
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 6,
-            ),
-            decoration: BoxDecoration(
-              color: roleColor.withAlpha((0.15 * 255).round()),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: roleColor.withAlpha((0.3 * 255).round()),
-                width: 1,
-              ),
-            ),
-            child: Text(
-              role,
-              style: TextStyle(
-                fontSize: AppConstants.fontSizeSmall,
-                fontWeight: FontWeight.w700,
-                color: roleColor,
+                color: AppConstants.textSecondaryColor,
               ),
             ),
           ),
         ],
       ),
-    );
-  }
-
-  Color _getRoleColor(String role) {
-    switch (role.toLowerCase()) {
-      case 'quản lý':
-      case 'admin':
-        return AppConstants.warningColor;
-      case 'phó quản lý':
-      case 'vice admin':
-        return Colors.orange;
-      case 'thành viên':
-      case 'member':
-        return AppConstants.primaryColor;
-      default:
-        return AppConstants.successColor;
-    }
-  }
-
-  IconData _getRoleIcon(String role) {
-    switch (role.toLowerCase()) {
-      case 'quản lý':
-      case 'admin':
-        return Icons.admin_panel_settings;
-      case 'phó quản lý':
-      case 'vice admin':
-        return Icons.supervisor_account;
-      case 'thành viên':
-      case 'member':
-        return Icons.person;
-      default:
-        return Icons.school;
-    }
-  }
-
-  Widget _buildDivider() {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: AppConstants.paddingMedium),
-      height: 1,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Colors.transparent,
-            AppConstants.primaryColor.withOpacity(0.3),
-            Colors.transparent,
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSectionDivider(String title) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: AppConstants.paddingLarge),
-      child: Row(
-        children: [
-          Expanded(
-            child: Container(
-              height: 1,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.transparent,
-                    AppConstants.primaryColor.withOpacity(0.3),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: AppConstants.paddingMedium),
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppConstants.paddingMedium,
-              vertical: AppConstants.paddingSmall,
-            ),
-            decoration: BoxDecoration(
-              color: AppConstants.primaryColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: AppConstants.primaryColor.withOpacity(0.3),
-                width: 1,
-              ),
-            ),
-            child: Text(
-              title,
-              style: TextStyle(
-                fontSize: AppConstants.fontSizeSmall,
-                fontWeight: FontWeight.w600,
-                color: AppConstants.primaryColor,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Container(
-              height: 1,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    AppConstants.primaryColor.withOpacity(0.3),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showEditClubInfoDialog() {
-    final TextEditingController teacherController = TextEditingController(text: _responsibleTeacher);
-    final TextEditingController descriptionController = TextEditingController(text: _description);
-    final TextEditingController regulationsController = TextEditingController(text: _regulations);
-    final TextEditingController leaderController = TextEditingController(text: _clubLeader);
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
-          ),
-          title: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppConstants.primaryColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  Icons.edit,
-                  color: AppConstants.primaryColor,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: AppConstants.paddingSmall),
-              const Text(
-                'Chỉnh sửa thông tin CLB',
-                style: TextStyle(
-                  fontSize: AppConstants.fontSizeXLarge,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Logo upload section
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(AppConstants.paddingLarge),
-                    decoration: BoxDecoration(
-                      color: Colors.blue[50],
-                      borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
-                      border: Border.all(color: Colors.blue[200]!),
-                    ),
-                    child: Column(
-                      children: [
-                        Icon(Icons.image, size: 40, color: Colors.blue[700]),
-                        const SizedBox(height: AppConstants.paddingSmall),
-                        Text(
-                          'Logo CLB',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            color: Colors.blue[700],
-                          ),
-                        ),
-                        const SizedBox(height: AppConstants.paddingSmall),
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Chức năng upload đang phát triển')),
-                            );
-                          },
-                          icon: const Icon(Icons.upload),
-                          label: const Text('Chọn ảnh mới'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue[100],
-                            foregroundColor: Colors.blue[700],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: AppConstants.paddingMedium),
-                  
-                  TextField(
-                    controller: teacherController,
-                    decoration: InputDecoration(
-                      labelText: 'Giáo viên phụ trách',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
-                      ),
-                      prefixIcon: const Icon(Icons.person_outline),
-                    ),
-                  ),
-                  const SizedBox(height: AppConstants.paddingMedium),
-                  
-                  TextField(
-                    controller: descriptionController,
-                    maxLines: 4,
-                    decoration: InputDecoration(
-                      labelText: 'Miêu tả',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
-                      ),
-                      prefixIcon: const Icon(Icons.description),
-                      alignLabelWithHint: true,
-                    ),
-                  ),
-                  const SizedBox(height: AppConstants.paddingMedium),
-                  
-                  TextField(
-                    controller: regulationsController,
-                    maxLines: 3,
-                    decoration: InputDecoration(
-                      labelText: 'Quy định',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
-                      ),
-                      prefixIcon: const Icon(Icons.rule),
-                      alignLabelWithHint: true,
-                    ),
-                  ),
-                  const SizedBox(height: AppConstants.paddingMedium),
-                  
-                  TextField(
-                    controller: leaderController,
-                    decoration: InputDecoration(
-                      labelText: 'Trưởng ban CLB (MSHS)',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
-                      ),
-                      prefixIcon: const Icon(Icons.supervisor_account),
-                      hintText: 'Ví dụ: HS123456',
-                    ),
-                  ),
-                  const SizedBox(height: AppConstants.paddingMedium),
-                  
-                  Container(
-                    padding: const EdgeInsets.all(AppConstants.paddingMedium),
-                    decoration: BoxDecoration(
-                      color: Colors.orange[50],
-                      borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
-                      border: Border.all(color: Colors.orange[200]!),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.info, color: Colors.orange[700], size: 20),
-                        const SizedBox(width: AppConstants.paddingSmall),
-                        Expanded(
-                          child: Text(
-                            'Chỉ có thể chỉnh sửa: Logo, Giáo viên phụ trách, Miêu tả, Quy định và Trưởng ban CLB.',
-                            style: TextStyle(
-                              fontSize: AppConstants.fontSizeSmall,
-                              color: Colors.orange[700],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text(
-                'Hủy',
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontWeight: FontWeight.w600,
-                  fontSize: AppConstants.fontSizeLarge,
-                ),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  _responsibleTeacher = teacherController.text;
-                  _description = descriptionController.text;
-                  _regulations = regulationsController.text;
-                  _clubLeader = leaderController.text;
-                });
-                Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Đã cập nhật thông tin câu lạc bộ'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppConstants.primaryColor,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppConstants.borderRadiusMedium),
-                ),
-              ),
-              child: const Text(
-                'Lưu thay đổi',
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: AppConstants.fontSizeLarge,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
     );
   }
 
@@ -1394,5 +938,4 @@ class _DashboardScreenState extends State<DashboardScreen> {
       },
     );
   }
-
 }
